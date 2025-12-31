@@ -120,23 +120,22 @@ export class SyncService {
       // Fetch games from API
       const games = await client.fetchGames(username, fetchOptions);
 
-      // Filter out games we already have and add userId
-      const newGames: (Game & { userId: number })[] = [];
-      for (const game of games) {
-        const exists = await this.gameRepository.existsById(game.id);
-        if (!exists) {
-          newGames.push({ ...game, userId });
-        }
-      }
+      // Add userId to all games
+      const gamesToSave = games.map((game) => ({ ...game, userId }));
 
-      // Save new games
-      if (newGames.length > 0) {
-        await this.gameRepository.saveMany(newGames);
+      // Save games (upsert handles both new and existing games)
+      // This ensures clock data and other fields are updated for existing games
+      let newGamesCount = 0;
+      if (gamesToSave.length > 0) {
+        const beforeCount = await this.gameRepository.count(userId);
+        await this.gameRepository.saveMany(gamesToSave);
+        const afterCount = await this.gameRepository.count(userId);
+        newGamesCount = afterCount - beforeCount;
       }
 
       return {
         source: client.source,
-        newGames: newGames.length,
+        newGames: newGamesCount,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
