@@ -4,6 +4,7 @@ import { useState, Fragment } from 'react';
 import type { Game, AnalysisData } from '@/lib/types';
 import GameLink from './GameLink';
 import GameAnalysisPanel from './GameAnalysisPanel';
+import TerminationIcon from './TerminationIcon';
 import Spinner from '@/components/ui/Spinner';
 
 interface GamesTableProps {
@@ -129,9 +130,12 @@ export default function GamesTable({
                     {formatDate(game.playedAt)}
                   </td>
                   <td className="py-2 pr-4">
-                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded font-medium ${resultStyles.bg} ${resultStyles.text}`}>
-                      {resultStyles.label}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded font-medium ${resultStyles.bg} ${resultStyles.text}`}>
+                        {resultStyles.label}
+                      </span>
+                      <TerminationIcon termination={game.termination} />
+                    </div>
                   </td>
                   {showOpponent && (
                     <td className="py-2 pr-4">
