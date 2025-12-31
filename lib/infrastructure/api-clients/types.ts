@@ -56,6 +56,11 @@ export interface ChessComGame {
   white: ChessComPlayer;
   black: ChessComPlayer;
   eco?: string;
+  /** Player accuracies, if they were previously calculated via Game Review */
+  accuracies?: {
+    white: number;
+    black: number;
+  };
 }
 
 export interface ChessComGamesResponse {

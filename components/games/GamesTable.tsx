@@ -16,6 +16,7 @@ interface GamesTableProps {
   expandable?: boolean;
   onAnalyze?: (gameId: string) => Promise<void>;
   onFetchLichessAnalysis?: (gameId: string, playerColor: 'white' | 'black') => Promise<AnalysisData | null>;
+  onFetchChessComAnalysis?: (game: Game) => Promise<AnalysisData | null>;
 }
 
 function formatDate(date: Date): string {
@@ -57,6 +58,7 @@ export default function GamesTable({
   expandable = false,
   onAnalyze,
   onFetchLichessAnalysis,
+  onFetchChessComAnalysis,
 }: GamesTableProps) {
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
 
@@ -186,6 +188,7 @@ export default function GamesTable({
                         game={game} 
                         onAnalyze={onAnalyze}
                         onFetchLichessAnalysis={onFetchLichessAnalysis}
+                        onFetchChessComAnalysis={onFetchChessComAnalysis}
                       />
                     </td>
                   </tr>
