@@ -1,11 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import { useToast } from './ui/Toast';
 import { validateChessComUser } from '@/lib/api/chesscom';
 import { validateLichessUser } from '@/lib/api/lichess';
+
+const STORAGE_KEY = 'chess-dashboard-usernames';
+
+interface SavedUsernames {
+  chesscom: string;
+  lichess: string;
+}
 
 interface UsernameFormProps {
   onSubmit: (chesscomUsername: string, lichessUsername: string) => void;
@@ -18,7 +25,40 @@ export default function UsernameForm({ onSubmit, isLoading }: UsernameFormProps)
   const [chesscomError, setChesscomError] = useState('');
   const [lichessError, setLichessError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { showToast } = useToast();
+
+  // Load saved usernames from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed: SavedUsernames = JSON.parse(saved);
+        if (parsed.chesscom) setChesscomUsername(parsed.chesscom);
+        if (parsed.lichess) setLichessUsername(parsed.lichess);
+      }
+    } catch (e) {
+      // Ignore localStorage errors
+      console.warn('Failed to load saved usernames:', e);
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // Save usernames to localStorage whenever they change (after initial load)
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    try {
+      const toSave: SavedUsernames = {
+        chesscom: chesscomUsername.trim(),
+        lichess: lichessUsername.trim(),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    } catch (e) {
+      // Ignore localStorage errors
+      console.warn('Failed to save usernames:', e);
+    }
+  }, [chesscomUsername, lichessUsername, isInitialized]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

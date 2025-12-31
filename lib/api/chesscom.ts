@@ -4,6 +4,7 @@ import type {
   ChessComGamesResponse,
   ChessComGame,
   FetchGamesOptions,
+  TerminationType,
 } from '../types';
 import { mapChessComResult, mapTimeClass, parseOpeningFromPgn } from '../utils';
 
@@ -43,6 +44,76 @@ async function fetchArchiveGames(archiveUrl: string): Promise<ChessComGame[]> {
   return data.games || [];
 }
 
+// Map Chess.com result to termination type
+function mapChessComTermination(result: string): TerminationType {
+  const map: Record<string, TerminationType> = {
+    'checkmated': 'checkmate',
+    'win': 'checkmate', // Default assumption for win
+    'timeout': 'timeout',
+    'resigned': 'resignation',
+    'stalemate': 'stalemate',
+    'insufficient': 'insufficient',
+    'repetition': 'repetition',
+    'agreed': 'agreement',
+    '50move': 'agreement',
+    'abandoned': 'abandoned',
+    'timevsinsufficient': 'timeout',
+    'lose': 'other',
+    'kingofthehill': 'other',
+    'threecheck': 'other',
+    'bughousepartnerlose': 'other',
+  };
+  return map[result] || 'other';
+}
+
+// Count moves from PGN
+function countMovesFromPgn(pgn: string): number {
+  if (!pgn) return 0;
+  
+  // Find all move numbers (e.g., "1.", "2.", etc.)
+  const moveMatches = pgn.match(/\d+\./g);
+  if (!moveMatches) return 0;
+  
+  // Get the highest move number
+  const moveNumbers = moveMatches.map(m => parseInt(m.replace('.', '')));
+  return Math.max(...moveNumbers, 0);
+}
+
+// Determine termination from both players' results
+function determineTermination(whiteResult: string, blackResult: string): TerminationType {
+  // Check both results to determine how game ended
+  if (whiteResult === 'checkmated' || blackResult === 'checkmated') {
+    return 'checkmate';
+  }
+  if (whiteResult === 'timeout' || blackResult === 'timeout') {
+    return 'timeout';
+  }
+  if (whiteResult === 'resigned' || blackResult === 'resigned') {
+    return 'resignation';
+  }
+  if (whiteResult === 'stalemate' || blackResult === 'stalemate') {
+    return 'stalemate';
+  }
+  if (whiteResult === 'insufficient' || blackResult === 'insufficient') {
+    return 'insufficient';
+  }
+  if (whiteResult === 'repetition' || blackResult === 'repetition') {
+    return 'repetition';
+  }
+  if (whiteResult === 'agreed' || blackResult === 'agreed' || 
+      whiteResult === '50move' || blackResult === '50move') {
+    return 'agreement';
+  }
+  if (whiteResult === 'abandoned' || blackResult === 'abandoned') {
+    return 'abandoned';
+  }
+  if (whiteResult === 'timevsinsufficient' || blackResult === 'timevsinsufficient') {
+    return 'timeout';
+  }
+  
+  return 'other';
+}
+
 // Convert a Chess.com game to our unified Game type
 function convertChessComGame(game: ChessComGame, username: string): Game {
   const normalizedUsername = username.toLowerCase();
@@ -60,6 +131,12 @@ function convertChessComGame(game: ChessComGame, username: string): Game {
   // Map time class
   const timeClass = mapTimeClass(game.time_class);
   
+  // Determine termination from both results
+  const termination = determineTermination(game.white.result, game.black.result);
+  
+  // Count moves
+  const moveCount = countMovesFromPgn(game.pgn || '');
+  
   return {
     id: game.url.split('/').pop() || game.url,
     source: 'chesscom',
@@ -73,6 +150,10 @@ function convertChessComGame(game: ChessComGame, username: string): Game {
       rating: opponent.rating,
     },
     playerRating: player.rating,
+    termination,
+    moveCount,
+    // Note: Chess.com doesn't provide rating change in the API directly
+    ratingChange: undefined,
   };
 }
 

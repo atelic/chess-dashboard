@@ -5,6 +5,18 @@ export type GameResult = 'win' | 'loss' | 'draw';
 export type GameSource = 'chesscom' | 'lichess';
 export type PlayerColor = 'white' | 'black';
 
+// Termination types - how games end
+export type TerminationType =
+  | 'checkmate'
+  | 'resignation'
+  | 'timeout'
+  | 'stalemate'
+  | 'insufficient'
+  | 'repetition'
+  | 'agreement'
+  | 'abandoned'
+  | 'other';
+
 export interface Opening {
   eco: string;    // e.g., "B08"
   name: string;   // e.g., "Pirc Defense"
@@ -25,6 +37,10 @@ export interface Game {
   opening: Opening;
   opponent: Opponent;
   playerRating: number;
+  // New fields
+  termination: TerminationType;
+  ratingChange?: number;        // +/- rating points (if available)
+  moveCount: number;            // Number of moves in game
 }
 
 export interface FetchGamesOptions {
@@ -77,6 +93,86 @@ export interface ColorPerformanceDataPoint {
   winRate: number;
   games: number;
   wins: number;
+}
+
+// New data structures for insights
+
+// Opening stats by color
+export interface OpeningByColorStats {
+  eco: string;
+  name: string;
+  color: PlayerColor;
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+  avgOpponentRating: number;
+}
+
+// Opponent statistics
+export interface OpponentStats {
+  username: string;
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+  avgRating: number;
+  lastPlayed: Date;
+}
+
+// Rating bracket performance
+export interface RatingBracketStats {
+  bracket: string;           // "1200-1400"
+  minRating: number;
+  maxRating: number;
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+}
+
+// Streak information
+export interface StreakInfo {
+  type: 'win' | 'loss';
+  count: number;
+  startDate: Date;
+  endDate: Date;
+}
+
+// Termination statistics
+export interface TerminationStats {
+  termination: TerminationType;
+  label: string;
+  asWinner: number;
+  asLoser: number;
+  total: number;
+}
+
+// Insight card data
+export interface Insight {
+  id: string;
+  type: 'positive' | 'negative' | 'neutral' | 'warning';
+  icon: string;
+  title: string;
+  description: string;
+  value?: string | number;
+}
+
+// Filter state
+export interface FilterState {
+  dateRange: { start?: Date; end?: Date };
+  maxGames: number;
+  timeClasses: TimeClass[];
+  colors: PlayerColor[];
+  results: GameResult[];
+  openings: string[];                              // ECO codes
+  opponentRatingRange: { min?: number; max?: number };
+  opponents: string[];                             // Usernames
+  terminations: TerminationType[];
+  sources: GameSource[];
 }
 
 // API response types for Chess.com

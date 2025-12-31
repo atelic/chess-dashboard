@@ -1,20 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import type { Game } from '@/lib/types';
-import {
-  calculateStats,
-  calculateWinRateOverTime,
-  calculateOpeningStats,
-  calculateRatingProgression,
-  calculateTimeControlDistribution,
-  calculateColorPerformance,
-} from '@/lib/utils';
-import StatsOverview from './StatsOverview';
-import WinRateChart from './WinRateChart';
-import OpeningsChart from './OpeningsChart';
-import RatingChart from './RatingChart';
-import TimeControlChart from './TimeControlChart';
-import ColorPerformanceChart from './ColorPerformanceChart';
+import Tabs, { Tab } from './ui/Tabs';
+import OverviewTab from './tabs/OverviewTab';
+import OpeningsTab from './tabs/OpeningsTab';
+import OpponentsTab from './tabs/OpponentsTab';
+import InsightsTab from './tabs/InsightsTab';
 import Spinner from './ui/Spinner';
 
 interface DashboardProps {
@@ -22,7 +14,45 @@ interface DashboardProps {
   isLoading: boolean;
 }
 
+// SVG Icons as components for cleaner code
+const OverviewIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+  </svg>
+);
+
+const OpeningsIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+  </svg>
+);
+
+const OpponentsIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+  </svg>
+);
+
+const InsightsIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+  </svg>
+);
+
+const TABS: Tab[] = [
+  { id: 'overview', label: 'Overview', icon: <OverviewIcon /> },
+  { id: 'openings', label: 'Openings', icon: <OpeningsIcon /> },
+  { id: 'opponents', label: 'Opponents', icon: <OpponentsIcon /> },
+  { id: 'insights', label: 'Insights', icon: <InsightsIcon /> },
+];
+
 export default function Dashboard({ games, isLoading }: DashboardProps) {
+  const [activeTab, setActiveTab] = useState('overview');
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -56,30 +86,29 @@ export default function Dashboard({ games, isLoading }: DashboardProps) {
     );
   }
 
-  // Calculate all stats and chart data
-  const stats = calculateStats(games);
-  const winRateData = calculateWinRateOverTime(games);
-  const openingData = calculateOpeningStats(games);
-  const ratingData = calculateRatingProgression(games);
-  const timeControlData = calculateTimeControlDistribution(games);
-  const colorPerformanceData = calculateColorPerformance(games);
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'overview':
+        return <OverviewTab games={games} />;
+      case 'openings':
+        return <OpeningsTab games={games} />;
+      case 'opponents':
+        return <OpponentsTab games={games} />;
+      case 'insights':
+        return <InsightsTab games={games} />;
+      default:
+        return <OverviewTab games={games} />;
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
-      <StatsOverview stats={stats} />
+      {/* Tab Navigation */}
+      <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
 
-      {/* Main Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <WinRateChart data={winRateData} />
-        <OpeningsChart data={openingData} />
-      </div>
-
-      {/* Secondary Charts Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <RatingChart data={ratingData} />
-        <TimeControlChart data={timeControlData} />
-        <ColorPerformanceChart data={colorPerformanceData} />
+      {/* Tab Content */}
+      <div className="mt-6">
+        {renderActiveTab()}
       </div>
     </div>
   );

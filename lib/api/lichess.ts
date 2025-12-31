@@ -1,4 +1,4 @@
-import type { Game, LichessGame, FetchGamesOptions } from '../types';
+import type { Game, LichessGame, FetchGamesOptions, TerminationType } from '../types';
 import { mapTimeClass } from '../utils';
 
 const BASE_URL = 'https://lichess.org/api';
@@ -32,6 +32,33 @@ async function parseNdjsonStream(response: Response): Promise<LichessGame[]> {
   return games;
 }
 
+// Map Lichess status to termination type
+function mapLichessTermination(status: string): TerminationType {
+  const map: Record<string, TerminationType> = {
+    'mate': 'checkmate',
+    'resign': 'resignation',
+    'outoftime': 'timeout',
+    'timeout': 'timeout',
+    'stalemate': 'stalemate',
+    'draw': 'agreement',
+    'aborted': 'abandoned',
+    'noStart': 'abandoned',
+    'cheat': 'other',
+    'variantEnd': 'other',
+  };
+  return map[status] || 'other';
+}
+
+// Count moves from moves string
+function countMovesFromString(moves: string | undefined): number {
+  if (!moves) return 0;
+  
+  // Moves are space-separated, each pair is one full move
+  const moveList = moves.trim().split(/\s+/);
+  // Full moves = total half-moves / 2, rounded up
+  return Math.ceil(moveList.length / 2);
+}
+
 // Convert a Lichess game to our unified Game type
 function convertLichessGame(game: LichessGame, username: string): Game {
   const normalizedUsername = username.toLowerCase();
@@ -57,6 +84,15 @@ function convertLichessGame(game: LichessGame, username: string): Game {
     name: game.opening?.name || 'Unknown Opening',
   };
   
+  // Map termination
+  const termination = mapLichessTermination(game.status);
+  
+  // Count moves
+  const moveCount = countMovesFromString(game.moves);
+  
+  // Get rating change from player data
+  const ratingChange = player.ratingDiff;
+  
   return {
     id: game.id,
     source: 'lichess',
@@ -70,6 +106,9 @@ function convertLichessGame(game: LichessGame, username: string): Game {
       rating: opponent.rating,
     },
     playerRating: player.rating,
+    termination,
+    moveCount,
+    ratingChange,
   };
 }
 
@@ -84,7 +123,7 @@ export async function fetchLichessGames(
   const params = new URLSearchParams({
     max: maxGames.toString(),
     opening: 'true',
-    pgnInJson: 'true',
+    moves: 'true',  // Need moves to count them
   });
   
   // Add date filters if provided (Lichess uses millisecond timestamps)

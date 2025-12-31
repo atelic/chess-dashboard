@@ -1,19 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import UsernameForm from '@/components/UsernameForm';
-import DateRangeFilter from '@/components/DateRangeFilter';
+import AdvancedFilters from '@/components/AdvancedFilters';
 import Dashboard from '@/components/Dashboard';
 import { useGames } from '@/hooks/useGames';
 import { useToast } from '@/components/ui/Toast';
+import { FilterState } from '@/lib/types';
+import { getDefaultFilters, filterGames } from '@/lib/utils';
 
 export default function Home() {
   const { games, isLoading, error, fetchGames, refetchWithOptions, chesscomUsername, lichessUsername } = useGames();
   const { showToast } = useToast();
   const [hasSearched, setHasSearched] = useState(false);
+  const [filters, setFilters] = useState<FilterState>(getDefaultFilters());
+
+  // Apply client-side filters to games
+  const filteredGames = useMemo(() => {
+    return filterGames(games, filters);
+  }, [games, filters]);
 
   const handleSubmit = async (chesscom: string, lichess: string) => {
     setHasSearched(true);
+    // Reset filters when fetching new user
+    setFilters(getDefaultFilters());
+    
     try {
       await fetchGames(chesscom, lichess, { maxGames: 100 });
       
@@ -27,15 +38,19 @@ export default function Home() {
     }
   };
 
-  const handleFilterChange = async (startDate: Date | undefined, endDate: Date | undefined, maxGames: number) => {
+  const handleRefetch = async (startDate: Date | undefined, endDate: Date | undefined, maxGames: number) => {
     if (!chesscomUsername && !lichessUsername) return;
     
     try {
       await refetchWithOptions({ startDate, endDate, maxGames });
-      showToast('Games filtered successfully!', 'success');
+      showToast('Games fetched successfully!', 'success');
     } catch {
-      showToast('Failed to filter games.', 'error');
+      showToast('Failed to fetch games.', 'error');
     }
+  };
+
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
   };
 
   return (
@@ -69,10 +84,16 @@ export default function Home() {
         {/* Show filter and dashboard only after search */}
         {hasSearched && (
           <>
-            {/* Date Range Filter */}
+            {/* Advanced Filters */}
             {(chesscomUsername || lichessUsername) && games.length > 0 && (
               <div className="mb-6">
-                <DateRangeFilter onFilterChange={handleFilterChange} isLoading={isLoading} />
+                <AdvancedFilters 
+                  games={games}
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  onRefetch={handleRefetch}
+                  isLoading={isLoading}
+                />
               </div>
             )}
 
@@ -83,14 +104,14 @@ export default function Home() {
               </div>
             )}
 
-            {/* Dashboard */}
-            <Dashboard games={games} isLoading={isLoading} />
+            {/* Dashboard - now receives filtered games */}
+            <Dashboard games={filteredGames} isLoading={isLoading} />
 
             {/* Source Attribution */}
             {games.length > 0 && (
               <div className="mt-8 text-center text-sm text-zinc-600">
                 <p>
-                  Showing {games.length} games from{' '}
+                  Showing {filteredGames.length} of {games.length} games from{' '}
                   {chesscomUsername && lichessUsername
                     ? `Chess.com (${chesscomUsername}) and Lichess (${lichessUsername})`
                     : chesscomUsername
