@@ -679,6 +679,7 @@ export function calculateDateStats(games: Game[]): DateStats[] {
   const result: DateStats[] = [];
   for (const [dateKey, data] of dateMap) {
     const total = data.wins + data.losses + data.draws;
+    const dateGames = games.filter((g) => getDateKey(g.playedAt) === dateKey);
     result.push({
       date: dateKey,
       displayDate: formatDisplayDate(data.date),
@@ -688,11 +689,30 @@ export function calculateDateStats(games: Game[]): DateStats[] {
       draws: data.draws,
       winRate: total > 0 ? (data.wins / total) * 100 : 0,
       ratingChange: data.ratingChange,
+      hasTilt: detectTiltForGames(dateGames),
     });
   }
 
   // Sort by date descending (most recent first)
   return result.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function detectTiltForGames(games: Game[], threshold: number = 3): boolean {
+  if (games.length < threshold) return false;
+
+  // Sort chronologically (oldest first) to detect consecutive losses in order played
+  const sorted = [...games].sort((a, b) => a.playedAt.getTime() - b.playedAt.getTime());
+
+  let consecutiveLosses = 0;
+  for (const game of sorted) {
+    if (game.result === 'loss') {
+      consecutiveLosses++;
+      if (consecutiveLosses >= threshold) return true;
+    } else {
+      consecutiveLosses = 0;
+    }
+  }
+  return false;
 }
 
 export function getGamesForDate(games: Game[], dateKey: string): Game[] {

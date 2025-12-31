@@ -163,6 +163,7 @@ export interface DateStats {
   draws: number;
   winRate: number;
   ratingChange: number;    // Sum of rating changes for the day
+  hasTilt: boolean;        // True if 3+ consecutive losses on this day
 }
 
 // Insight card data
