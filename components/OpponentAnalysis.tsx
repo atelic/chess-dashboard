@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import type { Game, OpponentStats, RatingBracketStats } from '@/lib/types';
 import {
   calculateOpponentStats,
@@ -10,6 +10,7 @@ import {
   formatDate,
 } from '@/lib/utils';
 import Card from './ui/Card';
+import GamesTable from './games/GamesTable';
 
 interface OpponentAnalysisProps {
   games: Game[];
@@ -145,12 +146,14 @@ type SortDirection = 'asc' | 'desc';
 
 interface FrequentOpponentsTableProps {
   opponents: OpponentStats[];
+  allGames: Game[];
   limit?: number;
 }
 
-function FrequentOpponentsTable({ opponents, limit = 10 }: FrequentOpponentsTableProps) {
+function FrequentOpponentsTable({ opponents, allGames, limit = 10 }: FrequentOpponentsTableProps) {
   const [sortField, setSortField] = useState<SortField>('games');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [expandedOpponent, setExpandedOpponent] = useState<string | null>(null);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -159,6 +162,16 @@ function FrequentOpponentsTable({ opponents, limit = 10 }: FrequentOpponentsTabl
       setSortField(field);
       setSortDirection('desc');
     }
+  };
+
+  const handleRowClick = (username: string) => {
+    setExpandedOpponent(expandedOpponent === username ? null : username);
+  };
+
+  const getGamesForOpponent = (username: string): Game[] => {
+    return allGames
+      .filter(g => g.opponent.username.toLowerCase() === username.toLowerCase())
+      .sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime());
   };
 
   const sortedOpponents = [...opponents]
@@ -192,6 +205,7 @@ function FrequentOpponentsTable({ opponents, limit = 10 }: FrequentOpponentsTabl
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-zinc-800">
+            <th className="text-left py-2 px-2 text-zinc-400 font-medium w-8"></th>
             <th className="text-left py-2 px-2 text-zinc-400 font-medium">Opponent</th>
             <th 
               className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
@@ -215,29 +229,62 @@ function FrequentOpponentsTable({ opponents, limit = 10 }: FrequentOpponentsTabl
           </tr>
         </thead>
         <tbody>
-          {sortedOpponents.map((opp) => (
-            <tr key={opp.username} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-              <td className="py-2 px-2 text-zinc-200">{opp.username}</td>
-              <td className="text-right py-2 px-2 text-zinc-300">{opp.games}</td>
-              <td className="text-right py-2 px-2">
-                <span className={`${
-                  opp.winRate >= 60 ? 'text-green-400' :
-                  opp.winRate >= 40 ? 'text-zinc-300' :
-                  'text-red-400'
-                }`}>
-                  {opp.winRate.toFixed(0)}%
-                </span>
-              </td>
-              <td className="text-right py-2 px-2 text-zinc-400">
-                <span className="text-green-400">{opp.wins}</span>
-                <span className="text-zinc-600">/</span>
-                <span className="text-red-400">{opp.losses}</span>
-                <span className="text-zinc-600">/</span>
-                <span className="text-zinc-400">{opp.draws}</span>
-              </td>
-              <td className="text-right py-2 px-2 text-zinc-400">{opp.avgRating}</td>
-            </tr>
-          ))}
+          {sortedOpponents.map((opp) => {
+            const isExpanded = expandedOpponent === opp.username;
+            const opponentGames = isExpanded ? getGamesForOpponent(opp.username) : [];
+
+            return (
+              <Fragment key={opp.username}>
+                <tr 
+                  className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
+                    isExpanded ? 'bg-zinc-800/50' : 'hover:bg-zinc-800/30'
+                  }`}
+                  onClick={() => handleRowClick(opp.username)}
+                >
+                  <td className="py-2 px-2 text-zinc-500">
+                    <svg 
+                      className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </td>
+                  <td className="py-2 px-2 text-zinc-200">{opp.username}</td>
+                  <td className="text-right py-2 px-2 text-zinc-300">{opp.games}</td>
+                  <td className="text-right py-2 px-2">
+                    <span className={`${
+                      opp.winRate >= 60 ? 'text-green-400' :
+                      opp.winRate >= 40 ? 'text-zinc-300' :
+                      'text-red-400'
+                    }`}>
+                      {opp.winRate.toFixed(0)}%
+                    </span>
+                  </td>
+                  <td className="text-right py-2 px-2 text-zinc-400">
+                    <span className="text-green-400">{opp.wins}</span>
+                    <span className="text-zinc-600">/</span>
+                    <span className="text-red-400">{opp.losses}</span>
+                    <span className="text-zinc-600">/</span>
+                    <span className="text-zinc-400">{opp.draws}</span>
+                  </td>
+                  <td className="text-right py-2 px-2 text-zinc-400">{opp.avgRating}</td>
+                </tr>
+                {isExpanded && (
+                  <tr>
+                    <td colSpan={6} className="bg-zinc-800/20 p-4">
+                      <GamesTable 
+                        games={opponentGames} 
+                        maxRows={10}
+                        showOpponent={false}
+                      />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -273,9 +320,9 @@ export default function OpponentAnalysis({ games, minGames = 2 }: OpponentAnalys
       {/* Frequent Opponents Table */}
       <Card 
         title="Frequent Opponents" 
-        subtitle="Opponents you've played at least twice"
+        subtitle="Click a row to view games"
       >
-        <FrequentOpponentsTable opponents={allOpponents} />
+        <FrequentOpponentsTable opponents={allOpponents} allGames={games} />
       </Card>
     </div>
   );

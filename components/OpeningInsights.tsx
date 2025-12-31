@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import type { Game, OpeningByColorStats, PlayerColor } from '@/lib/types';
 import { findBestOpenings, findWorstOpenings, calculateOpeningsByColor } from '@/lib/utils';
+import { useGames } from '@/hooks/useGames';
 import Card from './ui/Card';
+import GamesTable from './games/GamesTable';
 
 interface OpeningInsightsProps {
   games: Game[];
@@ -16,11 +18,13 @@ type SortDirection = 'asc' | 'desc';
 interface OpeningTableProps {
   openings: OpeningByColorStats[];
   title: string;
+  allGames: Game[];
 }
 
-function OpeningTable({ openings, title }: OpeningTableProps) {
+function OpeningTable({ openings, title, allGames }: OpeningTableProps) {
   const [sortField, setSortField] = useState<SortField>('games');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [expandedEco, setExpandedEco] = useState<string | null>(null);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -35,6 +39,17 @@ function OpeningTable({ openings, title }: OpeningTableProps) {
     const multiplier = sortDirection === 'asc' ? 1 : -1;
     return (a[sortField] - b[sortField]) * multiplier;
   });
+
+  const handleRowClick = (eco: string) => {
+    setExpandedEco(expandedEco === eco ? null : eco);
+  };
+
+  // Get games for expanded opening (filtered client-side from already-loaded games)
+  const getGamesForOpening = (eco: string, color: PlayerColor): Game[] => {
+    return allGames
+      .filter(g => g.opening.eco === eco && g.playerColor === color)
+      .sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime());
+  };
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
@@ -62,6 +77,7 @@ function OpeningTable({ openings, title }: OpeningTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-800">
+              <th className="text-left py-2 px-2 text-zinc-400 font-medium w-8"></th>
               <th className="text-left py-2 px-2 text-zinc-400 font-medium">Opening</th>
               <th 
                 className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
@@ -85,32 +101,65 @@ function OpeningTable({ openings, title }: OpeningTableProps) {
             </tr>
           </thead>
           <tbody>
-            {sortedOpenings.map((opening) => (
-              <tr key={opening.eco} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                <td className="py-2 px-2">
-                  <span className="text-zinc-200">{opening.name}</span>
-                  <span className="text-zinc-500 ml-2 text-xs">({opening.eco})</span>
-                </td>
-                <td className="text-right py-2 px-2 text-zinc-300">{opening.games}</td>
-                <td className="text-right py-2 px-2">
-                  <span className={`${
-                    opening.winRate >= 60 ? 'text-green-400' : 
-                    opening.winRate >= 40 ? 'text-zinc-300' : 
-                    'text-red-400'
-                  }`}>
-                    {opening.winRate.toFixed(0)}%
-                  </span>
-                </td>
-                <td className="text-right py-2 px-2 text-zinc-400">
-                  <span className="text-green-400">{opening.wins}</span>
-                  <span className="text-zinc-600">/</span>
-                  <span className="text-red-400">{opening.losses}</span>
-                  <span className="text-zinc-600">/</span>
-                  <span className="text-zinc-400">{opening.draws}</span>
-                </td>
-                <td className="text-right py-2 px-2 text-zinc-400">{opening.avgOpponentRating}</td>
-              </tr>
-            ))}
+            {sortedOpenings.map((opening) => {
+              const isExpanded = expandedEco === opening.eco;
+              const openingGames = isExpanded ? getGamesForOpening(opening.eco, opening.color) : [];
+
+              return (
+                <Fragment key={opening.eco}>
+                  <tr 
+                    className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
+                      isExpanded ? 'bg-zinc-800/50' : 'hover:bg-zinc-800/30'
+                    }`}
+                    onClick={() => handleRowClick(opening.eco)}
+                  >
+                    <td className="py-2 px-2 text-zinc-500">
+                      <svg 
+                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </td>
+                    <td className="py-2 px-2">
+                      <span className="text-zinc-200">{opening.name}</span>
+                      <span className="text-zinc-500 ml-2 text-xs">({opening.eco})</span>
+                    </td>
+                    <td className="text-right py-2 px-2 text-zinc-300">{opening.games}</td>
+                    <td className="text-right py-2 px-2">
+                      <span className={`${
+                        opening.winRate >= 60 ? 'text-green-400' : 
+                        opening.winRate >= 40 ? 'text-zinc-300' : 
+                        'text-red-400'
+                      }`}>
+                        {opening.winRate.toFixed(0)}%
+                      </span>
+                    </td>
+                    <td className="text-right py-2 px-2 text-zinc-400">
+                      <span className="text-green-400">{opening.wins}</span>
+                      <span className="text-zinc-600">/</span>
+                      <span className="text-red-400">{opening.losses}</span>
+                      <span className="text-zinc-600">/</span>
+                      <span className="text-zinc-400">{opening.draws}</span>
+                    </td>
+                    <td className="text-right py-2 px-2 text-zinc-400">{opening.avgOpponentRating}</td>
+                  </tr>
+                  {isExpanded && (
+                    <tr>
+                      <td colSpan={6} className="bg-zinc-800/20 p-4">
+                        <GamesTable 
+                          games={openingGames} 
+                          maxRows={10} 
+                          showOpening={false}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -203,7 +252,7 @@ export default function OpeningInsights({ games, minGames = 3 }: OpeningInsights
       )}
 
       {/* Full Table Section */}
-      <Card title="All Openings" subtitle="Click column headers to sort">
+      <Card title="All Openings" subtitle="Click a row to view games">
         {/* Color Toggle */}
         <div className="flex gap-2 mb-4">
           <button
@@ -233,6 +282,7 @@ export default function OpeningInsights({ games, minGames = 3 }: OpeningInsights
         <OpeningTable
           openings={allOpeningsForColor}
           title={`${selectedColor === 'white' ? 'White' : 'Black'} Openings`}
+          allGames={games}
         />
       </Card>
     </div>

@@ -1,128 +1,194 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { Game, FetchGamesOptions } from '@/lib/types';
-import { fetchChessComGames } from '@/lib/api/chesscom';
-import { fetchLichessGames } from '@/lib/api/lichess';
-import { mergeAndSortGames, filterGamesByDateRange } from '@/lib/utils';
+import { useAppStore } from '@/stores/useAppStore';
+import type { TerminationType } from '@/lib/shared/types';
 
-interface UseGamesState {
+// ============================================
+// TYPES
+// ============================================
+
+export interface Game {
+  id: string;
+  source: 'chesscom' | 'lichess';
+  playedAt: string;
+  timeClass: 'bullet' | 'blitz' | 'rapid' | 'classical';
+  playerColor: 'white' | 'black';
+  result: 'win' | 'loss' | 'draw';
+  opening: {
+    eco: string;
+    name: string;
+  };
+  opponent: {
+    username: string;
+    rating: number;
+  };
+  playerRating: number;
+  termination: TerminationType;
+  moveCount: number;
+  ratingChange?: number;
+  rated: boolean;
+  gameUrl: string;
+}
+
+interface FetchOptions {
+  eco?: string;
+  color?: 'white' | 'black';
+  result?: 'win' | 'loss' | 'draw';
+  opponent?: string;
+}
+
+interface UseGamesReturn {
   games: Game[];
   isLoading: boolean;
   error: string | null;
-  chesscomUsername: string;
-  lichessUsername: string;
-}
-
-interface UseGamesReturn extends UseGamesState {
-  fetchGames: (
-    chesscomUsername: string,
-    lichessUsername: string,
-    options?: FetchGamesOptions
-  ) => Promise<void>;
-  refetchWithOptions: (options: FetchGamesOptions) => Promise<void>;
+  totalCount: number;
+  fetchGames: (options?: FetchOptions) => Promise<void>;
+  fetchGamesByEco: (eco: string, color?: 'white' | 'black', result?: 'win' | 'loss' | 'draw') => Promise<Game[]>;
+  fetchGamesByOpponent: (opponent: string) => Promise<Game[]>;
   clearGames: () => void;
 }
 
+// ============================================
+// HOOK
+// ============================================
+
 export function useGames(): UseGamesReturn {
-  const [state, setState] = useState<UseGamesState>({
-    games: [],
-    isLoading: false,
-    error: null,
-    chesscomUsername: '',
-    lichessUsername: '',
-  });
+  const [games, setGames] = useState<Game[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const fetchGames = useCallback(
-    async (
-      chesscomUsername: string,
-      lichessUsername: string,
-      options: FetchGamesOptions = {}
-    ) => {
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-        chesscomUsername,
-        lichessUsername,
-      }));
+  const { filter } = useAppStore();
 
+  /**
+   * Fetch games with optional filters
+   */
+  const fetchGames = useCallback(async (options?: FetchOptions) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Build query params from store filter and options
+      const params = new URLSearchParams();
+
+      if (filter.timeClasses.length > 0) {
+        params.set('timeClasses', filter.timeClasses.join(','));
+      }
+      if (filter.colors.length > 0) {
+        params.set('colors', filter.colors.join(','));
+      }
+      if (filter.results.length > 0) {
+        params.set('results', filter.results.join(','));
+      }
+      if (filter.sources.length > 0) {
+        params.set('sources', filter.sources.join(','));
+      }
+      if (filter.rated !== null) {
+        params.set('rated', String(filter.rated));
+      }
+      if (filter.openings.length > 0) {
+        params.set('openings', filter.openings.join(','));
+      }
+
+      // Add specific options
+      if (options?.eco) {
+        params.set('eco', options.eco);
+      }
+      if (options?.color) {
+        params.set('color', options.color);
+      }
+      if (options?.result) {
+        params.set('result', options.result);
+      }
+      if (options?.opponent) {
+        params.set('opponents', options.opponent);
+      }
+
+      const url = `/api/games${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch games');
+      }
+
+      setGames(data.games);
+      setTotalCount(data.count);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch games';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filter]);
+
+  /**
+   * Fetch games by ECO code (for inline expansion)
+   */
+  const fetchGamesByEco = useCallback(
+    async (eco: string, color?: 'white' | 'black', result?: 'win' | 'loss' | 'draw'): Promise<Game[]> => {
       try {
-        const gamesArrays: Game[][] = [];
+        const params = new URLSearchParams();
+        params.set('eco', eco);
+        if (color) params.set('color', color);
+        if (result) params.set('result', result);
 
-        // Fetch from Chess.com if username provided
-        if (chesscomUsername) {
-          try {
-            const chesscomGames = await fetchChessComGames(chesscomUsername, options);
-            gamesArrays.push(chesscomGames);
-          } catch (error) {
-            console.error('Chess.com fetch error:', error);
-            throw new Error(`Failed to fetch Chess.com games: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          }
+        const response = await fetch(`/api/games?${params.toString()}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch games');
         }
 
-        // Fetch from Lichess if username provided
-        if (lichessUsername) {
-          try {
-            const lichessGames = await fetchLichessGames(lichessUsername, options);
-            gamesArrays.push(lichessGames);
-          } catch (error) {
-            console.error('Lichess fetch error:', error);
-            throw new Error(`Failed to fetch Lichess games: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          }
-        }
-
-        // Merge and sort all games
-        let allGames = mergeAndSortGames(gamesArrays);
-
-        // Apply date filters if provided
-        if (options.startDate || options.endDate) {
-          allGames = filterGamesByDateRange(allGames, options.startDate, options.endDate);
-        }
-
-        // Limit to maxGames
-        const maxGames = options.maxGames || 100;
-        allGames = allGames.slice(0, maxGames);
-
-        setState((prev) => ({
-          ...prev,
-          games: allGames,
-          isLoading: false,
-        }));
-      } catch (error) {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: error instanceof Error ? error.message : 'An unknown error occurred',
-        }));
+        return data.games;
+      } catch (err) {
+        console.error('Failed to fetch games by ECO:', err);
+        return [];
       }
     },
-    []
+    [],
   );
 
-  const refetchWithOptions = useCallback(
-    async (options: FetchGamesOptions) => {
-      if (state.chesscomUsername || state.lichessUsername) {
-        await fetchGames(state.chesscomUsername, state.lichessUsername, options);
+  /**
+   * Fetch games by opponent (for inline expansion)
+   */
+  const fetchGamesByOpponent = useCallback(async (opponent: string): Promise<Game[]> => {
+    try {
+      const params = new URLSearchParams();
+      params.set('opponents', opponent);
+
+      const response = await fetch(`/api/games?${params.toString()}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch games');
       }
-    },
-    [fetchGames, state.chesscomUsername, state.lichessUsername]
-  );
 
+      return data.games;
+    } catch (err) {
+      console.error('Failed to fetch games by opponent:', err);
+      return [];
+    }
+  }, []);
+
+  /**
+   * Clear games from state
+   */
   const clearGames = useCallback(() => {
-    setState({
-      games: [],
-      isLoading: false,
-      error: null,
-      chesscomUsername: '',
-      lichessUsername: '',
-    });
+    setGames([]);
+    setTotalCount(0);
+    setError(null);
   }, []);
 
   return {
-    ...state,
+    games,
+    isLoading,
+    error,
+    totalCount,
     fetchGames,
-    refetchWithOptions,
+    fetchGamesByEco,
+    fetchGamesByOpponent,
     clearGames,
   };
 }

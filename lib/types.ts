@@ -37,10 +37,11 @@ export interface Game {
   opening: Opening;
   opponent: Opponent;
   playerRating: number;
-  // New fields
   termination: TerminationType;
   ratingChange?: number;        // +/- rating points (if available)
   moveCount: number;            // Number of moves in game
+  rated: boolean;               // Whether the game was rated
+  gameUrl: string;              // URL to view the game on the platform
 }
 
 export interface FetchGamesOptions {
@@ -80,6 +81,7 @@ export interface RatingDataPoint {
   date: string;        // ISO date
   rating: number;
   source: GameSource;
+  timeClass: TimeClass;
 }
 
 export interface TimeControlDataPoint {
@@ -173,6 +175,7 @@ export interface FilterState {
   opponents: string[];                             // Usernames
   terminations: TerminationType[];
   sources: GameSource[];
+  rated: boolean | null;                           // null = all, true = rated only, false = unrated only
 }
 
 // API response types for Chess.com

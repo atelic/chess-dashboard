@@ -166,6 +166,10 @@ export function calculateOpeningStats(games: Game[]): OpeningDataPoint[] {
 
   for (const game of games) {
     const eco = game.opening.eco;
+    
+    // Skip unknown openings
+    if (eco === 'Unknown' || game.opening.name === 'Unknown Opening') continue;
+    
     const current = ecoMap.get(eco) || { name: game.opening.name, wins: 0, losses: 0, draws: 0 };
 
     if (game.result === 'win') current.wins++;
@@ -203,6 +207,7 @@ export function calculateRatingProgression(games: Game[]): RatingDataPoint[] {
     date: formatDate(game.playedAt),
     rating: game.playerRating,
     source: game.source,
+    timeClass: game.timeClass,
   }));
 }
 
@@ -274,6 +279,10 @@ export function calculateOpeningsByColor(
 
   for (const game of colorGames) {
     const eco = game.opening.eco;
+    
+    // Skip unknown openings
+    if (eco === 'Unknown' || game.opening.name === 'Unknown Opening') continue;
+    
     const current = ecoMap.get(eco) || {
       name: game.opening.name,
       games: 0,
@@ -866,7 +875,7 @@ export function generateInsights(games: Game[]): Insight[] {
 export function getDefaultFilters(): FilterState {
   return {
     dateRange: {},
-    maxGames: 100,
+    maxGames: 0, // 0 means no limit (all games)
     timeClasses: [],
     colors: [],
     results: [],
@@ -875,11 +884,16 @@ export function getDefaultFilters(): FilterState {
     opponents: [],
     terminations: [],
     sources: [],
+    rated: null,
   };
 }
 
 export function filterGames(games: Game[], filters: Partial<FilterState>): Game[] {
-  return games.filter((game) => {
+  // First, sort games by date (newest first)
+  const sorted = [...games].sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime());
+  
+  // Apply filters
+  let filtered = sorted.filter((game) => {
     // Date range
     if (filters.dateRange?.start && game.playedAt < filters.dateRange.start) return false;
     if (filters.dateRange?.end && game.playedAt > filters.dateRange.end) return false;
@@ -927,8 +941,21 @@ export function filterGames(games: Game[], filters: Partial<FilterState>): Game[
       if (!filters.sources.includes(game.source)) return false;
     }
 
+    // Rated/Unrated
+    if (filters.rated !== undefined && filters.rated !== null) {
+      if (game.rated !== filters.rated) return false;
+    }
+
     return true;
   });
+
+  // Apply maxGames limit (after filtering, take most recent N games)
+  // maxGames of 0 or undefined means no limit
+  if (filters.maxGames && filters.maxGames > 0 && filtered.length > filters.maxGames) {
+    filtered = filtered.slice(0, filters.maxGames);
+  }
+
+  return filtered;
 }
 
 // ============================================
@@ -946,6 +973,9 @@ export function getUniqueOpponents(games: Game[]): string[] {
 export function getUniqueOpenings(games: Game[]): { eco: string; name: string }[] {
   const openings = new Map<string, string>();
   for (const game of games) {
+    // Skip unknown openings
+    if (game.opening.eco === 'Unknown' || game.opening.name === 'Unknown Opening') continue;
+    
     if (!openings.has(game.opening.eco)) {
       openings.set(game.opening.eco, game.opening.name);
     }

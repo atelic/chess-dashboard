@@ -22,24 +22,42 @@ export default function AdvancedFilters({
   isLoading 
 }: AdvancedFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [fetchMode, setFetchMode] = useState<'last100' | 'custom'>('last100');
+  const [viewMode, setViewMode] = useState<'all' | 'last100' | 'dateRange'>('all');
   const [startDateStr, setStartDateStr] = useState('');
   const [endDateStr, setEndDateStr] = useState('');
 
   // Get unique values from games for filter options
   const availableOpenings = useMemo(() => getUniqueOpenings(games), [games]);
   
-  const handleFetchModeChange = (mode: 'last100' | 'custom') => {
-    setFetchMode(mode);
-    if (mode === 'last100') {
-      onRefetch(undefined, undefined, 100);
+  const handleViewModeChange = (mode: 'all' | 'last100' | 'dateRange') => {
+    setViewMode(mode);
+    
+    if (mode === 'all') {
+      // Clear date range and max games filter (0 = no limit)
+      onFiltersChange({ 
+        ...filters, 
+        dateRange: {},
+        maxGames: 0 
+      });
+    } else if (mode === 'last100') {
+      // Set max games to 100, clear date range
+      onFiltersChange({ 
+        ...filters, 
+        dateRange: {},
+        maxGames: 100 
+      });
     }
+    // For dateRange, wait for user to click Apply
   };
 
   const handleApplyDateRange = () => {
     const start = startDateStr ? new Date(startDateStr) : undefined;
     const end = endDateStr ? new Date(endDateStr + 'T23:59:59') : undefined;
-    onRefetch(start, end, 1000);
+    onFiltersChange({
+      ...filters,
+      dateRange: { start, end },
+      maxGames: 0 // No limit when using date range
+    });
   };
 
   const handleTimeClassToggle = (tc: TimeClass) => {
@@ -74,6 +92,12 @@ export default function AdvancedFilters({
     onFiltersChange({ ...filters, sources: updated });
   };
 
+  const handleRatedToggle = (rated: boolean | null) => {
+    // Toggle logic: if clicking the same value, reset to null (all)
+    const newValue = filters.rated === rated ? null : rated;
+    onFiltersChange({ ...filters, rated: newValue });
+  };
+
   const handleOpeningToggle = (eco: string) => {
     const current = filters.openings;
     const updated = current.includes(eco)
@@ -105,6 +129,7 @@ export default function AdvancedFilters({
     if (filters.sources.length > 0) count++;
     if (filters.openings.length > 0) count++;
     if (filters.opponentRatingRange.min !== undefined || filters.opponentRatingRange.max !== undefined) count++;
+    if (filters.rated !== null && filters.rated !== undefined) count++;
     return count;
   }, [filters]);
 
@@ -130,36 +155,48 @@ export default function AdvancedFilters({
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl">
       {/* Header Row - Always Visible */}
       <div className="p-4 flex flex-wrap items-center gap-4">
-        {/* Fetch Mode Toggle */}
+        {/* View Mode Toggle */}
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => handleFetchModeChange('last100')}
+            onClick={() => handleViewModeChange('all')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              fetchMode === 'last100'
+              viewMode === 'all'
                 ? 'bg-blue-600 text-white'
                 : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
             }`}
             disabled={isLoading}
           >
-            Last 100 Games
+            All Time
           </button>
           <button
             type="button"
-            onClick={() => handleFetchModeChange('custom')}
+            onClick={() => handleViewModeChange('last100')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              fetchMode === 'custom'
+              viewMode === 'last100'
                 ? 'bg-blue-600 text-white'
                 : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
             }`}
             disabled={isLoading}
           >
-            Custom Range
+            Last 100
+          </button>
+          <button
+            type="button"
+            onClick={() => handleViewModeChange('dateRange')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === 'dateRange'
+                ? 'bg-blue-600 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+            }`}
+            disabled={isLoading}
+          >
+            Date Range
           </button>
         </div>
 
-        {/* Date Range Inputs (shown when custom) */}
-        {fetchMode === 'custom' && (
+        {/* Date Range Inputs (shown when dateRange mode) */}
+        {viewMode === 'dateRange' && (
           <>
             <div className="flex items-center gap-2">
               <Input
@@ -183,7 +220,7 @@ export default function AdvancedFilters({
               size="sm"
               disabled={isLoading}
             >
-              Fetch
+              Apply
             </Button>
           </>
         )}
@@ -307,6 +344,35 @@ export default function AdvancedFilters({
                   {s.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Rated/Unrated */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-2">Game Type</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleRatedToggle(true)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  filters.rated === true
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Rated
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRatedToggle(false)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  filters.rated === false
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Unrated
+              </button>
             </div>
           </div>
 

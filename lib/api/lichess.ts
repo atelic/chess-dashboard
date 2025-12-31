@@ -109,6 +109,8 @@ function convertLichessGame(game: LichessGame, username: string): Game {
     termination,
     moveCount,
     ratingChange,
+    rated: game.rated,
+    gameUrl: `https://lichess.org/${game.id}`,
   };
 }
 

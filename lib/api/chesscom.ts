@@ -154,6 +154,8 @@ function convertChessComGame(game: ChessComGame, username: string): Game {
     moveCount,
     // Note: Chess.com doesn't provide rating change in the API directly
     ratingChange: undefined,
+    rated: game.rated,
+    gameUrl: game.url,
   };
 }
 
