@@ -208,7 +208,9 @@ export default function GameAnalysisPanel({
       {/* View on platform link */}
       <div className="mt-3 pt-3 border-t border-zinc-700">
         <a
-          href={`${game.gameUrl}${game.source === 'lichess' ? '#analysis' : ''}`}
+          href={game.source === 'lichess' 
+            ? `${game.gameUrl}/${game.playerColor}#analysis`
+            : game.gameUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
