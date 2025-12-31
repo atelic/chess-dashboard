@@ -338,9 +338,9 @@ export class SQLiteGameRepository implements IGameRepository {
       };
     }
 
-    // Build analysis data if available
+    // Build analysis data if available (check analyzed_at since blunders defaults to 0)
     let analysis: AnalysisData | undefined;
-    if (row.accuracy !== null || row.blunders !== null) {
+    if (row.analyzed_at !== null) {
       analysis = {
         accuracy: row.accuracy ?? undefined,
         blunders: row.blunders ?? 0,
