@@ -41,6 +41,7 @@ export async function GET(request: Request) {
     };
 
     // Update the game in the database with the analysis
+    let saveWarning: string | undefined;
     try {
       const userService = createUserService();
       const user = await userService.getCurrentUser();
@@ -50,11 +51,11 @@ export async function GET(request: Request) {
         await gameService.updateGameAnalysis(gameId, analysis);
       }
     } catch (dbError) {
-      // Log but don't fail the request if DB update fails
       console.error('Failed to save analysis to database:', dbError);
+      saveWarning = 'Analysis fetched but could not be saved. It may not persist on reload.';
     }
 
-    return NextResponse.json({ analysis });
+    return NextResponse.json({ analysis, warning: saveWarning });
   } catch (error) {
     console.error('GET /api/games/analysis error:', error);
     return NextResponse.json(
