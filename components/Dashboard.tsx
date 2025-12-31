@@ -5,6 +5,7 @@ import type { Game } from '@/lib/types';
 import Tabs, { Tab } from './ui/Tabs';
 import OverviewTab from './tabs/OverviewTab';
 import OpeningsTab from './tabs/OpeningsTab';
+import DaysTab from './tabs/DaysTab';
 import OpponentsTab from './tabs/OpponentsTab';
 import InsightsTab from './tabs/InsightsTab';
 import Spinner from './ui/Spinner';
@@ -43,9 +44,17 @@ const InsightsIcon = () => (
   </svg>
 );
 
+const DaysIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+
 const TABS: Tab[] = [
   { id: 'overview', label: 'Overview', icon: <OverviewIcon /> },
   { id: 'openings', label: 'Openings', icon: <OpeningsIcon /> },
+  { id: 'days', label: 'Days', icon: <DaysIcon /> },
   { id: 'opponents', label: 'Opponents', icon: <OpponentsIcon /> },
   { id: 'insights', label: 'Insights', icon: <InsightsIcon /> },
 ];
@@ -92,6 +101,8 @@ export default function Dashboard({ games, isLoading }: DashboardProps) {
         return <OverviewTab games={games} />;
       case 'openings':
         return <OpeningsTab games={games} />;
+      case 'days':
+        return <DaysTab games={games} />;
       case 'opponents':
         return <OpponentsTab games={games} />;
       case 'insights':

@@ -33,17 +33,17 @@ export default function OverviewTab({ games }: OverviewTabProps) {
       {/* Stats Overview */}
       <StatsOverview stats={stats} />
 
-      {/* Main Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <WinRateChart data={winRateData} />
-        <OpeningsChart data={openingData} />
-      </div>
+      {/* Rating Progression - prominent, full width */}
+      <RatingChart data={ratingData} />
+
+      {/* Results by Opening - full width for readability */}
+      <OpeningsChart data={openingData} />
 
       {/* Secondary Charts Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <RatingChart data={ratingData} />
         <TimeControlChart data={timeControlData} />
         <ColorPerformanceChart data={colorPerformanceData} />
+        <WinRateChart data={winRateData} />
       </div>
     </div>
   );

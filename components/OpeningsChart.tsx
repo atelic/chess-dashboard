@@ -45,25 +45,41 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   return null;
 }
 
+// Truncate opening name to fit in chart
+function formatOpeningLabel(eco: string, name: string, maxLength: number = 25): string {
+  // Get the main opening name (before any variation details)
+  const mainName = name.split(':')[0].split(',')[0].trim();
+  const truncated = mainName.length > maxLength 
+    ? mainName.substring(0, maxLength - 1) + '...'
+    : mainName;
+  return `${eco} ${truncated}`;
+}
+
 export default function OpeningsChart({ data }: OpeningsChartProps) {
   if (data.length === 0) {
     return (
       <Card title="Results by Opening">
-        <div className="h-80 flex items-center justify-center text-zinc-500">
+        <div className="h-96 flex items-center justify-center text-zinc-500">
           No data available
         </div>
       </Card>
     );
   }
 
+  // Add display labels to data
+  const chartData = data.map((d) => ({
+    ...d,
+    label: formatOpeningLabel(d.eco, d.name),
+  }));
+
   return (
-    <Card title="Results by Opening" subtitle="Top 10 most played openings (by ECO code)">
-      <div className="h-80">
+    <Card title="Results by Opening" subtitle="Top 10 most played openings">
+      <div className="h-96">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={data}
+            data={chartData}
             layout="vertical"
-            margin={{ top: 5, right: 20, left: 40, bottom: 5 }}
+            margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" horizontal={false} />
             <XAxis
@@ -75,12 +91,13 @@ export default function OpeningsChart({ data }: OpeningsChartProps) {
             />
             <YAxis
               type="category"
-              dataKey="eco"
-              stroke="#71717a"
+              dataKey="label"
+              stroke="#a1a1aa"
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              width={40}
+              width={200}
+              tick={{ textAnchor: 'start', dx: -195 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend

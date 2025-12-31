@@ -153,6 +153,18 @@ export interface TerminationStats {
   total: number;
 }
 
+// Daily performance (by calendar date)
+export interface DateStats {
+  date: string;            // "2025-12-25"
+  displayDate: string;     // "Dec 25, 2025"
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+  ratingChange: number;    // Sum of rating changes for the day
+}
+
 // Insight card data
 export interface Insight {
   id: string;

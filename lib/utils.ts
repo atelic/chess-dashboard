@@ -18,6 +18,7 @@ import type {
   Insight,
   FilterState,
   GameSource,
+  DateStats,
 } from './types';
 
 // ============================================
@@ -638,6 +639,66 @@ export function calculateTerminationStats(games: Game[]): TerminationStats[] {
   }
 
   return result.sort((a, b) => b.total - a.total);
+}
+
+// ============================================
+// DAILY PERFORMANCE ANALYSIS
+// ============================================
+
+function getDateKey(date: Date): string {
+  return date.toISOString().split('T')[0]; // "2025-12-25"
+}
+
+function formatDisplayDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+export function calculateDateStats(games: Game[]): DateStats[] {
+  const dateMap = new Map<string, { date: Date; wins: number; losses: number; draws: number; ratingChange: number }>();
+
+  for (const game of games) {
+    const key = getDateKey(game.playedAt);
+    const current = dateMap.get(key) || { date: game.playedAt, wins: 0, losses: 0, draws: 0, ratingChange: 0 };
+
+    if (game.result === 'win') current.wins++;
+    else if (game.result === 'loss') current.losses++;
+    else current.draws++;
+    
+    // Sum up rating changes (handle undefined)
+    if (game.ratingChange !== undefined) {
+      current.ratingChange += game.ratingChange;
+    }
+
+    dateMap.set(key, current);
+  }
+
+  const result: DateStats[] = [];
+  for (const [dateKey, data] of dateMap) {
+    const total = data.wins + data.losses + data.draws;
+    result.push({
+      date: dateKey,
+      displayDate: formatDisplayDate(data.date),
+      games: total,
+      wins: data.wins,
+      losses: data.losses,
+      draws: data.draws,
+      winRate: total > 0 ? (data.wins / total) * 100 : 0,
+      ratingChange: data.ratingChange,
+    });
+  }
+
+  // Sort by date descending (most recent first)
+  return result.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function getGamesForDate(games: Game[], dateKey: string): Game[] {
+  return games
+    .filter((game) => getDateKey(game.playedAt) === dateKey)
+    .sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime());
 }
 
 // ============================================
