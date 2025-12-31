@@ -187,7 +187,8 @@ const MIGRATIONS = [
       ALTER TABLE games ADD COLUMN time_remaining REAL;
       ALTER TABLE games ADD COLUMN avg_move_time REAL;
       
-      -- Analysis data columns  
+      -- Analysis data columns (NULL = not analyzed, 0 = analyzed with zero errors)
+      -- Note: DEFAULT 0 was a mistake, fixed in migration 4
       ALTER TABLE games ADD COLUMN accuracy INTEGER;
       ALTER TABLE games ADD COLUMN blunders INTEGER DEFAULT 0;
       ALTER TABLE games ADD COLUMN mistakes INTEGER DEFAULT 0;
@@ -215,6 +216,19 @@ const MIGRATIONS = [
       -- Index for finding games needing re-analysis
       CREATE INDEX IF NOT EXISTS idx_game_analysis_analyzed_at 
         ON game_analysis(analyzed_at);
+    `,
+  },
+  {
+    version: 4,
+    name: 'fix_analysis_defaults_to_null',
+    sql: `
+      -- Fix: analysis columns should be NULL when not analyzed, not 0
+      -- 0 means "analyzed with zero errors", NULL means "not yet analyzed"
+      UPDATE games SET 
+        blunders = NULL,
+        mistakes = NULL,
+        inaccuracies = NULL
+      WHERE analyzed_at IS NULL;
     `,
   },
 ];

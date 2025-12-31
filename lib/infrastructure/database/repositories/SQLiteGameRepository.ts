@@ -265,18 +265,18 @@ export class SQLiteGameRepository implements IGameRepository {
             accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET
-            -- Update clock data if we have new data and existing is null
+            -- Clock data: preserve existing (static per game)
             initial_time = COALESCE(games.initial_time, excluded.initial_time),
             increment = COALESCE(games.increment, excluded.increment),
             time_remaining = COALESCE(games.time_remaining, excluded.time_remaining),
             avg_move_time = COALESCE(games.avg_move_time, excluded.avg_move_time),
-            -- Update analysis data if we have new data and existing is null
-            accuracy = COALESCE(games.accuracy, excluded.accuracy),
-            blunders = COALESCE(games.blunders, excluded.blunders),
-            mistakes = COALESCE(games.mistakes, excluded.mistakes),
-            inaccuracies = COALESCE(games.inaccuracies, excluded.inaccuracies),
-            acpl = COALESCE(games.acpl, excluded.acpl),
-            analyzed_at = COALESCE(games.analyzed_at, excluded.analyzed_at)`,
+            -- Analysis data: prefer new data (re-analysis may have updated results)
+            accuracy = COALESCE(excluded.accuracy, games.accuracy),
+            blunders = COALESCE(excluded.blunders, games.blunders),
+            mistakes = COALESCE(excluded.mistakes, games.mistakes),
+            inaccuracies = COALESCE(excluded.inaccuracies, games.inaccuracies),
+            acpl = COALESCE(excluded.acpl, games.acpl),
+            analyzed_at = COALESCE(excluded.analyzed_at, games.analyzed_at)`,
           [
             game.id,
             game.userId,
