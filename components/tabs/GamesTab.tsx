@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import GamesTable from '@/components/games/GamesTable';
 import { useAppStore } from '@/stores/useAppStore';
+import { fetchChessComMonthlyArchive, extractChessComAnalysis } from '@/lib/infrastructure/api-clients/ChessComClient';
 
 interface BulkFetchProgress {
   current: number;
@@ -157,12 +158,12 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
         }
       }
 
-      // Process Chess.com games
+      // Process Chess.com games - fetch each monthly archive once
       if (chesscomGames.length > 0 && user?.chesscomUsername) {
-        // Group Chess.com games by month to optimize API calls
+        // Group Chess.com games by month
         const gamesByMonth = new Map<string, Game[]>();
         for (const game of chesscomGames) {
-          const monthKey = `${game.playedAt.getFullYear()}-${String(game.playedAt.getMonth() + 1).padStart(2, '0')}`;
+          const monthKey = `${game.playedAt.getFullYear()}-${game.playedAt.getMonth() + 1}`;
           if (!gamesByMonth.has(monthKey)) {
             gamesByMonth.set(monthKey, []);
           }
@@ -170,7 +171,20 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
         }
 
         let processedChesscom = 0;
-        for (const [, monthGames] of gamesByMonth) {
+        for (const [monthKey, monthGames] of gamesByMonth) {
+          const [year, month] = monthKey.split('-').map(Number);
+          
+          // Fetch the monthly archive once
+          setBulkFetchProgress({
+            current: lichessGames.length + processedChesscom + 1,
+            total: totalGames,
+            found: totalFound,
+            source: 'chesscom',
+          });
+
+          const archiveMap = await fetchChessComMonthlyArchive(user.chesscomUsername, year, month);
+          
+          // Extract analysis for each game in this month
           for (const game of monthGames) {
             processedChesscom++;
             setBulkFetchProgress({
@@ -180,14 +194,29 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
               source: 'chesscom',
             });
 
-            try {
-              const result = await handleFetchChessComAnalysis(game);
-              if (result) {
-                totalFound++;
-                setBulkFetchProgress(prev => prev ? { ...prev, found: totalFound } : null);
+            if (archiveMap) {
+              const archiveGame = archiveMap.get(game.gameUrl);
+              if (archiveGame) {
+                const analysis = extractChessComAnalysis(archiveGame, game.playerColor);
+                if (analysis?.accuracy !== undefined) {
+                  // Save to DB via API
+                  try {
+                    const params = new URLSearchParams({
+                      gameId: game.id,
+                      playerColor: game.playerColor,
+                      source: 'chesscom',
+                      username: user.chesscomUsername,
+                      gameUrl: game.gameUrl,
+                      gameDate: game.playedAt.toISOString(),
+                    });
+                    await fetch(`/api/games/analysis?${params}`);
+                    totalFound++;
+                    setBulkFetchProgress(prev => prev ? { ...prev, found: totalFound } : null);
+                  } catch (err) {
+                    console.error(`Failed to save Chess.com analysis for ${game.id}:`, err);
+                  }
+                }
               }
-            } catch (err) {
-              console.error(`Failed to fetch Chess.com analysis for ${game.id}:`, err);
             }
           }
 
@@ -206,7 +235,7 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
       setBulkFetchProgress(null);
       setBulkFetchError(err instanceof Error ? err.message : 'Failed to fetch analysis');
     }
-  }, [games, user, handleFetchLichessAnalysis, handleFetchChessComAnalysis]);
+  }, [games, user, handleFetchLichessAnalysis]);
 
   const filteredGames = useMemo(() => {
     return games.filter(game => {
