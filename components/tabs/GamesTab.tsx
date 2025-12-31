@@ -4,7 +4,17 @@ import { useState, useMemo, useCallback } from 'react';
 import type { Game, AnalysisData } from '@/lib/types';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import Spinner from '@/components/ui/Spinner';
 import GamesTable from '@/components/games/GamesTable';
+import { useAppStore } from '@/stores/useAppStore';
+
+interface BulkFetchProgress {
+  current: number;
+  total: number;
+  found: number;
+  source: 'lichess' | 'chesscom' | null;
+}
 
 interface GamesTabProps {
   games: Game[];
@@ -25,6 +35,10 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
   const [result, setResult] = useState<Result>('all');
   const [source, setSource] = useState<Source>('all');
   const [page, setPage] = useState(0);
+  const [bulkFetchProgress, setBulkFetchProgress] = useState<BulkFetchProgress | null>(null);
+  const [bulkFetchError, setBulkFetchError] = useState<string | null>(null);
+  
+  const user = useAppStore(state => state.user);
   
   const PAGE_SIZE = 25;
 
@@ -37,7 +51,7 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
     playerColor: 'white' | 'black'
   ): Promise<AnalysisData | null> => {
     const response = await fetch(
-      `/api/games/analysis?gameId=${gameId}&playerColor=${playerColor}`
+      `/api/games/analysis?gameId=${gameId}&playerColor=${playerColor}&source=lichess`
     );
     
     if (!response.ok) {
@@ -55,6 +69,144 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
     
     return data.analysis;
   }, []);
+
+  /**
+   * Fetch Chess.com analysis for a game via our API
+   * The analysis is saved to the DB by the API, and displayed immediately via local state
+   */
+  const handleFetchChessComAnalysis = useCallback(async (
+    game: Game
+  ): Promise<AnalysisData | null> => {
+    const chesscomUsername = user?.chesscomUsername;
+    if (!chesscomUsername) {
+      throw new Error('Chess.com username not configured');
+    }
+
+    const params = new URLSearchParams({
+      gameId: game.id,
+      playerColor: game.playerColor,
+      source: 'chesscom',
+      username: chesscomUsername,
+      gameUrl: game.gameUrl,
+      gameDate: game.playedAt.toISOString(),
+    });
+
+    const response = await fetch(`/api/games/analysis?${params}`);
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error('Failed to fetch analysis');
+    }
+    
+    const data = await response.json();
+    
+    // Analysis is saved to DB by the API endpoint
+    // The GameAnalysisPanel will display it immediately via local state
+    // Next time games are loaded, it will come from the DB
+    
+    return data.analysis;
+  }, [user]);
+
+  /**
+   * Fetch analysis for all games that don't have analysis yet
+   * Processes Lichess and Chess.com games sequentially to avoid rate limiting
+   */
+  const handleFetchAllAnalysis = useCallback(async () => {
+    setBulkFetchError(null);
+    
+    // Find games without analysis
+    const gamesWithoutAnalysis = games.filter(g => g.analysis?.accuracy === undefined);
+    
+    if (gamesWithoutAnalysis.length === 0) {
+      setBulkFetchError('All games already have analysis data.');
+      return;
+    }
+
+    const lichessGames = gamesWithoutAnalysis.filter(g => g.source === 'lichess');
+    const chesscomGames = gamesWithoutAnalysis.filter(g => g.source === 'chesscom');
+    
+    let totalFound = 0;
+    const totalGames = gamesWithoutAnalysis.length;
+
+    try {
+      // Process Lichess games first
+      if (lichessGames.length > 0) {
+        for (let i = 0; i < lichessGames.length; i++) {
+          const game = lichessGames[i];
+          setBulkFetchProgress({
+            current: i + 1,
+            total: totalGames,
+            found: totalFound,
+            source: 'lichess',
+          });
+
+          try {
+            const result = await handleFetchLichessAnalysis(game.id, game.playerColor);
+            if (result) {
+              totalFound++;
+              setBulkFetchProgress(prev => prev ? { ...prev, found: totalFound } : null);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch Lichess analysis for ${game.id}:`, err);
+          }
+
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      // Process Chess.com games
+      if (chesscomGames.length > 0 && user?.chesscomUsername) {
+        // Group Chess.com games by month to optimize API calls
+        const gamesByMonth = new Map<string, Game[]>();
+        for (const game of chesscomGames) {
+          const monthKey = `${game.playedAt.getFullYear()}-${String(game.playedAt.getMonth() + 1).padStart(2, '0')}`;
+          if (!gamesByMonth.has(monthKey)) {
+            gamesByMonth.set(monthKey, []);
+          }
+          gamesByMonth.get(monthKey)!.push(game);
+        }
+
+        let processedChesscom = 0;
+        for (const [, monthGames] of gamesByMonth) {
+          for (const game of monthGames) {
+            processedChesscom++;
+            setBulkFetchProgress({
+              current: lichessGames.length + processedChesscom,
+              total: totalGames,
+              found: totalFound,
+              source: 'chesscom',
+            });
+
+            try {
+              const result = await handleFetchChessComAnalysis(game);
+              if (result) {
+                totalFound++;
+                setBulkFetchProgress(prev => prev ? { ...prev, found: totalFound } : null);
+              }
+            } catch (err) {
+              console.error(`Failed to fetch Chess.com analysis for ${game.id}:`, err);
+            }
+          }
+
+          // Delay between months to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+
+      // Done
+      setBulkFetchProgress(null);
+      
+      if (totalFound === 0) {
+        setBulkFetchError(`Checked ${totalGames} games but no new analysis was available. Games may need to be analyzed on Lichess/Chess.com first.`);
+      }
+    } catch (err) {
+      setBulkFetchProgress(null);
+      setBulkFetchError(err instanceof Error ? err.message : 'Failed to fetch analysis');
+    }
+  }, [games, user, handleFetchLichessAnalysis, handleFetchChessComAnalysis]);
 
   const filteredGames = useMemo(() => {
     return games.filter(game => {
@@ -166,7 +318,7 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
         </div>
         
         {/* Summary */}
-        <div className="mt-4 pt-4 border-t border-zinc-800 flex flex-wrap gap-4 text-sm">
+        <div className="mt-4 pt-4 border-t border-zinc-800 flex flex-wrap items-center gap-4 text-sm">
           <span className="text-zinc-400">
             <span className="text-zinc-100 font-medium">{stats.total}</span> games
           </span>
@@ -178,7 +330,38 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
               <span className="text-zinc-100 font-medium">{stats.avgAccuracy.toFixed(1)}%</span> avg accuracy
             </span>
           )}
+          
+          {/* Fetch All Analysis Button */}
+          <div className="ml-auto flex items-center gap-3">
+            {bulkFetchProgress ? (
+              <div className="flex items-center gap-2 text-zinc-400">
+                <Spinner size="sm" />
+                <span>
+                  Checking {bulkFetchProgress.source === 'lichess' ? 'Lichess' : 'Chess.com'}... 
+                  {bulkFetchProgress.current}/{bulkFetchProgress.total}
+                  {bulkFetchProgress.found > 0 && (
+                    <span className="text-green-400 ml-1">({bulkFetchProgress.found} found)</span>
+                  )}
+                </span>
+              </div>
+            ) : (
+              <Button
+                onClick={handleFetchAllAnalysis}
+                variant="secondary"
+                disabled={stats.total === stats.analyzed}
+              >
+                Fetch all analysis
+              </Button>
+            )}
+          </div>
         </div>
+        
+        {/* Bulk fetch error/info message */}
+        {bulkFetchError && (
+          <div className="mt-3 p-3 bg-zinc-800/50 rounded-lg text-sm text-zinc-400">
+            {bulkFetchError}
+          </div>
+        )}
       </Card>
 
       {/* Games Table */}
@@ -194,6 +377,7 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
           showAnalysis
           onAnalyze={onAnalyze}
           onFetchLichessAnalysis={handleFetchLichessAnalysis}
+          onFetchChessComAnalysis={handleFetchChessComAnalysis}
         />
         
         {/* Pagination */}

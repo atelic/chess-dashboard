@@ -1,4 +1,4 @@
-import type { Game, TimeClass, TerminationType, ClockData } from '@/lib/domain/models/Game';
+import type { Game, TimeClass, TerminationType, ClockData, AnalysisData } from '@/lib/domain/models/Game';
 import type {
   IChessClient,
   FetchGamesOptions,
@@ -9,6 +9,63 @@ import type {
 import { ExternalApiError, InvalidUsernameError, RateLimitError } from '@/lib/shared/errors';
 
 const BASE_URL = 'https://api.chess.com/pub';
+
+/**
+ * Result of fetching game analysis from Chess.com
+ */
+export interface ChessComGameAnalysis {
+  accuracy?: number;
+}
+
+/**
+ * Fetch analysis data for a single Chess.com game
+ * Returns null if the game hasn't been analyzed on Chess.com (user needs to request Game Review first)
+ * 
+ * Note: Chess.com doesn't have a single-game endpoint, so we fetch the monthly archive
+ * and find the specific game by URL
+ */
+export async function fetchChessComGameAnalysis(
+  username: string,
+  gameUrl: string,
+  gameDate: Date,
+  playerColor: 'white' | 'black'
+): Promise<ChessComGameAnalysis | null> {
+  try {
+    // Construct the archive URL from the game date
+    const year = gameDate.getFullYear();
+    const month = String(gameDate.getMonth() + 1).padStart(2, '0');
+    const archiveUrl = `${BASE_URL}/player/${username.toLowerCase()}/games/${year}/${month}`;
+
+    const response = await fetch(archiveUrl);
+
+    if (!response.ok) {
+      console.error(`Failed to fetch Chess.com archive: ${response.status}`);
+      return null;
+    }
+
+    const data: { games: ChessComGame[] } = await response.json();
+    
+    // Find the specific game by URL
+    const game = data.games?.find(g => g.url === gameUrl);
+    
+    if (!game) {
+      console.error(`Game not found in archive: ${gameUrl}`);
+      return null;
+    }
+
+    // Check if accuracies are available
+    if (!game.accuracies) {
+      return null;
+    }
+
+    return {
+      accuracy: playerColor === 'white' ? game.accuracies.white : game.accuracies.black,
+    };
+  } catch (error) {
+    console.error('Error fetching Chess.com game analysis:', error);
+    return null;
+  }
+}
 
 /**
  * Chess.com API client for fetching games
@@ -173,6 +230,16 @@ export class ChessComClient implements IChessClient {
     // Extract clock data from time_control and PGN
     const clock = this.extractClockData(game.time_control, game.pgn || '', playerColor);
 
+    // Extract analysis data if available (user must have requested Game Review on Chess.com)
+    const analysis: AnalysisData | undefined = game.accuracies
+      ? {
+          accuracy: playerColor === 'white' ? game.accuracies.white : game.accuracies.black,
+          blunders: 0, // Not available from Chess.com API
+          mistakes: 0, // Not available from Chess.com API
+          inaccuracies: 0, // Not available from Chess.com API
+        }
+      : undefined;
+
     return {
       id: game.url.split('/').pop() || game.url,
       source: 'chesscom',
@@ -192,6 +259,7 @@ export class ChessComClient implements IChessClient {
       rated: game.rated,
       gameUrl: game.url,
       clock,
+      analysis,
     };
   }
 

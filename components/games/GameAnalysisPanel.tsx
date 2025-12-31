@@ -9,6 +9,7 @@ interface GameAnalysisPanelProps {
   game: Game;
   onAnalyze?: (gameId: string) => Promise<void>;
   onFetchLichessAnalysis?: (gameId: string, playerColor: 'white' | 'black') => Promise<AnalysisData | null>;
+  onFetchChessComAnalysis?: (game: Game) => Promise<AnalysisData | null>;
 }
 
 /**
@@ -36,11 +37,14 @@ function getAccuracyBgColor(accuracy: number): string {
 export default function GameAnalysisPanel({ 
   game, 
   onAnalyze,
-  onFetchLichessAnalysis 
+  onFetchLichessAnalysis,
+  onFetchChessComAnalysis,
 }: GameAnalysisPanelProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isFetchingLichess, setIsFetchingLichess] = useState(false);
+  const [isFetchingChessCom, setIsFetchingChessCom] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reviewUrl, setReviewUrl] = useState<string | null>(null);
   const [fetchedAnalysis, setFetchedAnalysis] = useState<AnalysisData | null>(null);
 
   // Use fetched analysis if available, otherwise use game's analysis
@@ -67,6 +71,7 @@ export default function GameAnalysisPanel({
     
     setIsFetchingLichess(true);
     setError(null);
+    setReviewUrl(null);
     
     try {
       const result = await onFetchLichessAnalysis(game.id, game.playerColor);
@@ -82,9 +87,34 @@ export default function GameAnalysisPanel({
     }
   };
 
+  const handleFetchChessComAnalysis = async () => {
+    if (!onFetchChessComAnalysis) return;
+    
+    setIsFetchingChessCom(true);
+    setError(null);
+    setReviewUrl(null);
+    
+    try {
+      const result = await onFetchChessComAnalysis(game);
+      if (result) {
+        setFetchedAnalysis(result);
+      } else {
+        setError('No analysis available yet.');
+        setReviewUrl(`${game.gameUrl}?tab=review`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch analysis');
+      setReviewUrl(`${game.gameUrl}?tab=review`);
+    } finally {
+      setIsFetchingChessCom(false);
+    }
+  };
+
   // If no analysis data, show options to get analysis
   if (!hasAnalysis) {
     const isLichess = game.source === 'lichess';
+    const isChessCom = game.source === 'chesscom';
+    const isFetching = isFetchingLichess || isFetchingChessCom;
     
     return (
       <div className="bg-zinc-800/50 rounded-lg p-4">
@@ -94,7 +124,7 @@ export default function GameAnalysisPanel({
             <p className="text-xs text-zinc-500 mt-1">
               {isLichess 
                 ? 'Check if Lichess has analysis for this game, or analyze locally with Stockfish.'
-                : 'Analyze this game with Stockfish to see accuracy and blunders.'}
+                : 'Check if Chess.com has analysis for this game. You may need to request Game Review on Chess.com first.'}
             </p>
           </div>
           
@@ -103,7 +133,7 @@ export default function GameAnalysisPanel({
             {isLichess && onFetchLichessAnalysis && (
               <Button
                 onClick={handleFetchLichessAnalysis}
-                disabled={isFetchingLichess || isAnalyzing}
+                disabled={isFetching || isAnalyzing}
                 variant="secondary"
               >
                 {isFetchingLichess ? (
@@ -116,12 +146,30 @@ export default function GameAnalysisPanel({
                 )}
               </Button>
             )}
+
+            {/* For Chess.com games, offer to fetch from Chess.com */}
+            {isChessCom && onFetchChessComAnalysis && (
+              <Button
+                onClick={handleFetchChessComAnalysis}
+                disabled={isFetching || isAnalyzing}
+                variant="secondary"
+              >
+                {isFetchingChessCom ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span className="ml-2">Checking Chess.com...</span>
+                  </>
+                ) : (
+                  'Fetch from Chess.com'
+                )}
+              </Button>
+            )}
             
             {/* Local Stockfish analysis option */}
             {onAnalyze && (
               <Button
                 onClick={handleAnalyze}
-                disabled={isAnalyzing || isFetchingLichess}
+                disabled={isAnalyzing || isFetching}
               >
                 {isAnalyzing ? (
                   <>
@@ -136,7 +184,22 @@ export default function GameAnalysisPanel({
           </div>
           
           {error && (
-            <p className="text-red-400 text-xs">{error}</p>
+            <div className="text-xs">
+              <span className="text-red-400">{error}</span>
+              {reviewUrl && (
+                <span className="ml-1">
+                  <a
+                    href={reviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300 underline"
+                  >
+                    Request Game Review on Chess.com
+                  </a>
+                  {' '}first, then try again.
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -210,7 +273,7 @@ export default function GameAnalysisPanel({
         <a
           href={game.source === 'lichess' 
             ? `${game.gameUrl}/${game.playerColor}#analysis`
-            : game.gameUrl}
+            : `${game.gameUrl}?tab=review`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
