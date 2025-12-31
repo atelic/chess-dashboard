@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { TerminationType } from '@/lib/shared/types';
+import type { TerminationType } from '@/lib/types';
 
 interface TerminationIconProps {
   termination: TerminationType;
