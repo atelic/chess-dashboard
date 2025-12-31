@@ -196,7 +196,6 @@ export class AnalysisService {
     playerColor: 'white' | 'black'
   ): Promise<Pick<GameAnalysis, 'gameId' | 'accuracy' | 'blunders' | 'mistakes' | 'inaccuracies' | 'acpl' | 'analyzedAt'>> {
     // Only analyze every 5th position for speed
-    const sampleSize = Math.max(1, Math.floor(fens.length / 5));
     const sampleIndices: number[] = [];
     
     for (let i = 0; i < fens.length; i += 5) {
@@ -205,6 +204,10 @@ export class AnalysisService {
 
     const cpLosses: number[] = [];
     let blunders = 0, mistakes = 0, inaccuracies = 0;
+    let playerMovesAnalyzed = 0;
+
+    // Count total player moves in the game
+    const totalPlayerMoves = Math.ceil(fens.length / 2);
 
     for (const i of sampleIndices) {
       if (i >= fens.length || i >= moves.length) continue;
@@ -224,6 +227,7 @@ export class AnalysisService {
         
         const cpLoss = Math.max(0, scoreBefore - scoreAfter);
         cpLosses.push(cpLoss);
+        playerMovesAnalyzed++;
 
         const classification = classifyMove(cpLoss);
         if (classification === 'blunder') blunders++;
@@ -232,8 +236,8 @@ export class AnalysisService {
       }
     }
 
-    // Extrapolate to full game
-    const multiplier = fens.length / (sampleIndices.length * 2);
+    // Extrapolate to full game based on actual player moves analyzed
+    const multiplier = playerMovesAnalyzed > 0 ? totalPlayerMoves / playerMovesAnalyzed : 1;
     
     return {
       gameId,

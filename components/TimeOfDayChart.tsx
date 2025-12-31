@@ -70,7 +70,7 @@ export default function TimeOfDayChart({ games }: TimeOfDayChartProps) {
     const startHour = i % 12 || 12;
     const endHour = (i + 4) % 12 || 12;
     const startPeriod = i < 12 ? 'am' : 'pm';
-    const endPeriod = (i + 4) < 12 || (i + 4) >= 24 ? 'am' : 'pm';
+    const endPeriod = (i + 4) % 24 < 12 ? 'am' : 'pm';
     hourlyChartData.push({
       name: `${startHour}${startPeriod}-${endHour}${endPeriod}`,
       games: totalGames,

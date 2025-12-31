@@ -72,6 +72,7 @@ export class StockfishEngine {
   private worker: Worker | null = null;
   private isReady = false;
   private pendingResolve: ((value: string) => void) | null = null;
+  private pendingTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private messageBuffer: string[] = [];
   private initPromise: Promise<void> | null = null;
 
@@ -167,6 +168,10 @@ export class StockfishEngine {
     
     // If we're waiting for a result and got the final line
     if (this.pendingResolve && message.startsWith('bestmove')) {
+      if (this.pendingTimeoutId) {
+        clearTimeout(this.pendingTimeoutId);
+        this.pendingTimeoutId = null;
+      }
       this.pendingResolve(this.messageBuffer.join('\n'));
       this.pendingResolve = null;
       this.messageBuffer = [];
@@ -197,11 +202,12 @@ export class StockfishEngine {
       this.postMessage(`go depth ${depth}`);
 
       // Timeout after 30 seconds
-      setTimeout(() => {
+      this.pendingTimeoutId = setTimeout(() => {
         if (this.pendingResolve) {
           this.postMessage('stop');
           reject(new Error('Analysis timeout'));
           this.pendingResolve = null;
+          this.pendingTimeoutId = null;
         }
       }, 30000);
     });
