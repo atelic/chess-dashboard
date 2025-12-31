@@ -127,14 +127,10 @@ export class SyncService {
       // This ensures clock data and other fields are updated for existing games
       let newGamesCount = 0;
       if (gamesToSave.length > 0) {
-        // Count how many are actually new before saving
-        for (const game of gamesToSave) {
-          const exists = await this.gameRepository.existsById(game.id);
-          if (!exists) {
-            newGamesCount++;
-          }
-        }
+        const beforeCount = await this.gameRepository.count(userId);
         await this.gameRepository.saveMany(gamesToSave);
+        const afterCount = await this.gameRepository.count(userId);
+        newGamesCount = afterCount - beforeCount;
       }
 
       return {
