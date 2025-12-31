@@ -79,7 +79,7 @@ export default function OpeningsChart({ data }: OpeningsChartProps) {
           <BarChart
             data={chartData}
             layout="vertical"
-            margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+            margin={{ top: 5, right: 20, left: 8, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" horizontal={false} />
             <XAxis

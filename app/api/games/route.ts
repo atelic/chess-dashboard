@@ -89,6 +89,11 @@ export async function GET(request: Request) {
       ratingChange: game.ratingChange,
       rated: game.rated,
       gameUrl: game.gameUrl,
+      clock: game.clock,
+      analysis: game.analysis ? {
+        ...game.analysis,
+        analyzedAt: game.analysis.analyzedAt?.toISOString(),
+      } : undefined,
     }));
 
     return NextResponse.json({

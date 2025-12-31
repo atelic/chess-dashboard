@@ -21,6 +21,42 @@ export interface Opponent {
 }
 
 /**
+ * Clock/time data for a game.
+ * Used for time management analysis.
+ */
+export interface ClockData {
+  /** Starting time in seconds */
+  initialTime: number;
+  /** Increment per move in seconds */
+  increment: number;
+  /** Player's time remaining at game end (seconds) */
+  timeRemaining?: number;
+  /** Average seconds per move for the player */
+  avgMoveTime?: number;
+  /** Time spent per move in seconds (optional, for detailed analysis) */
+  moveTimes?: number[];
+}
+
+/**
+ * Analysis data for a game.
+ * Either from Lichess server analysis or local Stockfish.
+ */
+export interface AnalysisData {
+  /** Accuracy percentage 0-100 */
+  accuracy?: number;
+  /** Number of blunders (>200cp loss) */
+  blunders: number;
+  /** Number of mistakes (100-200cp loss) */
+  mistakes: number;
+  /** Number of inaccuracies (50-100cp loss) */
+  inaccuracies: number;
+  /** Average centipawn loss */
+  acpl?: number;
+  /** When the analysis was performed */
+  analyzedAt?: Date;
+}
+
+/**
  * Game domain model.
  * Represents a single chess game from any platform.
  */
@@ -40,6 +76,10 @@ export interface Game {
   readonly ratingChange?: number;
   readonly rated: boolean;
   readonly gameUrl: string;
+  /** Clock/time data for time management analysis */
+  readonly clock?: ClockData;
+  /** Analysis data (accuracy, blunders, etc.) */
+  readonly analysis?: AnalysisData;
 }
 
 /**
@@ -71,6 +111,8 @@ export function createGame(data: CreateGameData): Game {
     ratingChange: data.ratingChange,
     rated: data.rated,
     gameUrl: data.gameUrl,
+    clock: data.clock,
+    analysis: data.analysis,
   };
 }
 

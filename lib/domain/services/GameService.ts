@@ -1,5 +1,5 @@
 import type { IGameRepository } from '../repositories/interfaces';
-import type { Game, PlayerColor, GameResult } from '../models/Game';
+import type { Game, PlayerColor, GameResult, AnalysisData } from '../models/Game';
 import { GameFilter } from '../models/GameFilter';
 
 // ============================================
@@ -117,6 +117,13 @@ export class GameService {
   async getOpponentStats(userId: number, minGames: number = 1): Promise<OpponentStats[]> {
     const games = await this.gameRepository.findAll(userId);
     return this.calculateOpponentStats(games, minGames);
+  }
+
+  /**
+   * Update analysis data for a game
+   */
+  async updateGameAnalysis(gameId: string, analysis: AnalysisData): Promise<void> {
+    return this.gameRepository.updateAnalysis(gameId, analysis);
   }
 
   // ============================================

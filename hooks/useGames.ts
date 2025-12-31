@@ -29,6 +29,20 @@ export interface Game {
   ratingChange?: number;
   rated: boolean;
   gameUrl: string;
+  clock?: {
+    initialTime: number;
+    increment: number;
+    timeRemaining?: number;
+    avgMoveTime?: number;
+  };
+  analysis?: {
+    accuracy?: number;
+    blunders: number;
+    mistakes: number;
+    inaccuracies: number;
+    acpl?: number;
+    analyzedAt?: string;
+  };
 }
 
 interface FetchOptions {

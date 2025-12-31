@@ -1,6 +1,6 @@
-import type { Game, GameSource, PlayerColor } from '../models/Game';
-import type { User, CreateUserData, UpdateUserData } from '../models/User';
-import type { GameFilter } from '../models/GameFilter';
+import type { Game, GameSource, PlayerColor, AnalysisData } from '@/lib/domain/models/Game';
+import type { User, CreateUserData, UpdateUserData } from '@/lib/domain/models/User';
+import type { GameFilter } from '@/lib/domain/models/GameFilter';
 
 /**
  * Abstract interface for game data access.
@@ -50,6 +50,11 @@ export interface IGameRepository {
    * Get the most recent game date for a user/source (for incremental sync)
    */
   getLatestGameDate(userId: number, source: GameSource): Promise<Date | null>;
+
+  /**
+   * Find games that don't have analysis data yet
+   */
+  findGamesNeedingAnalysis(userId: number, limit?: number): Promise<Game[]>;
   
   // ============================================
   // MUTATIONS
@@ -71,6 +76,11 @@ export interface IGameRepository {
    * Returns the count of games deleted
    */
   deleteByUser(userId: number): Promise<number>;
+
+  /**
+   * Update analysis data for a game
+   */
+  updateAnalysis(gameId: string, analysis: AnalysisData): Promise<void>;
 }
 
 /**

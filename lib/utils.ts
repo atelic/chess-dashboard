@@ -19,6 +19,14 @@ import type {
   FilterState,
   GameSource,
   DateStats,
+  TimeStats,
+  TimeClassTimeStats,
+  TimePressureStats,
+  TimeUsageByPhase,
+  HourlyStats,
+  DayOfWeekStats,
+  TimeWindow,
+  TimeHeatmapCell,
 } from './types';
 
 // ============================================
@@ -946,6 +954,82 @@ export function generateInsights(games: Game[]): Insight[] {
     });
   }
 
+  // 16. Time management - timeout losses
+  const losses = games.filter((g) => g.result === 'loss');
+  const timeoutLosses = losses.filter((g) => g.termination === 'timeout');
+  if (losses.length >= 5) {
+    const timeoutRate = (timeoutLosses.length / losses.length) * 100;
+    if (timeoutRate > 20) {
+      insights.push({
+        id: 'timeout-losses',
+        type: 'warning',
+        icon: '⏰',
+        title: 'Timeout Trouble',
+        description: `${timeoutRate.toFixed(0)}% of your losses are timeouts`,
+        value: 'Consider playing with increment or slower time controls',
+      });
+    }
+  }
+
+  // 17. Time pressure performance (requires clock data)
+  const gamesWithClock = games.filter((g) => g.clock?.timeRemaining !== undefined);
+  if (gamesWithClock.length >= 10) {
+    const timeTroubleGames = gamesWithClock.filter((g) => g.clock!.timeRemaining! < 30);
+    if (timeTroubleGames.length >= 5) {
+      const timeTroubleWins = timeTroubleGames.filter((g) => g.result === 'win');
+      const timeTroubleWinRate = (timeTroubleWins.length / timeTroubleGames.length) * 100;
+      
+      if (timeTroubleWinRate < 30) {
+        insights.push({
+          id: 'time-pressure',
+          type: 'negative',
+          icon: '⚡',
+          title: 'Struggles Under Time Pressure',
+          description: `Only ${timeTroubleWinRate.toFixed(0)}% win rate when low on time`,
+          value: 'Practice faster decision-making or manage time better',
+        });
+      } else if (timeTroubleWinRate > 60) {
+        insights.push({
+          id: 'time-pressure-clutch',
+          type: 'positive',
+          icon: '💪',
+          title: 'Clutch Under Pressure',
+          description: `${timeTroubleWinRate.toFixed(0)}% win rate when low on time`,
+          value: 'You handle time pressure well!',
+        });
+      }
+    }
+  }
+
+  // 18. Peak performance time (requires sufficient games across time slots)
+  const peakTime = findPeakPerformanceTimes(games, 10);
+  const worstTime = findWorstPerformanceTimes(games, 10);
+  const overallWinRate = games.length > 0 
+    ? (games.filter(g => g.result === 'win').length / games.length) * 100 
+    : 0;
+    
+  if (peakTime && peakTime.winRate > overallWinRate + 10) {
+    insights.push({
+      id: 'peak-time',
+      type: 'positive',
+      icon: '🌟',
+      title: 'Peak Performance Window',
+      description: peakTime.label,
+      value: `${peakTime.winRate.toFixed(0)}% win rate (${peakTime.games} games)`,
+    });
+  }
+  
+  if (worstTime && worstTime.winRate < overallWinRate - 10) {
+    insights.push({
+      id: 'avoid-time',
+      type: 'warning',
+      icon: '😴',
+      title: 'Consider Avoiding',
+      description: worstTime.label,
+      value: `Only ${worstTime.winRate.toFixed(0)}% win rate - you may be tired`,
+    });
+  }
+
   return insights;
 }
 
@@ -1088,4 +1172,404 @@ export function filterGamesByDateRange(
 export function mergeAndSortGames(gamesArrays: Game[][]): Game[] {
   const allGames = gamesArrays.flat();
   return allGames.sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime());
+}
+
+// ============================================
+// TIME MANAGEMENT ANALYSIS
+// ============================================
+
+/**
+ * Calculate overall time management statistics
+ */
+export function calculateTimeStats(games: Game[]): TimeStats {
+  // Filter to games that have clock data
+  const gamesWithClock = games.filter((g) => g.clock?.initialTime !== undefined);
+  
+  if (gamesWithClock.length === 0) {
+    return {
+      avgTimeRemaining: 0,
+      timeoutLossRate: 0,
+      avgMoveTime: 0,
+      gamesWithClockData: 0,
+      byTimeClass: [],
+    };
+  }
+
+  // Calculate overall stats
+  let totalTimeRemaining = 0;
+  let gamesWithTimeRemaining = 0;
+  let totalMoveTime = 0;
+  let gamesWithMoveTime = 0;
+
+  for (const game of gamesWithClock) {
+    if (game.clock?.timeRemaining !== undefined) {
+      totalTimeRemaining += game.clock.timeRemaining;
+      gamesWithTimeRemaining++;
+    }
+    if (game.clock?.avgMoveTime !== undefined) {
+      totalMoveTime += game.clock.avgMoveTime;
+      gamesWithMoveTime++;
+    }
+  }
+
+  // Calculate timeout loss rate
+  const losses = games.filter((g) => g.result === 'loss');
+  const timeoutLosses = losses.filter((g) => g.termination === 'timeout');
+  const timeoutLossRate = losses.length > 0 ? (timeoutLosses.length / losses.length) * 100 : 0;
+
+  // Calculate by time class
+  const timeClasses: TimeClass[] = ['bullet', 'blitz', 'rapid', 'classical'];
+  const byTimeClass: TimeClassTimeStats[] = [];
+
+  for (const tc of timeClasses) {
+    const tcGames = gamesWithClock.filter((g) => g.timeClass === tc);
+    if (tcGames.length === 0) continue;
+
+    const tcLosses = tcGames.filter((g) => g.result === 'loss');
+    const tcTimeouts = tcLosses.filter((g) => g.termination === 'timeout');
+
+    let tcTotalRemaining = 0;
+    let tcCountRemaining = 0;
+    let tcTotalMoveTime = 0;
+    let tcCountMoveTime = 0;
+
+    for (const game of tcGames) {
+      if (game.clock?.timeRemaining !== undefined) {
+        tcTotalRemaining += game.clock.timeRemaining;
+        tcCountRemaining++;
+      }
+      if (game.clock?.avgMoveTime !== undefined) {
+        tcTotalMoveTime += game.clock.avgMoveTime;
+        tcCountMoveTime++;
+      }
+    }
+
+    byTimeClass.push({
+      timeClass: tc,
+      games: tcGames.length,
+      avgTimeRemaining: tcCountRemaining > 0 ? tcTotalRemaining / tcCountRemaining : 0,
+      timeoutRate: tcLosses.length > 0 ? (tcTimeouts.length / tcLosses.length) * 100 : 0,
+      avgMoveTime: tcCountMoveTime > 0 ? tcTotalMoveTime / tcCountMoveTime : 0,
+    });
+  }
+
+  return {
+    avgTimeRemaining: gamesWithTimeRemaining > 0 ? totalTimeRemaining / gamesWithTimeRemaining : 0,
+    timeoutLossRate,
+    avgMoveTime: gamesWithMoveTime > 0 ? totalMoveTime / gamesWithMoveTime : 0,
+    gamesWithClockData: gamesWithClock.length,
+    byTimeClass,
+  };
+}
+
+/**
+ * Analyze time pressure situations
+ */
+export function analyzeTimePressure(games: Game[], timeTroubleThreshold: number = 30): TimePressureStats {
+  const gamesWithClock = games.filter((g) => g.clock?.timeRemaining !== undefined);
+  
+  if (gamesWithClock.length === 0) {
+    return {
+      gamesInTimeTrouble: 0,
+      winRateInTimeTrouble: 0,
+      lossesToTimeout: 0,
+      avgTimeWhenLosing: 0,
+      avgTimeWhenWinning: 0,
+    };
+  }
+
+  // Games ending with low time
+  const timeTroubleGames = gamesWithClock.filter(
+    (g) => g.clock!.timeRemaining !== undefined && g.clock!.timeRemaining < timeTroubleThreshold
+  );
+  const timeTroubleWins = timeTroubleGames.filter((g) => g.result === 'win');
+
+  // Timeout losses
+  const lossesToTimeout = games.filter(
+    (g) => g.result === 'loss' && g.termination === 'timeout'
+  ).length;
+
+  // Average time when winning vs losing
+  const wins = gamesWithClock.filter((g) => g.result === 'win' && g.clock?.timeRemaining !== undefined);
+  const losses = gamesWithClock.filter((g) => g.result === 'loss' && g.clock?.timeRemaining !== undefined);
+
+  const avgTimeWhenWinning = wins.length > 0
+    ? wins.reduce((sum, g) => sum + (g.clock?.timeRemaining || 0), 0) / wins.length
+    : 0;
+  const avgTimeWhenLosing = losses.length > 0
+    ? losses.reduce((sum, g) => sum + (g.clock?.timeRemaining || 0), 0) / losses.length
+    : 0;
+
+  return {
+    gamesInTimeTrouble: timeTroubleGames.length,
+    winRateInTimeTrouble: timeTroubleGames.length > 0
+      ? (timeTroubleWins.length / timeTroubleGames.length) * 100
+      : 0,
+    lossesToTimeout,
+    avgTimeWhenLosing,
+    avgTimeWhenWinning,
+  };
+}
+
+/**
+ * Analyze time usage by game phase
+ * Requires games with moveTimes data
+ */
+export function analyzeTimeUsageByPhase(games: Game[]): TimeUsageByPhase {
+  const gamesWithMoveTimes = games.filter((g) => g.clock?.moveTimes && g.clock.moveTimes.length > 0);
+  
+  if (gamesWithMoveTimes.length === 0) {
+    return {
+      openingAvgTime: 0,
+      middlegameAvgTime: 0,
+      endgameAvgTime: 0,
+    };
+  }
+
+  let openingTotal = 0, openingCount = 0;
+  let middlegameTotal = 0, middlegameCount = 0;
+  let endgameTotal = 0, endgameCount = 0;
+
+  for (const game of gamesWithMoveTimes) {
+    const moveTimes = game.clock!.moveTimes!;
+    
+    for (let i = 0; i < moveTimes.length; i++) {
+      const moveNumber = i + 1;
+      const time = moveTimes[i];
+      
+      if (moveNumber <= 15) {
+        openingTotal += time;
+        openingCount++;
+      } else if (moveNumber <= 40) {
+        middlegameTotal += time;
+        middlegameCount++;
+      } else {
+        endgameTotal += time;
+        endgameCount++;
+      }
+    }
+  }
+
+  return {
+    openingAvgTime: openingCount > 0 ? openingTotal / openingCount : 0,
+    middlegameAvgTime: middlegameCount > 0 ? middlegameTotal / middlegameCount : 0,
+    endgameAvgTime: endgameCount > 0 ? endgameTotal / endgameCount : 0,
+  };
+}
+
+// ============================================
+// TIME-OF-DAY PERFORMANCE ANALYSIS
+// ============================================
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/**
+ * Calculate performance by hour of day
+ */
+export function calculateHourlyStats(games: Game[]): HourlyStats[] {
+  const hourData = new Map<number, { wins: number; losses: number; draws: number; ratingChange: number }>();
+
+  // Initialize all hours
+  for (let h = 0; h < 24; h++) {
+    hourData.set(h, { wins: 0, losses: 0, draws: 0, ratingChange: 0 });
+  }
+
+  for (const game of games) {
+    const hour = game.playedAt.getHours();
+    const data = hourData.get(hour)!;
+
+    if (game.result === 'win') data.wins++;
+    else if (game.result === 'loss') data.losses++;
+    else data.draws++;
+    
+    if (game.ratingChange !== undefined) {
+      data.ratingChange += game.ratingChange;
+    }
+  }
+
+  const result: HourlyStats[] = [];
+  for (let hour = 0; hour < 24; hour++) {
+    const data = hourData.get(hour)!;
+    const total = data.wins + data.losses + data.draws;
+    result.push({
+      hour,
+      games: total,
+      wins: data.wins,
+      losses: data.losses,
+      draws: data.draws,
+      winRate: total > 0 ? (data.wins / total) * 100 : 0,
+      avgRatingChange: total > 0 ? data.ratingChange / total : 0,
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Calculate performance by day of week
+ */
+export function calculateDayOfWeekStats(games: Game[]): DayOfWeekStats[] {
+  const dayData = new Map<number, { wins: number; losses: number; draws: number }>();
+
+  // Initialize all days
+  for (let d = 0; d < 7; d++) {
+    dayData.set(d, { wins: 0, losses: 0, draws: 0 });
+  }
+
+  for (const game of games) {
+    const day = game.playedAt.getDay();
+    const data = dayData.get(day)!;
+
+    if (game.result === 'win') data.wins++;
+    else if (game.result === 'loss') data.losses++;
+    else data.draws++;
+  }
+
+  const result: DayOfWeekStats[] = [];
+  for (let day = 0; day < 7; day++) {
+    const data = dayData.get(day)!;
+    const total = data.wins + data.losses + data.draws;
+    result.push({
+      day,
+      dayName: DAY_NAMES[day],
+      games: total,
+      wins: data.wins,
+      losses: data.losses,
+      draws: data.draws,
+      winRate: total > 0 ? (data.wins / total) * 100 : 0,
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Generate heatmap data for time of day analysis
+ */
+export function calculateTimeHeatmap(games: Game[]): TimeHeatmapCell[] {
+  const cellData = new Map<string, { wins: number; losses: number; draws: number }>();
+
+  // Initialize all cells
+  for (let day = 0; day < 7; day++) {
+    for (let hour = 0; hour < 24; hour++) {
+      cellData.set(`${day}-${hour}`, { wins: 0, losses: 0, draws: 0 });
+    }
+  }
+
+  for (const game of games) {
+    const day = game.playedAt.getDay();
+    const hour = game.playedAt.getHours();
+    const key = `${day}-${hour}`;
+    const data = cellData.get(key)!;
+
+    if (game.result === 'win') data.wins++;
+    else if (game.result === 'loss') data.losses++;
+    else data.draws++;
+  }
+
+  const result: TimeHeatmapCell[] = [];
+  for (let day = 0; day < 7; day++) {
+    for (let hour = 0; hour < 24; hour++) {
+      const key = `${day}-${hour}`;
+      const data = cellData.get(key)!;
+      const total = data.wins + data.losses + data.draws;
+      result.push({
+        day,
+        hour,
+        games: total,
+        winRate: total > 0 ? (data.wins / total) * 100 : 0,
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Find peak performance time window
+ */
+export function findPeakPerformanceTimes(games: Game[], minGames: number = 10): TimeWindow | null {
+  const hourlyStats = calculateHourlyStats(games);
+  
+  // Find the best consecutive 3-hour window
+  let bestWindow: TimeWindow | null = null;
+  let bestWinRate = 0;
+
+  for (let startHour = 0; startHour < 24; startHour++) {
+    let wins = 0, totalGames = 0;
+    
+    // Sum up 3 consecutive hours (wrapping around midnight)
+    for (let offset = 0; offset < 3; offset++) {
+      const hour = (startHour + offset) % 24;
+      wins += hourlyStats[hour].wins;
+      totalGames += hourlyStats[hour].games;
+    }
+
+    if (totalGames >= minGames) {
+      const winRate = (wins / totalGames) * 100;
+      if (winRate > bestWinRate) {
+        bestWinRate = winRate;
+        const endHour = (startHour + 3) % 24;
+        bestWindow = {
+          startHour,
+          endHour,
+          winRate,
+          games: totalGames,
+          label: formatHourRange(startHour, endHour),
+        };
+      }
+    }
+  }
+
+  return bestWindow;
+}
+
+/**
+ * Find worst performance time window
+ */
+export function findWorstPerformanceTimes(games: Game[], minGames: number = 10): TimeWindow | null {
+  const hourlyStats = calculateHourlyStats(games);
+  
+  // Find the worst consecutive 3-hour window
+  let worstWindow: TimeWindow | null = null;
+  let worstWinRate = 100;
+
+  for (let startHour = 0; startHour < 24; startHour++) {
+    let wins = 0, totalGames = 0;
+    
+    for (let offset = 0; offset < 3; offset++) {
+      const hour = (startHour + offset) % 24;
+      wins += hourlyStats[hour].wins;
+      totalGames += hourlyStats[hour].games;
+    }
+
+    if (totalGames >= minGames) {
+      const winRate = (wins / totalGames) * 100;
+      if (winRate < worstWinRate) {
+        worstWinRate = winRate;
+        const endHour = (startHour + 3) % 24;
+        worstWindow = {
+          startHour,
+          endHour,
+          winRate,
+          games: totalGames,
+          label: formatHourRange(startHour, endHour),
+        };
+      }
+    }
+  }
+
+  return worstWindow;
+}
+
+/**
+ * Format an hour range for display
+ */
+function formatHourRange(startHour: number, endHour: number): string {
+  const formatHour = (h: number) => {
+    const period = h >= 12 ? 'pm' : 'am';
+    const hour12 = h % 12 || 12;
+    return `${hour12}${period}`;
+  };
+  return `${formatHour(startHour)}-${formatHour(endHour)}`;
 }

@@ -66,6 +66,17 @@ export interface ChessComGamesResponse {
 // LICHESS API TYPES
 // ============================================
 
+/**
+ * Lichess analysis data for a player
+ */
+export interface LichessAnalysis {
+  inaccuracy: number;
+  mistake: number;
+  blunder: number;
+  acpl: number;
+  accuracy?: number;
+}
+
 export interface LichessPlayer {
   user?: {
     name: string;
@@ -73,6 +84,20 @@ export interface LichessPlayer {
   };
   rating: number;
   ratingDiff?: number;
+  /** Analysis data (only present if game has been analyzed) */
+  analysis?: LichessAnalysis;
+}
+
+/**
+ * Lichess clock data
+ */
+export interface LichessClock {
+  /** Initial time in seconds */
+  initial: number;
+  /** Increment in seconds */
+  increment: number;
+  /** Estimated total time for rating purposes */
+  totalTime: number;
 }
 
 export interface LichessGame {
@@ -96,4 +121,24 @@ export interface LichessGame {
   };
   moves?: string;
   pgn?: string;
+  /** Clock configuration */
+  clock?: LichessClock;
+  /** Time remaining per ply in centiseconds */
+  clocks?: number[];
+  /** Per-move analysis (only present if game has been analyzed and evals=true) */
+  analysis?: Array<{
+    eval?: number;
+    mate?: number;
+    best?: string;
+    variation?: string;
+    judgment?: {
+      name: 'Inaccuracy' | 'Mistake' | 'Blunder';
+      comment: string;
+    };
+  }>;
+  /** Division markers for game phases (only present if game has been analyzed) */
+  division?: {
+    middle?: number;
+    end?: number;
+  };
 }

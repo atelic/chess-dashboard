@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Game } from '@/lib/types';
 import Tabs, { Tab } from './ui/Tabs';
 import OverviewTab from './tabs/OverviewTab';
+import GamesTab from './tabs/GamesTab';
 import OpeningsTab from './tabs/OpeningsTab';
 import DaysTab from './tabs/DaysTab';
 import OpponentsTab from './tabs/OpponentsTab';
@@ -51,8 +52,16 @@ const DaysIcon = () => (
   </svg>
 );
 
+const GamesIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+  </svg>
+);
+
 const TABS: Tab[] = [
   { id: 'overview', label: 'Overview', icon: <OverviewIcon /> },
+  { id: 'games', label: 'Games', icon: <GamesIcon /> },
   { id: 'openings', label: 'Openings', icon: <OpeningsIcon /> },
   { id: 'days', label: 'Days', icon: <DaysIcon /> },
   { id: 'opponents', label: 'Opponents', icon: <OpponentsIcon /> },
@@ -99,6 +108,8 @@ export default function Dashboard({ games, isLoading }: DashboardProps) {
     switch (activeTab) {
       case 'overview':
         return <OverviewTab games={games} />;
+      case 'games':
+        return <GamesTab games={games} />;
       case 'openings':
         return <OpeningsTab games={games} />;
       case 'days':
