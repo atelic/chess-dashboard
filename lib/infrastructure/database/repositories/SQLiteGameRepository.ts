@@ -1,5 +1,5 @@
 import type { IGameRepository } from '@/lib/domain/repositories/interfaces';
-import type { Game, GameSource, PlayerColor } from '@/lib/domain/models/Game';
+import type { Game, GameSource, PlayerColor, ClockData, AnalysisData } from '@/lib/domain/models/Game';
 import { GameFilter } from '@/lib/domain/models/GameFilter';
 import type { SQLiteClient } from '../client';
 
@@ -24,6 +24,18 @@ interface GameRow {
   move_count: number | null;
   rated: number;
   game_url: string | null;
+  // Clock data
+  initial_time: number | null;
+  increment: number | null;
+  time_remaining: number | null;
+  avg_move_time: number | null;
+  // Analysis data
+  accuracy: number | null;
+  blunders: number | null;
+  mistakes: number | null;
+  inaccuracies: number | null;
+  acpl: number | null;
+  analyzed_at: string | null;
 }
 
 /**
@@ -146,6 +158,49 @@ export class SQLiteGameRepository implements IGameRepository {
     return new Date(rows[0].played_at);
   }
 
+  /**
+   * Find games that don't have analysis data yet
+   */
+  async findGamesNeedingAnalysis(userId: number, limit: number = 50): Promise<Game[]> {
+    const rows = this.db.query<GameRow>(
+      `SELECT * FROM games 
+       WHERE user_id = ? AND analyzed_at IS NULL
+       ORDER BY played_at DESC
+       LIMIT ?`,
+      [userId, limit],
+    );
+
+    return rows.map((row) => this.rowToGame(row));
+  }
+
+  /**
+   * Update analysis data for a game
+   */
+  async updateAnalysis(
+    gameId: string,
+    analysis: AnalysisData
+  ): Promise<void> {
+    this.db.execute(
+      `UPDATE games SET 
+        accuracy = ?,
+        blunders = ?,
+        mistakes = ?,
+        inaccuracies = ?,
+        acpl = ?,
+        analyzed_at = ?
+       WHERE id = ?`,
+      [
+        analysis.accuracy ?? null,
+        analysis.blunders,
+        analysis.mistakes,
+        analysis.inaccuracies,
+        analysis.acpl ?? null,
+        new Date().toISOString(),
+        gameId,
+      ],
+    );
+  }
+
   // ============================================
   // MUTATIONS
   // ============================================
@@ -155,8 +210,10 @@ export class SQLiteGameRepository implements IGameRepository {
       `INSERT OR REPLACE INTO games (
         id, user_id, source, played_at, time_class, player_color, result,
         opening_eco, opening_name, opponent_username, opponent_rating,
-        player_rating, termination, rating_change, move_count, rated, game_url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        player_rating, termination, rating_change, move_count, rated, game_url,
+        initial_time, increment, time_remaining, avg_move_time,
+        accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         game.id,
         game.userId,
@@ -175,6 +232,16 @@ export class SQLiteGameRepository implements IGameRepository {
         game.moveCount,
         game.rated ? 1 : 0,
         game.gameUrl,
+        game.clock?.initialTime ?? null,
+        game.clock?.increment ?? null,
+        game.clock?.timeRemaining ?? null,
+        game.clock?.avgMoveTime ?? null,
+        game.analysis?.accuracy ?? null,
+        game.analysis?.blunders ?? null,
+        game.analysis?.mistakes ?? null,
+        game.analysis?.inaccuracies ?? null,
+        game.analysis?.acpl ?? null,
+        game.analysis?.analyzedAt?.toISOString() ?? null,
       ],
     );
   }
@@ -188,12 +255,28 @@ export class SQLiteGameRepository implements IGameRepository {
 
     this.db.transaction(() => {
       for (const game of games) {
+        // First, try to insert. If the game exists, update analysis data if we have new data
         this.db.execute(
-          `INSERT OR IGNORE INTO games (
+          `INSERT INTO games (
             id, user_id, source, played_at, time_class, player_color, result,
             opening_eco, opening_name, opponent_username, opponent_rating,
-            player_rating, termination, rating_change, move_count, rated, game_url
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            player_rating, termination, rating_change, move_count, rated, game_url,
+            initial_time, increment, time_remaining, avg_move_time,
+            accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            -- Update clock data if we have new data and existing is null
+            initial_time = COALESCE(games.initial_time, excluded.initial_time),
+            increment = COALESCE(games.increment, excluded.increment),
+            time_remaining = COALESCE(games.time_remaining, excluded.time_remaining),
+            avg_move_time = COALESCE(games.avg_move_time, excluded.avg_move_time),
+            -- Update analysis data if we have new data and existing is null
+            accuracy = COALESCE(games.accuracy, excluded.accuracy),
+            blunders = COALESCE(games.blunders, excluded.blunders),
+            mistakes = COALESCE(games.mistakes, excluded.mistakes),
+            inaccuracies = COALESCE(games.inaccuracies, excluded.inaccuracies),
+            acpl = COALESCE(games.acpl, excluded.acpl),
+            analyzed_at = COALESCE(games.analyzed_at, excluded.analyzed_at)`,
           [
             game.id,
             game.userId,
@@ -212,6 +295,16 @@ export class SQLiteGameRepository implements IGameRepository {
             game.moveCount,
             game.rated ? 1 : 0,
             game.gameUrl,
+            game.clock?.initialTime ?? null,
+            game.clock?.increment ?? null,
+            game.clock?.timeRemaining ?? null,
+            game.clock?.avgMoveTime ?? null,
+            game.analysis?.accuracy ?? null,
+            game.analysis?.blunders ?? null,
+            game.analysis?.mistakes ?? null,
+            game.analysis?.inaccuracies ?? null,
+            game.analysis?.acpl ?? null,
+            game.analysis?.analyzedAt?.toISOString() ?? null,
           ],
         );
         saved++;
@@ -234,6 +327,30 @@ export class SQLiteGameRepository implements IGameRepository {
   // ============================================
 
   private rowToGame(row: GameRow): Game {
+    // Build clock data if available
+    let clock: ClockData | undefined;
+    if (row.initial_time !== null) {
+      clock = {
+        initialTime: row.initial_time,
+        increment: row.increment ?? 0,
+        timeRemaining: row.time_remaining ?? undefined,
+        avgMoveTime: row.avg_move_time ?? undefined,
+      };
+    }
+
+    // Build analysis data if available
+    let analysis: AnalysisData | undefined;
+    if (row.accuracy !== null || row.blunders !== null) {
+      analysis = {
+        accuracy: row.accuracy ?? undefined,
+        blunders: row.blunders ?? 0,
+        mistakes: row.mistakes ?? 0,
+        inaccuracies: row.inaccuracies ?? 0,
+        acpl: row.acpl ?? undefined,
+        analyzedAt: row.analyzed_at ? new Date(row.analyzed_at) : undefined,
+      };
+    }
+
     return {
       id: row.id,
       userId: row.user_id,
@@ -256,6 +373,8 @@ export class SQLiteGameRepository implements IGameRepository {
       moveCount: row.move_count || 0,
       rated: row.rated === 1,
       gameUrl: row.game_url || '',
+      clock,
+      analysis,
     };
   }
 

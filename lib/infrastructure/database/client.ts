@@ -177,6 +177,46 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    version: 2,
+    name: 'add_clock_and_analysis_fields',
+    sql: `
+      -- Clock data columns
+      ALTER TABLE games ADD COLUMN initial_time INTEGER;
+      ALTER TABLE games ADD COLUMN increment INTEGER;
+      ALTER TABLE games ADD COLUMN time_remaining REAL;
+      ALTER TABLE games ADD COLUMN avg_move_time REAL;
+      
+      -- Analysis data columns  
+      ALTER TABLE games ADD COLUMN accuracy INTEGER;
+      ALTER TABLE games ADD COLUMN blunders INTEGER DEFAULT 0;
+      ALTER TABLE games ADD COLUMN mistakes INTEGER DEFAULT 0;
+      ALTER TABLE games ADD COLUMN inaccuracies INTEGER DEFAULT 0;
+      ALTER TABLE games ADD COLUMN acpl INTEGER;
+      ALTER TABLE games ADD COLUMN analyzed_at TEXT;
+      
+      -- Index for time-based queries
+      CREATE INDEX IF NOT EXISTS idx_games_initial_time ON games(initial_time);
+      CREATE INDEX IF NOT EXISTS idx_games_accuracy ON games(accuracy);
+    `,
+  },
+  {
+    version: 3,
+    name: 'add_game_analysis_table',
+    sql: `
+      -- Detailed game analysis storage (per-move analysis)
+      CREATE TABLE IF NOT EXISTS game_analysis (
+        game_id TEXT PRIMARY KEY REFERENCES games(id) ON DELETE CASCADE,
+        move_analyses TEXT,           -- JSON array of MoveAnalysis objects
+        analyzed_at TEXT NOT NULL,
+        analysis_depth INTEGER DEFAULT 16
+      );
+      
+      -- Index for finding games needing re-analysis
+      CREATE INDEX IF NOT EXISTS idx_game_analysis_analyzed_at 
+        ON game_analysis(analyzed_at);
+    `,
+  },
 ];
 
 /**

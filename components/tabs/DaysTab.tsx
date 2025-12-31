@@ -1,7 +1,7 @@
 'use client';
 
 import type { Game } from '@/lib/types';
-import DayPerformance from '../DayPerformance';
+import DayPerformance from '@/components/DayPerformance';
 
 interface DaysTabProps {
   games: Game[];

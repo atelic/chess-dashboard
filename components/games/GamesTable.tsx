@@ -1,7 +1,9 @@
 'use client';
 
-import type { Game } from '@/lib/types';
+import { useState, Fragment } from 'react';
+import type { Game, AnalysisData } from '@/lib/types';
 import GameLink from './GameLink';
+import GameAnalysisPanel from './GameAnalysisPanel';
 import Spinner from '@/components/ui/Spinner';
 
 interface GamesTableProps {
@@ -10,6 +12,10 @@ interface GamesTableProps {
   maxRows?: number;
   showOpening?: boolean;
   showOpponent?: boolean;
+  showAnalysis?: boolean;
+  expandable?: boolean;
+  onAnalyze?: (gameId: string) => Promise<void>;
+  onFetchLichessAnalysis?: (gameId: string, playerColor: 'white' | 'black') => Promise<AnalysisData | null>;
 }
 
 function formatDate(date: Date): string {
@@ -47,7 +53,16 @@ export default function GamesTable({
   maxRows,
   showOpening = true,
   showOpponent = true,
+  showAnalysis = false,
+  expandable = false,
+  onAnalyze,
+  onFetchLichessAnalysis,
 }: GamesTableProps) {
+  const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
+
+  const toggleExpand = (gameId: string) => {
+    setExpandedGameId(prev => prev === gameId ? null : gameId);
+  };
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -73,61 +88,109 @@ export default function GamesTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-zinc-500 border-b border-zinc-800">
+            {expandable && <th className="pb-2 pr-2 font-medium w-8"></th>}
             <th className="pb-2 pr-4 font-medium">Date</th>
             <th className="pb-2 pr-4 font-medium">Result</th>
             {showOpponent && <th className="pb-2 pr-4 font-medium">Opponent</th>}
             {showOpening && <th className="pb-2 pr-4 font-medium hidden sm:table-cell">Opening</th>}
             <th className="pb-2 pr-4 font-medium hidden md:table-cell">Time</th>
+            {showAnalysis && <th className="pb-2 pr-4 font-medium hidden lg:table-cell">Accuracy</th>}
             <th className="pb-2 font-medium w-10">Link</th>
           </tr>
         </thead>
         <tbody>
           {displayGames.map((game) => {
             const resultStyles = getResultStyles(game.result);
+            const isExpanded = expandedGameId === game.id;
+            const accuracy = game.analysis?.accuracy;
+            const colSpan = 4 + (showOpponent ? 1 : 0) + (showOpening ? 1 : 0) + (showAnalysis ? 1 : 0) + (expandable ? 1 : 0);
+            
             return (
-              <tr
-                key={game.id}
-                className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors"
-              >
-                <td className="py-2 pr-4 text-zinc-300">
-                  {formatDate(game.playedAt)}
-                </td>
-                <td className="py-2 pr-4">
-                  <span className={`inline-flex items-center justify-center w-6 h-6 rounded font-medium ${resultStyles.bg} ${resultStyles.text}`}>
-                    {resultStyles.label}
-                  </span>
-                </td>
-                {showOpponent && (
-                  <td className="py-2 pr-4">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${game.playerColor === 'white' ? 'bg-white' : 'bg-zinc-700 border border-zinc-500'}`} />
-                      <span className="text-zinc-300">{game.opponent.username}</span>
-                      <span className="text-zinc-500">({game.opponent.rating})</span>
-                    </div>
+              <Fragment key={game.id}>
+                <tr
+                  className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${expandable ? 'cursor-pointer' : ''} ${isExpanded ? 'bg-zinc-800/30' : ''}`}
+                  onClick={expandable ? () => toggleExpand(game.id) : undefined}
+                >
+                  {expandable && (
+                    <td className="py-2 pr-2 text-zinc-500">
+                      <svg 
+                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </td>
+                  )}
+                  <td className="py-2 pr-4 text-zinc-300">
+                    {formatDate(game.playedAt)}
                   </td>
-                )}
-                {showOpening && (
-                  <td className="py-2 pr-4 hidden sm:table-cell">
-                    <span className="text-zinc-400" title={game.opening.name}>
-                      {game.opening.eco !== 'Unknown' ? (
-                        <>
-                          <span className="text-zinc-500">{game.opening.eco}</span>
-                          {' '}
-                          <span className="hidden lg:inline">{game.opening.name}</span>
-                        </>
+                  <td className="py-2 pr-4">
+                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded font-medium ${resultStyles.bg} ${resultStyles.text}`}>
+                      {resultStyles.label}
+                    </span>
+                  </td>
+                  {showOpponent && (
+                    <td className="py-2 pr-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${game.playerColor === 'white' ? 'bg-white' : 'bg-zinc-700 border border-zinc-500'}`} />
+                        <span className="text-zinc-300">{game.opponent.username}</span>
+                        <span className="text-zinc-500">({game.opponent.rating})</span>
+                      </div>
+                    </td>
+                  )}
+                  {showOpening && (
+                    <td className="py-2 pr-4 hidden sm:table-cell">
+                      <span className="text-zinc-400" title={game.opening.name}>
+                        {game.opening.eco !== 'Unknown' ? (
+                          <>
+                            <span className="text-zinc-500">{game.opening.eco}</span>
+                            {' '}
+                            <span className="hidden lg:inline">{game.opening.name}</span>
+                          </>
+                        ) : (
+                          <span className="text-zinc-600">-</span>
+                        )}
+                      </span>
+                    </td>
+                  )}
+                  <td className="py-2 pr-4 hidden md:table-cell">
+                    <span className="text-zinc-500">{getTimeControlLabel(game.timeClass)}</span>
+                  </td>
+                  {showAnalysis && (
+                    <td className="py-2 pr-4 hidden lg:table-cell">
+                      {accuracy !== undefined ? (
+                        <span className={`font-medium ${
+                          accuracy >= 90 ? 'text-green-400' :
+                          accuracy >= 80 ? 'text-lime-400' :
+                          accuracy >= 70 ? 'text-yellow-400' :
+                          accuracy >= 60 ? 'text-orange-400' :
+                          'text-red-400'
+                        }`}>
+                          {accuracy}%
+                        </span>
                       ) : (
                         <span className="text-zinc-600">-</span>
                       )}
-                    </span>
+                    </td>
+                  )}
+                  <td className="py-2" onClick={(e) => e.stopPropagation()}>
+                    <GameLink url={game.gameUrl} source={game.source} />
                   </td>
+                </tr>
+                {expandable && isExpanded && (
+                  <tr className="bg-zinc-900/50">
+                    <td colSpan={colSpan} className="p-4">
+                      <GameAnalysisPanel 
+                        game={game} 
+                        onAnalyze={onAnalyze}
+                        onFetchLichessAnalysis={onFetchLichessAnalysis}
+                      />
+                    </td>
+                  </tr>
                 )}
-                <td className="py-2 pr-4 hidden md:table-cell">
-                  <span className="text-zinc-500">{getTimeControlLabel(game.timeClass)}</span>
-                </td>
-                <td className="py-2">
-                  <GameLink url={game.gameUrl} source={game.source} />
-                </td>
-              </tr>
+              </Fragment>
             );
           })}
         </tbody>

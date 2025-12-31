@@ -19,6 +19,10 @@ function convertGames(apiGames: Game[]): LibGame[] {
   return apiGames.map((game) => ({
     ...game,
     playedAt: new Date(game.playedAt),
+    analysis: game.analysis ? {
+      ...game.analysis,
+      analyzedAt: game.analysis.analyzedAt ? new Date(game.analysis.analyzedAt) : undefined,
+    } : undefined,
   }));
 }
 

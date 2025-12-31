@@ -1,4 +1,4 @@
-import type { Game, TimeClass, TerminationType } from '@/lib/domain/models/Game';
+import type { Game, TimeClass, TerminationType, ClockData } from '@/lib/domain/models/Game';
 import type {
   IChessClient,
   FetchGamesOptions,
@@ -170,6 +170,9 @@ export class ChessComClient implements IChessClient {
     // Count moves
     const moveCount = this.countMovesFromPgn(game.pgn || '');
 
+    // Extract clock data from time_control and PGN
+    const clock = this.extractClockData(game.time_control, game.pgn || '', playerColor);
+
     return {
       id: game.url.split('/').pop() || game.url,
       source: 'chesscom',
@@ -188,6 +191,7 @@ export class ChessComClient implements IChessClient {
       ratingChange: undefined, // Chess.com doesn't provide this in the API
       rated: game.rated,
       gameUrl: game.url,
+      clock,
     };
   }
 
@@ -289,5 +293,131 @@ export class ChessComClient implements IChessClient {
     // Get the highest move number
     const moveNumbers = moveMatches.map((m) => parseInt(m.replace('.', '')));
     return Math.max(...moveNumbers, 0);
+  }
+
+  /**
+   * Parse time control string (e.g., "300", "300+5", "1/86400")
+   */
+  private parseTimeControl(timeControl: string): { initialTime: number; increment: number } | null {
+    if (!timeControl) return null;
+
+    // Daily chess format: "1/86400" (1 day per move)
+    if (timeControl.includes('/')) {
+      const parts = timeControl.split('/');
+      // For daily chess, we don't track clock data the same way
+      return null;
+    }
+
+    // Live chess format: "300" or "300+5"
+    if (timeControl.includes('+')) {
+      const [initial, increment] = timeControl.split('+');
+      return {
+        initialTime: parseInt(initial, 10),
+        increment: parseInt(increment, 10),
+      };
+    }
+
+    // Just initial time, no increment
+    return {
+      initialTime: parseInt(timeControl, 10),
+      increment: 0,
+    };
+  }
+
+  /**
+   * Extract clock times from PGN
+   * Chess.com PGN includes clock annotations like: {[%clk 0:04:58]}
+   */
+  private extractClockTimesFromPgn(
+    pgn: string,
+    playerColor: 'white' | 'black'
+  ): number[] {
+    if (!pgn) return [];
+
+    // Match clock annotations: {[%clk H:MM:SS]} or {[%clk M:SS]}
+    const clockRegex = /\{[^}]*\[%clk\s+(\d+):(\d+):?(\d+)?\][^}]*\}/g;
+    const allClocks: { time: number; isWhite: boolean }[] = [];
+
+    // Find all moves with clock annotations
+    // PGN format: "1. e4 {[%clk 0:04:58]} e5 {[%clk 0:04:57]} 2. Nf3 ..."
+    let match;
+    let moveIndex = 0;
+
+    while ((match = clockRegex.exec(pgn)) !== null) {
+      const hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const seconds = match[3] ? parseInt(match[3], 10) : 0;
+
+      // Handle H:MM:SS vs M:SS format
+      let totalSeconds: number;
+      if (match[3]) {
+        // H:MM:SS format
+        totalSeconds = hours * 3600 + minutes * 60 + seconds;
+      } else {
+        // M:SS format (hours is actually minutes, minutes is actually seconds)
+        totalSeconds = hours * 60 + minutes;
+      }
+
+      // Alternate between white and black moves
+      // First clock in a move pair is white, second is black
+      allClocks.push({
+        time: totalSeconds,
+        isWhite: moveIndex % 2 === 0,
+      });
+      moveIndex++;
+    }
+
+    // Filter to get only the player's clocks
+    const playerClocks = allClocks
+      .filter((c) => c.isWhite === (playerColor === 'white'))
+      .map((c) => c.time);
+
+    return playerClocks;
+  }
+
+  /**
+   * Extract clock data from time control and PGN
+   */
+  private extractClockData(
+    timeControl: string,
+    pgn: string,
+    playerColor: 'white' | 'black'
+  ): ClockData | undefined {
+    // Parse the time control first
+    const parsed = this.parseTimeControl(timeControl);
+    if (!parsed) {
+      return undefined;
+    }
+
+    const clockData: ClockData = {
+      initialTime: parsed.initialTime,
+      increment: parsed.increment,
+    };
+
+    // Try to extract clock times from PGN
+    const playerClocks = this.extractClockTimesFromPgn(pgn, playerColor);
+
+    if (playerClocks.length > 0) {
+      // Time remaining at end of game
+      clockData.timeRemaining = playerClocks[playerClocks.length - 1];
+
+      // Calculate move times (time spent per move)
+      const moveTimes: number[] = [];
+      let previousTime = parsed.initialTime;
+
+      for (const clockTime of playerClocks) {
+        // Time used = previous time - current time + increment
+        const timeUsed = previousTime - clockTime + parsed.increment;
+        moveTimes.push(Math.max(0, timeUsed)); // Ensure non-negative
+        previousTime = clockTime;
+      }
+
+      if (moveTimes.length > 0) {
+        clockData.moveTimes = moveTimes;
+        clockData.avgMoveTime = moveTimes.reduce((a, b) => a + b, 0) / moveTimes.length;
+      }
+    }
+
+    return clockData;
   }
 }

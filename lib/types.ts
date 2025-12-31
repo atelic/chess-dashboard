@@ -27,6 +27,40 @@ export interface Opponent {
   rating: number;
 }
 
+/**
+ * Clock/time data for a game.
+ */
+export interface ClockData {
+  /** Starting time in seconds */
+  initialTime: number;
+  /** Increment per move in seconds */
+  increment: number;
+  /** Player's time remaining at game end (seconds) */
+  timeRemaining?: number;
+  /** Average seconds per move for the player */
+  avgMoveTime?: number;
+  /** Time spent per move in seconds (optional, for detailed analysis) */
+  moveTimes?: number[];
+}
+
+/**
+ * Analysis data for a game.
+ */
+export interface AnalysisData {
+  /** Accuracy percentage 0-100 */
+  accuracy?: number;
+  /** Number of blunders (>200cp loss) */
+  blunders: number;
+  /** Number of mistakes (100-200cp loss) */
+  mistakes: number;
+  /** Number of inaccuracies (50-100cp loss) */
+  inaccuracies: number;
+  /** Average centipawn loss */
+  acpl?: number;
+  /** When the analysis was performed */
+  analyzedAt?: Date;
+}
+
 export interface Game {
   id: string;
   source: GameSource;
@@ -42,6 +76,8 @@ export interface Game {
   moveCount: number;            // Number of moves in game
   rated: boolean;               // Whether the game was rated
   gameUrl: string;              // URL to view the game on the platform
+  clock?: ClockData;            // Clock/time data for time management analysis
+  analysis?: AnalysisData;      // Analysis data (accuracy, blunders, etc.)
 }
 
 export interface FetchGamesOptions {
@@ -189,6 +225,113 @@ export interface FilterState {
   terminations: TerminationType[];
   sources: GameSource[];
   rated: boolean | null;                           // null = all, true = rated only, false = unrated only
+}
+
+// ============================================
+// TIME MANAGEMENT TYPES
+// ============================================
+
+/**
+ * Overall time management statistics
+ */
+export interface TimeStats {
+  /** Average time remaining at game end (seconds) */
+  avgTimeRemaining: number;
+  /** Percentage of losses that are timeouts */
+  timeoutLossRate: number;
+  /** Average seconds per move */
+  avgMoveTime: number;
+  /** Number of games with clock data */
+  gamesWithClockData: number;
+  /** Breakdown by time control */
+  byTimeClass: TimeClassTimeStats[];
+}
+
+export interface TimeClassTimeStats {
+  timeClass: TimeClass;
+  games: number;
+  avgTimeRemaining: number;
+  timeoutRate: number;
+  avgMoveTime: number;
+}
+
+/**
+ * Time pressure analysis (games ending with low time)
+ */
+export interface TimePressureStats {
+  /** Games ending with < 30 seconds */
+  gamesInTimeTrouble: number;
+  /** Win rate when in time trouble */
+  winRateInTimeTrouble: number;
+  /** Total losses to timeout */
+  lossesToTimeout: number;
+  /** Average time remaining in losses */
+  avgTimeWhenLosing: number;
+  /** Average time remaining in wins */
+  avgTimeWhenWinning: number;
+}
+
+/**
+ * Time usage by game phase
+ */
+export interface TimeUsageByPhase {
+  /** Average time per move in moves 1-15 */
+  openingAvgTime: number;
+  /** Average time per move in moves 15-40 */
+  middlegameAvgTime: number;
+  /** Average time per move in moves 40+ */
+  endgameAvgTime: number;
+}
+
+// ============================================
+// TIME-OF-DAY PERFORMANCE TYPES
+// ============================================
+
+/**
+ * Performance by hour of day
+ */
+export interface HourlyStats {
+  hour: number;              // 0-23
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+  avgRatingChange: number;
+}
+
+/**
+ * Performance by day of week
+ */
+export interface DayOfWeekStats {
+  day: number;               // 0=Sunday, 6=Saturday
+  dayName: string;
+  games: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+}
+
+/**
+ * A window of time (e.g., peak performance hours)
+ */
+export interface TimeWindow {
+  startHour: number;
+  endHour: number;
+  winRate: number;
+  games: number;
+  label: string;             // e.g., "7pm-10pm"
+}
+
+/**
+ * Heatmap data for time of day analysis
+ */
+export interface TimeHeatmapCell {
+  day: number;               // 0-6 (Sunday-Saturday)
+  hour: number;              // 0-23
+  games: number;
+  winRate: number;
 }
 
 // API response types for Chess.com
