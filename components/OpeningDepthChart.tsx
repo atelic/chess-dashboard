@@ -243,6 +243,20 @@ export default function OpeningDepthChart({ games }: OpeningDepthChartProps) {
               </div>
             </div>
           </div>
+
+          {/* Estimation Notice */}
+          <div className="bg-blue-950/30 border border-blue-900/50 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-lg">ℹ️</span>
+              <div>
+                <h4 className="text-blue-300 font-medium">Estimation Notice</h4>
+                <p className="text-blue-200/70 text-sm mt-1">
+                  This analysis estimates opening depth based on average game length by opening.
+                  For precise book move tracking, position-by-position data would be needed.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </Card>

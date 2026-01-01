@@ -318,10 +318,19 @@ export default function ResilienceChart({ games }: ResilienceChartProps) {
           )}
         </div>
 
-        {/* Disclaimer */}
-        <p className="text-xs text-zinc-500 text-center">
-          Stats are estimated from error patterns. Full position evaluation history would provide more accurate resilience data.
-        </p>
+        {/* Estimation Notice */}
+        <div className="bg-blue-950/30 border border-blue-900/50 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-lg">ℹ️</span>
+            <div>
+              <h4 className="text-blue-300 font-medium">Estimation Notice</h4>
+              <p className="text-blue-200/70 text-sm mt-1">
+                Comeback and blown win stats are estimated from error patterns in analyzed games.
+                For precise tracking, full position-by-position evaluation history would be needed.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </Card>
   );
