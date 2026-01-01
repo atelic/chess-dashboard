@@ -3,6 +3,15 @@ import { fetchLichessGameAnalysis } from '@/lib/infrastructure/api-clients/Liche
 import { fetchChessComGameAnalysis } from '@/lib/infrastructure/api-clients/ChessComClient';
 import { createGameService, createUserService } from '@/lib/infrastructure/factories';
 import type { AnalysisData } from '@/lib/types';
+import { AppError, ValidationError } from '@/lib/shared/errors';
+import {
+  validateGameId,
+  validatePlayerColor,
+  validateSource,
+  validateUsername,
+  validateGameUrl,
+  validateDateString,
+} from '@/lib/shared/validation';
 
 /**
  * GET /api/games/analysis?gameId=xxx&playerColor=white&source=lichess
@@ -13,33 +22,20 @@ import type { AnalysisData } from '@/lib/types';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const gameId = searchParams.get('gameId');
-    const playerColor = searchParams.get('playerColor') as 'white' | 'black' | null;
-    const source = searchParams.get('source') as 'lichess' | 'chesscom' | null;
-
-    if (!gameId || !playerColor) {
-      return NextResponse.json(
-        { error: 'gameId and playerColor are required' },
-        { status: 400 }
-      );
-    }
+    
+    // Validate required parameters
+    const gameId = validateGameId(searchParams.get('gameId'));
+    const playerColor = validatePlayerColor(searchParams.get('playerColor'));
+    const source = searchParams.get('source') ? validateSource(searchParams.get('source')) : 'lichess';
 
     let analysis: AnalysisData | null = null;
 
     if (source === 'chesscom') {
-      // Chess.com requires additional params
-      const username = searchParams.get('username');
-      const gameUrl = searchParams.get('gameUrl');
-      const gameDateStr = searchParams.get('gameDate');
+      // Chess.com requires additional params - validate them
+      const username = validateUsername(searchParams.get('username'), 'username');
+      const gameUrl = validateGameUrl(searchParams.get('gameUrl'));
+      const gameDate = validateDateString(searchParams.get('gameDate'), 'gameDate');
 
-      if (!username || !gameUrl || !gameDateStr) {
-        return NextResponse.json(
-          { error: 'username, gameUrl, and gameDate are required for Chess.com analysis' },
-          { status: 400 }
-        );
-      }
-
-      const gameDate = new Date(gameDateStr);
       const chesscomAnalysis = await fetchChessComGameAnalysis(username, gameUrl, gameDate, playerColor);
 
       if (!chesscomAnalysis || chesscomAnalysis.accuracy === undefined) {
@@ -102,8 +98,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ analysis, warning: saveWarning });
   } catch (error) {
     console.error('GET /api/games/analysis error:', error);
+
+    if (error instanceof ValidationError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code, field: error.field },
+        { status: 400 }
+      );
+    }
+
+    if (error instanceof AppError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: error.statusCode }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Failed to fetch analysis' },
+      { error: 'Failed to fetch analysis', code: 'INTERNAL_ERROR' },
       { status: 500 }
     );
   }
