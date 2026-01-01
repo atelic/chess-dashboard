@@ -103,14 +103,33 @@ let migrationsRun = false;
 
 /**
  * Get the database client (singleton)
+ * 
+ * In development (NODE_ENV=development), uses local SQLite file at ./data/dev.db
+ * In production, uses Turso cloud database via TURSO_DATABASE_URL
+ * 
+ * Set USE_PROD_DB=true to force production database in development
  */
 export async function getDatabase(): Promise<TursoClient> {
   if (!clientInstance) {
-    const url = process.env.TURSO_DATABASE_URL;
-    const authToken = process.env.TURSO_AUTH_TOKEN;
+    const isDev = process.env.NODE_ENV === 'development';
+    const useProdDb = process.env.USE_PROD_DB === 'true';
     
-    if (!url) {
-      throw new DatabaseError('TURSO_DATABASE_URL environment variable is not set');
+    let url: string;
+    let authToken: string | undefined;
+    
+    if (isDev && !useProdDb) {
+      // Development: use local SQLite file
+      url = 'file:./data/dev.db';
+      authToken = undefined;
+      if (isDev) console.log('Using local dev database: ./data/dev.db');
+    } else {
+      // Production or USE_PROD_DB override
+      url = process.env.TURSO_DATABASE_URL!;
+      authToken = process.env.TURSO_AUTH_TOKEN;
+      
+      if (!url) {
+        throw new DatabaseError('TURSO_DATABASE_URL environment variable is not set');
+      }
     }
     
     clientInstance = new TursoClient(url, authToken);
