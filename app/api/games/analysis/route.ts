@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     // Validate required parameters
     const gameId = validateGameId(searchParams.get('gameId'));
     const playerColor = validatePlayerColor(searchParams.get('playerColor'));
-    const source = searchParams.get('source');
+    const source = searchParams.get('source') ? validateSource(searchParams.get('source')) : 'lichess';
 
     let analysis: AnalysisData | null = null;
 
