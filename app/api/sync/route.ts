@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSyncService, createUserService } from '@/lib/infrastructure/factories';
-import { AppError, ValidationError } from '@/lib/shared/errors';
-import { validateBooleanString } from '@/lib/shared/validation';
+import { AppError } from '@/lib/shared/errors';
 
 /**
  * POST /api/sync
