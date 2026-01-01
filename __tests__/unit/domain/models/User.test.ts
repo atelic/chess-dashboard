@@ -7,7 +7,6 @@ import {
   getPlatformDisplayText,
   formatLastSynced,
 } from '@/lib/domain/models/User';
-import type { User } from '@/lib/domain/models/User';
 import { createTestUser, createChessComOnlyUser, createLichessOnlyUser, createNoPlatformUser } from '@/__tests__/fixtures/user';
 
 describe('User domain model', () => {
