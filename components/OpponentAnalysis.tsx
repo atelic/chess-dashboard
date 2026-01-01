@@ -144,6 +144,18 @@ function RatingBracketChart({ brackets }: RatingBracketChartProps) {
 type SortField = 'games' | 'winRate' | 'avgRating';
 type SortDirection = 'asc' | 'desc';
 
+// Helper function to render sort icon - not a component
+function renderSortIcon(field: SortField, sortField: SortField, sortDirection: SortDirection) {
+  if (sortField !== field) {
+    return <span className="text-zinc-600 ml-1">↕</span>;
+  }
+  return (
+    <span className="text-blue-400 ml-1">
+      {sortDirection === 'asc' ? '↑' : '↓'}
+    </span>
+  );
+}
+
 interface FrequentOpponentsTableProps {
   opponents: OpponentStats[];
   allGames: Game[];
@@ -181,17 +193,6 @@ function FrequentOpponentsTable({ opponents, allGames, limit = 10 }: FrequentOpp
     })
     .slice(0, limit);
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) {
-      return <span className="text-zinc-600 ml-1">↕</span>;
-    }
-    return (
-      <span className="text-blue-400 ml-1">
-        {sortDirection === 'asc' ? '↑' : '↓'}
-      </span>
-    );
-  };
-
   if (opponents.length === 0) {
     return (
       <div className="text-center py-8 text-zinc-500">
@@ -211,20 +212,20 @@ function FrequentOpponentsTable({ opponents, allGames, limit = 10 }: FrequentOpp
               className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
               onClick={() => handleSort('games')}
             >
-              Games <SortIcon field="games" />
+              Games {renderSortIcon('games', sortField, sortDirection)}
             </th>
             <th 
               className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
               onClick={() => handleSort('winRate')}
             >
-              Win Rate <SortIcon field="winRate" />
+              Win Rate {renderSortIcon('winRate', sortField, sortDirection)}
             </th>
             <th className="text-right py-2 px-2 text-zinc-400 font-medium">W/L/D</th>
             <th 
               className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
               onClick={() => handleSort('avgRating')}
             >
-              Avg Rating <SortIcon field="avgRating" />
+              Avg Rating {renderSortIcon('avgRating', sortField, sortDirection)}
             </th>
           </tr>
         </thead>

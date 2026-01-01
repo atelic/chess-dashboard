@@ -51,7 +51,11 @@ export function ToastProvider({ children }: ToastProviderProps) {
       {children}
       
       {/* Toast container */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      <div 
+        role="region" 
+        aria-label="Notifications"
+        className="fixed bottom-4 right-4 z-50 flex flex-col gap-2"
+      >
         {toasts.map((toast) => (
           <ToastItem
             key={toast.id}
@@ -96,6 +100,9 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
   
   return (
     <div
+      role="alert"
+      aria-live="polite"
+      data-type={toast.type}
       className={`
         flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg
         animate-slide-in backdrop-blur-sm min-w-[300px] max-w-[400px]
@@ -106,6 +113,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
       <p className="flex-1 text-sm">{toast.message}</p>
       <button
         onClick={onClose}
+        aria-label="Dismiss notification"
         className="text-current opacity-60 hover:opacity-100 transition-opacity"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
