@@ -121,7 +121,7 @@ export async function getDatabase(): Promise<TursoClient> {
       // Development: use local SQLite file
       url = 'file:./data/dev.db';
       authToken = undefined;
-      console.log('Using local dev database: ./data/dev.db');
+      if (isDev) console.log('Using local dev database: ./data/dev.db');
     } else {
       // Production or USE_PROD_DB override
       url = process.env.TURSO_DATABASE_URL!;
