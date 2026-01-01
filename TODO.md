@@ -1,5 +1,35 @@
 # Chess Dashboard - Remaining Work
 
+## Test Suite Status
+
+**487 tests passing** across 19 test files
+
+### Test Coverage Completed
+- [x] Domain Models: Game, User, GameFilter
+- [x] Domain Services: GameService, UserService, SyncService
+- [x] Infrastructure: ChessComClient, LichessClient
+- [x] Repositories: TursoGameRepository, TursoUserRepository
+- [x] UI Components: Button, Input, Card, Tabs, Spinner, Toast, Dashboard
+- [x] Utility Functions: lib/utils.ts (72 tests)
+- [x] Error Handling: Custom error classes
+
+### Test Coverage Remaining
+- [ ] API Route Integration Tests (/api/user, /api/games, /api/sync)
+- [ ] E2E Tests with Playwright
+- [ ] More feature components (charts, filters)
+
+## CI/CD
+
+GitHub Actions workflow configured in `.github/workflows/ci.yml`:
+- **Test**: Runs unit tests (blocking)
+- **Type Check**: Runs TypeScript compiler (blocking)
+- **Lint**: Runs ESLint (non-blocking due to pre-existing issues)
+- **Build**: Runs Next.js production build (blocking, depends on test + typecheck)
+
+Tests and type check must pass for PRs to be merged.
+
+---
+
 ## Completed Phases
 
 ### Phase 1: Data Model & API Enhancements
