@@ -1,18 +1,36 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { TerminationType } from '@/lib/types';
+import type { TerminationType, GameResult } from '@/lib/types';
 
 interface TerminationIconProps {
   termination: TerminationType;
+  result?: GameResult;
   className?: string;
   showLabel?: boolean;
 }
 
 /**
+ * Get color based on game result
+ */
+function getResultColor(result?: GameResult): string {
+  switch (result) {
+    case 'win':
+      return 'text-green-400';
+    case 'loss':
+      return 'text-red-400';
+    case 'draw':
+      return 'text-zinc-400';
+    default:
+      return 'text-zinc-400';
+  }
+}
+
+/**
  * Get icon and label for a termination type
  */
-function getTerminationInfo(termination: TerminationType): { icon: ReactNode; label: string; color: string } {
+function getTerminationInfo(termination: TerminationType, result?: GameResult): { icon: ReactNode; label: string; color: string } {
+  const color = getResultColor(result);
   switch (termination) {
     case 'checkmate':
       return {
@@ -22,17 +40,20 @@ function getTerminationInfo(termination: TerminationType): { icon: ReactNode; la
           </svg>
         ),
         label: 'Checkmate',
-        color: 'text-purple-400',
+        color,
       };
     case 'resignation':
       return {
         icon: (
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M3 21l18-18" />
+            {/* Flag pole */}
+            <path strokeLinecap="round" d="M5 21V4" />
+            {/* Waving flag */}
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 4c3-1 6 1 9 0s6-1 6 2-3 4-6 3-6 2-9 1v-6z" fill="currentColor" fillOpacity="0.3" />
           </svg>
         ),
         label: 'Resignation',
-        color: 'text-orange-400',
+        color,
       };
     case 'timeout':
       return {
@@ -43,7 +64,7 @@ function getTerminationInfo(termination: TerminationType): { icon: ReactNode; la
           </svg>
         ),
         label: 'Timeout',
-        color: 'text-red-400',
+        color,
       };
     case 'stalemate':
       return {
@@ -54,7 +75,7 @@ function getTerminationInfo(termination: TerminationType): { icon: ReactNode; la
           </svg>
         ),
         label: 'Stalemate',
-        color: 'text-zinc-400',
+        color,
       };
     case 'insufficient':
       return {
@@ -65,7 +86,7 @@ function getTerminationInfo(termination: TerminationType): { icon: ReactNode; la
           </svg>
         ),
         label: 'Insufficient Material',
-        color: 'text-zinc-400',
+        color,
       };
     case 'repetition':
       return {
@@ -76,7 +97,7 @@ function getTerminationInfo(termination: TerminationType): { icon: ReactNode; la
           </svg>
         ),
         label: 'Repetition',
-        color: 'text-zinc-400',
+        color,
       };
     case 'agreement':
       return {
@@ -87,7 +108,7 @@ function getTerminationInfo(termination: TerminationType): { icon: ReactNode; la
           </svg>
         ),
         label: 'Draw Agreement',
-        color: 'text-zinc-400',
+        color,
       };
     case 'abandoned':
       return {
@@ -97,7 +118,7 @@ function getTerminationInfo(termination: TerminationType): { icon: ReactNode; la
           </svg>
         ),
         label: 'Abandoned',
-        color: 'text-zinc-500',
+        color,
       };
     case 'other':
     default:
@@ -109,17 +130,18 @@ function getTerminationInfo(termination: TerminationType): { icon: ReactNode; la
           </svg>
         ),
         label: 'Other',
-        color: 'text-zinc-500',
+        color,
       };
   }
 }
 
 export default function TerminationIcon({ 
-  termination, 
+  termination,
+  result,
   className = '',
   showLabel = false,
 }: TerminationIconProps) {
-  const { icon, label, color } = getTerminationInfo(termination);
+  const { icon, label, color } = getTerminationInfo(termination, result);
 
   return (
     <span className={`relative inline-flex items-center gap-1 group ${color} ${className}`}>

@@ -134,7 +134,7 @@ export default function GamesTable({
                       <span className={`inline-flex items-center justify-center w-6 h-6 rounded font-medium ${resultStyles.bg} ${resultStyles.text}`}>
                         {resultStyles.label}
                       </span>
-                      <TerminationIcon termination={game.termination} />
+                      <TerminationIcon termination={game.termination} result={game.result} />
                     </div>
                   </td>
                   {showOpponent && (
