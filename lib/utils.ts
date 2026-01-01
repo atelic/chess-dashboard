@@ -27,6 +27,13 @@ import type {
   DayOfWeekStats,
   TimeWindow,
   TimeHeatmapCell,
+  // Phase 6-8 types
+  GamePhase,
+  GamePhaseStats,
+  PhasePerformanceSummary,
+  ResilienceStats,
+  GameResilience,
+  StudyRecommendation,
 } from './types';
 
 // ============================================
@@ -1030,6 +1037,29 @@ export function generateInsights(games: Game[]): Insight[] {
     });
   }
 
+  // 19. Game phase weakness (requires analysis data)
+  const phasePerf = calculatePhasePerformance(games);
+  if (phasePerf.gamesAnalyzed >= 5) {
+    const weakPhase = phasePerf.weakestPhase;
+    const weakStats = phasePerf[weakPhase];
+    const totalErrors = weakStats.blunders + weakStats.mistakes + weakStats.inaccuracies;
+    
+    if (totalErrors >= 5) {
+      insights.push({
+        id: 'weak-phase',
+        type: 'warning',
+        icon: weakPhase === 'opening' ? '📖' : weakPhase === 'middlegame' ? '⚔️' : '👑',
+        title: `${getPhaseLabel(weakPhase)} Weakness`,
+        description: `You make the most errors in the ${weakPhase}`,
+        value: `${weakStats.blunders} blunders, ${weakStats.mistakes} mistakes`,
+      });
+    }
+  }
+
+  // 20. Add resilience insights
+  const resilienceInsights = generateResilienceInsights(games);
+  insights.push(...resilienceInsights);
+
   return insights;
 }
 
@@ -1572,4 +1602,513 @@ function formatHourRange(startHour: number, endHour: number): string {
     return `${hour12}${period}`;
   };
   return `${formatHour(startHour)}-${formatHour(endHour)}`;
+}
+
+// ============================================
+// GAME PHASE ANALYSIS (Phase 6)
+// ============================================
+
+/**
+ * Classify a move number into a game phase
+ * Opening: moves 1-15 (first 15 moves)
+ * Middlegame: moves 16-40
+ * Endgame: moves 41+
+ */
+export function classifyGamePhase(moveNumber: number): GamePhase {
+  if (moveNumber <= 15) return 'opening';
+  if (moveNumber <= 40) return 'middlegame';
+  return 'endgame';
+}
+
+/**
+ * Get game phase label for display
+ */
+export function getPhaseLabel(phase: GamePhase): string {
+  switch (phase) {
+    case 'opening': return 'Opening';
+    case 'middlegame': return 'Middlegame';
+    case 'endgame': return 'Endgame';
+  }
+}
+
+/**
+ * Calculate performance by game phase from games with analysis data
+ * Note: This requires games to have analysis.blunders, analysis.mistakes, etc.
+ * For detailed phase breakdown, move-level analysis data would be needed.
+ */
+export function calculatePhasePerformance(games: Game[]): PhasePerformanceSummary {
+  // Filter to games with analysis data
+  const analyzedGames = games.filter(g => g.analysis);
+  
+  if (analyzedGames.length === 0) {
+    const emptyStats: GamePhaseStats = {
+      phase: 'opening',
+      blunders: 0,
+      mistakes: 0,
+      inaccuracies: 0,
+      avgCpLoss: 0,
+      movesAnalyzed: 0,
+    };
+    return {
+      opening: { ...emptyStats, phase: 'opening' },
+      middlegame: { ...emptyStats, phase: 'middlegame' },
+      endgame: { ...emptyStats, phase: 'endgame' },
+      weakestPhase: 'middlegame',
+      strongestPhase: 'opening',
+      gamesAnalyzed: 0,
+    };
+  }
+
+  // Since we don't have move-by-move phase data, we estimate based on game length
+  // Short games (< 25 moves): mostly opening/early middlegame issues
+  // Medium games (25-50 moves): middlegame focused
+  // Long games (50+ moves): endgame included
+  
+  const phaseStats = {
+    opening: { blunders: 0, mistakes: 0, inaccuracies: 0, cpLossSum: 0, games: 0 },
+    middlegame: { blunders: 0, mistakes: 0, inaccuracies: 0, cpLossSum: 0, games: 0 },
+    endgame: { blunders: 0, mistakes: 0, inaccuracies: 0, cpLossSum: 0, games: 0 },
+  };
+
+  for (const game of analyzedGames) {
+    const analysis = game.analysis!;
+    const moveCount = game.moveCount;
+    
+    // Distribute errors based on typical phase lengths
+    // Assume errors are uniformly distributed (rough approximation)
+    const totalErrors = analysis.blunders + analysis.mistakes + analysis.inaccuracies;
+    
+    if (moveCount <= 20) {
+      // Short game - attribute to opening/middlegame
+      phaseStats.opening.blunders += Math.round(analysis.blunders * 0.6);
+      phaseStats.opening.mistakes += Math.round(analysis.mistakes * 0.6);
+      phaseStats.opening.inaccuracies += Math.round(analysis.inaccuracies * 0.6);
+      phaseStats.opening.games++;
+      
+      phaseStats.middlegame.blunders += Math.round(analysis.blunders * 0.4);
+      phaseStats.middlegame.mistakes += Math.round(analysis.mistakes * 0.4);
+      phaseStats.middlegame.inaccuracies += Math.round(analysis.inaccuracies * 0.4);
+      phaseStats.middlegame.games++;
+    } else if (moveCount <= 40) {
+      // Medium game - opening/middlegame focused
+      phaseStats.opening.blunders += Math.round(analysis.blunders * 0.3);
+      phaseStats.opening.mistakes += Math.round(analysis.mistakes * 0.3);
+      phaseStats.opening.inaccuracies += Math.round(analysis.inaccuracies * 0.3);
+      phaseStats.opening.games++;
+      
+      phaseStats.middlegame.blunders += Math.round(analysis.blunders * 0.7);
+      phaseStats.middlegame.mistakes += Math.round(analysis.mistakes * 0.7);
+      phaseStats.middlegame.inaccuracies += Math.round(analysis.inaccuracies * 0.7);
+      phaseStats.middlegame.games++;
+    } else {
+      // Long game - all phases
+      phaseStats.opening.blunders += Math.round(analysis.blunders * 0.2);
+      phaseStats.opening.mistakes += Math.round(analysis.mistakes * 0.2);
+      phaseStats.opening.inaccuracies += Math.round(analysis.inaccuracies * 0.2);
+      phaseStats.opening.games++;
+      
+      phaseStats.middlegame.blunders += Math.round(analysis.blunders * 0.5);
+      phaseStats.middlegame.mistakes += Math.round(analysis.mistakes * 0.5);
+      phaseStats.middlegame.inaccuracies += Math.round(analysis.inaccuracies * 0.5);
+      phaseStats.middlegame.games++;
+      
+      phaseStats.endgame.blunders += Math.round(analysis.blunders * 0.3);
+      phaseStats.endgame.mistakes += Math.round(analysis.mistakes * 0.3);
+      phaseStats.endgame.inaccuracies += Math.round(analysis.inaccuracies * 0.3);
+      phaseStats.endgame.games++;
+    }
+
+    // Track ACPL if available
+    if (analysis.acpl !== undefined) {
+      phaseStats.opening.cpLossSum += analysis.acpl;
+      phaseStats.middlegame.cpLossSum += analysis.acpl;
+      if (moveCount > 40) {
+        phaseStats.endgame.cpLossSum += analysis.acpl;
+      }
+    }
+  }
+
+  // Build final stats
+  const buildStats = (phase: GamePhase, data: typeof phaseStats.opening): GamePhaseStats => ({
+    phase,
+    blunders: data.blunders,
+    mistakes: data.mistakes,
+    inaccuracies: data.inaccuracies,
+    avgCpLoss: data.games > 0 ? data.cpLossSum / data.games : 0,
+    movesAnalyzed: data.games * (phase === 'opening' ? 15 : phase === 'middlegame' ? 25 : 20),
+  });
+
+  const opening = buildStats('opening', phaseStats.opening);
+  const middlegame = buildStats('middlegame', phaseStats.middlegame);
+  const endgame = buildStats('endgame', phaseStats.endgame);
+
+  // Calculate error rate per phase
+  const errorRate = (stats: GamePhaseStats) => 
+    stats.movesAnalyzed > 0 ? (stats.blunders + stats.mistakes + stats.inaccuracies) / stats.movesAnalyzed : 0;
+
+  const phases: [GamePhase, number][] = [
+    ['opening', errorRate(opening)],
+    ['middlegame', errorRate(middlegame)],
+    ['endgame', errorRate(endgame)],
+  ];
+
+  // Filter out phases with no data
+  const activePhasesWeak = phases.filter(([phase, rate]) => {
+    if (phase === 'opening') return phaseStats.opening.games > 0;
+    if (phase === 'middlegame') return phaseStats.middlegame.games > 0;
+    return phaseStats.endgame.games > 0;
+  });
+
+  const activePhases = activePhasesWeak.length > 0 ? activePhasesWeak : phases;
+
+  phases.sort((a, b) => b[1] - a[1]);
+  const weakestPhase = activePhases.length > 0 ? 
+    activePhases.reduce((a, b) => a[1] > b[1] ? a : b)[0] : 'middlegame';
+  const strongestPhase = activePhases.length > 0 ?
+    activePhases.reduce((a, b) => a[1] < b[1] ? a : b)[0] : 'opening';
+
+  return {
+    opening,
+    middlegame,
+    endgame,
+    weakestPhase,
+    strongestPhase,
+    gamesAnalyzed: analyzedGames.length,
+  };
+}
+
+// ============================================
+// RESILIENCE/COMEBACK ANALYSIS (Phase 8)
+// ============================================
+
+/**
+ * Threshold in centipawns for considering a position "winning"
+ */
+const WINNING_THRESHOLD = 150;
+
+/**
+ * Threshold in centipawns for considering a position "losing"
+ */
+const LOSING_THRESHOLD = -150;
+
+/**
+ * Calculate resilience statistics from games with evaluation data
+ * Note: This requires games to have detailed eval data, which may not be available
+ * for all games. Falls back to using analysis data if available.
+ */
+export function calculateResilienceStats(games: Game[]): ResilienceStats {
+  // Filter to games with analysis data
+  const analyzedGames = games.filter(g => g.analysis);
+  
+  let comebackWins = 0;
+  let blownWins = 0;
+  let gamesWhereLosing = 0;
+  let gamesWhereWinning = 0;
+  let totalDeficitOvercome = 0;
+  let totalLeadLost = 0;
+  let volatileGames = 0;
+  let convertedAdvantages = 0;
+
+  for (const game of analyzedGames) {
+    // Use blunder/mistake counts as proxy for eval swings
+    const analysis = game.analysis!;
+    const errorCount = analysis.blunders + analysis.mistakes;
+    
+    // Estimate volatility based on error count and game result
+    const isVolatile = errorCount >= 3;
+    if (isVolatile) volatileGames++;
+
+    // Heuristic: games with many opponent errors where you won = likely comeback
+    // games with many player errors where you lost = likely blown win
+    if (game.result === 'win') {
+      // Check if it's likely a comeback (high error count suggests volatile game)
+      if (errorCount >= 2 && analysis.blunders >= 1) {
+        // Could be a comeback - opponent may have had advantage
+        gamesWhereLosing++;
+        comebackWins++;
+        totalDeficitOvercome += 100 * errorCount; // Rough estimate
+      } else {
+        // Clean win - advantage converted
+        gamesWhereWinning++;
+        convertedAdvantages++;
+      }
+    } else if (game.result === 'loss') {
+      // Check if it's likely a blown win
+      if (errorCount >= 2 && analysis.blunders >= 1) {
+        gamesWhereWinning++;
+        blownWins++;
+        totalLeadLost += 100 * errorCount; // Rough estimate
+      } else {
+        gamesWhereLosing++;
+      }
+    }
+  }
+
+  // Calculate rates
+  const comebackRate = gamesWhereLosing > 0 ? (comebackWins / gamesWhereLosing) * 100 : 0;
+  const blowRate = gamesWhereWinning > 0 ? (blownWins / gamesWhereWinning) * 100 : 0;
+  
+  // Mental score: 0-100 based on comeback rate and blow avoidance
+  // Higher comeback rate is good, lower blow rate is good
+  const mentalScore = Math.min(100, Math.max(0, 
+    50 + (comebackRate * 0.3) - (blowRate * 0.5) + 
+    (convertedAdvantages / Math.max(1, analyzedGames.length) * 20)
+  ));
+
+  return {
+    comebackWins,
+    blownWins,
+    comebackRate,
+    blowRate,
+    convertedAdvantages,
+    avgDeficitOvercome: comebackWins > 0 ? totalDeficitOvercome / comebackWins : 0,
+    avgLeadLost: blownWins > 0 ? totalLeadLost / blownWins : 0,
+    volatileGames,
+    mentalScore: Math.round(mentalScore),
+  };
+}
+
+/**
+ * Classify a game based on resilience patterns
+ */
+export function classifyGameResilience(
+  game: Game,
+  maxDeficit: number = 0,
+  maxAdvantage: number = 0
+): GameResilience {
+  const isComeback = game.result === 'win' && maxDeficit < LOSING_THRESHOLD;
+  const isBlownWin = game.result === 'loss' && maxAdvantage > WINNING_THRESHOLD;
+  
+  // Estimate eval swings from analysis if available
+  let evalSwings = 0;
+  if (game.analysis) {
+    // Each blunder is roughly a 200+ cp swing, mistakes are 100-200 cp
+    evalSwings = game.analysis.blunders * 2 + game.analysis.mistakes;
+  }
+
+  return {
+    gameId: game.id,
+    maxDeficit,
+    maxAdvantage,
+    isComeback,
+    isBlownWin,
+    evalSwings,
+    result: game.result,
+  };
+}
+
+/**
+ * Get resilience-related insights
+ */
+export function generateResilienceInsights(games: Game[]): Insight[] {
+  const insights: Insight[] = [];
+  const stats = calculateResilienceStats(games);
+  
+  if (games.filter(g => g.analysis).length < 5) {
+    return insights; // Not enough data
+  }
+
+  // Mental game score insight
+  insights.push({
+    id: 'mental-score',
+    type: stats.mentalScore >= 60 ? 'positive' : stats.mentalScore >= 40 ? 'neutral' : 'negative',
+    icon: stats.mentalScore >= 60 ? '🧠' : stats.mentalScore >= 40 ? '🎯' : '😤',
+    title: 'Mental Game Score',
+    description: `Your resilience score is ${stats.mentalScore}/100`,
+    value: stats.mentalScore >= 60 ? 'Strong mental game!' : 
+           stats.mentalScore >= 40 ? 'Room for improvement' : 
+           'Work on staying composed',
+  });
+
+  // Comeback ability
+  if (stats.comebackWins >= 3) {
+    insights.push({
+      id: 'comeback-ability',
+      type: stats.comebackRate >= 30 ? 'positive' : 'neutral',
+      icon: '💪',
+      title: 'Comeback Ability',
+      description: `${stats.comebackWins} wins from losing positions`,
+      value: `${stats.comebackRate.toFixed(0)}% comeback rate`,
+    });
+  }
+
+  // Blown wins warning
+  if (stats.blownWins >= 3 && stats.blowRate >= 20) {
+    insights.push({
+      id: 'blown-wins',
+      type: 'warning',
+      icon: '📉',
+      title: 'Advantage Conversion',
+      description: `${stats.blownWins} games lost from winning positions`,
+      value: 'Focus on converting advantages carefully',
+    });
+  }
+
+  // Volatility
+  const volatilityRate = games.length > 0 ? (stats.volatileGames / games.length) * 100 : 0;
+  if (volatilityRate >= 40) {
+    insights.push({
+      id: 'volatile-games',
+      type: 'warning',
+      icon: '🎢',
+      title: 'Volatile Play Style',
+      description: `${volatilityRate.toFixed(0)}% of games have major swings`,
+      value: 'Your games tend to be back-and-forth battles',
+    });
+  }
+
+  return insights;
+}
+
+// ============================================
+// RECOMMENDATIONS GENERATOR (Phase 7)
+// ============================================
+
+/**
+ * Generate personalized study recommendations based on game analysis
+ */
+export function generateRecommendations(games: Game[]): StudyRecommendation[] {
+  const recommendations: StudyRecommendation[] = [];
+  
+  if (games.length < 10) {
+    return recommendations; // Need more games for meaningful recommendations
+  }
+
+  // 1. Opening recommendations based on weak openings
+  const worstWhite = findWorstOpenings(games, 'white', 3, 3);
+  const worstBlack = findWorstOpenings(games, 'black', 3, 3);
+  
+  const weakOpenings = [...worstWhite, ...worstBlack]
+    .filter(o => o.winRate < 40)
+    .sort((a, b) => a.winRate - b.winRate);
+
+  if (weakOpenings.length > 0) {
+    recommendations.push({
+      id: 'weak-openings',
+      type: 'opening_study',
+      priority: 'high',
+      title: 'Study Your Weak Openings',
+      description: 'These openings have a significantly below-average win rate for you.',
+      studyItems: weakOpenings.slice(0, 3).map(o => `${o.name} (${o.eco})`),
+      evidence: `Lowest win rate: ${weakOpenings[0].winRate.toFixed(0)}% in ${weakOpenings[0].games} games`,
+      estimatedImpact: 'high',
+    });
+  }
+
+  // 2. Time control recommendations
+  const timeStats = calculateTimeStats(games);
+  if (timeStats.timeoutLossRate > 25) {
+    recommendations.push({
+      id: 'time-management',
+      type: 'time_management',
+      priority: 'high',
+      title: 'Improve Time Management',
+      description: 'You lose too many games on time. Practice faster decision-making.',
+      studyItems: [
+        'Practice with increment (e.g., 3+2)',
+        'Pre-move in clear positions',
+        'Study faster opening lines',
+      ],
+      evidence: `${timeStats.timeoutLossRate.toFixed(0)}% of losses are timeouts`,
+      estimatedImpact: 'medium',
+    });
+  }
+
+  // 3. Time control where struggling
+  const byTimeClass = timeStats.byTimeClass
+    .filter(tc => tc.games >= 5)
+    .sort((a, b) => a.timeoutRate - b.timeoutRate);
+  
+  if (byTimeClass.length > 0 && byTimeClass[byTimeClass.length - 1].timeoutRate > 30) {
+    const worst = byTimeClass[byTimeClass.length - 1];
+    recommendations.push({
+      id: 'time-control-weak',
+      type: 'time_control',
+      priority: 'medium',
+      title: `Struggles in ${worst.timeClass.charAt(0).toUpperCase() + worst.timeClass.slice(1)}`,
+      description: `You have a high timeout rate in ${worst.timeClass} games.`,
+      studyItems: [
+        `Play slower time controls until comfortable`,
+        `Practice ${worst.timeClass} specifically`,
+        'Work on opening preparation',
+      ],
+      evidence: `${worst.timeoutRate.toFixed(0)}% timeout rate in ${worst.games} ${worst.timeClass} games`,
+      estimatedImpact: 'medium',
+    });
+  }
+
+  // 4. Game phase recommendations (if analysis data available)
+  const phasePerf = calculatePhasePerformance(games);
+  if (phasePerf.gamesAnalyzed >= 5) {
+    const weakPhase = phasePerf.weakestPhase;
+    const weakStats = phasePerf[weakPhase];
+    
+    if (weakStats.blunders + weakStats.mistakes >= 5) {
+      recommendations.push({
+        id: 'weak-phase',
+        type: weakPhase === 'endgame' ? 'endgame' : 'tactical_pattern',
+        priority: 'high',
+        title: `Improve Your ${getPhaseLabel(weakPhase)}`,
+        description: `You make the most mistakes in the ${weakPhase}.`,
+        studyItems: weakPhase === 'endgame' 
+          ? ['Study basic endgame patterns', 'Practice king and pawn endgames', 'Learn rook endgames']
+          : weakPhase === 'opening'
+          ? ['Deepen opening knowledge', 'Study opening principles', 'Learn typical pawn structures']
+          : ['Solve tactics puzzles', 'Study middlegame strategy', 'Practice calculation'],
+        evidence: `${weakStats.blunders} blunders and ${weakStats.mistakes} mistakes in ${weakPhase}`,
+        estimatedImpact: 'high',
+      });
+    }
+  }
+
+  // 5. Mental game recommendations
+  const resilienceStats = calculateResilienceStats(games);
+  if (resilienceStats.blowRate > 30 && resilienceStats.blownWins >= 3) {
+    recommendations.push({
+      id: 'mental-game',
+      type: 'mental_game',
+      priority: 'medium',
+      title: 'Work on Converting Advantages',
+      description: 'You tend to lose games from winning positions.',
+      studyItems: [
+        'Practice technique positions',
+        'Study prophylaxis',
+        'Learn to "not rush" when winning',
+      ],
+      evidence: `${resilienceStats.blownWins} games lost from winning positions (${resilienceStats.blowRate.toFixed(0)}% blow rate)`,
+      estimatedImpact: 'medium',
+    });
+  }
+
+  // 6. Rating performance recommendations
+  const higherRated = games.filter(g => g.opponent.rating > g.playerRating + 100);
+  const lowerRated = games.filter(g => g.opponent.rating < g.playerRating - 100);
+  
+  if (lowerRated.length >= 10) {
+    const lowerWins = lowerRated.filter(g => g.result === 'win').length;
+    const lowerWinRate = (lowerWins / lowerRated.length) * 100;
+    
+    if (lowerWinRate < 60) {
+      recommendations.push({
+        id: 'vs-lower-rated',
+        type: 'tactical_pattern',
+        priority: 'medium',
+        title: 'Beat Lower-Rated Players More Consistently',
+        description: `Only ${lowerWinRate.toFixed(0)}% win rate against players rated 100+ points below you.`,
+        studyItems: [
+          'Avoid overconfidence',
+          'Play solid, principle-based chess',
+          'Take every opponent seriously',
+        ],
+        evidence: `${lowerWins} wins in ${lowerRated.length} games vs lower-rated`,
+        estimatedImpact: 'medium',
+      });
+    }
+  }
+
+  // Sort by priority
+  const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  recommendations.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+  return recommendations.slice(0, 6); // Limit to top 6 recommendations
 }

@@ -37,8 +37,24 @@ import {
   calculateDayOfWeekStats,
   findPeakPerformanceTimes,
   findWorstPerformanceTimes,
+  // Phase 6: Game Phase Analysis
+  classifyGamePhase,
+  getPhaseLabel,
+  calculatePhasePerformance,
+  // Phase 7: Recommendations
+  generateRecommendations,
+  // Phase 8: Resilience
+  calculateResilienceStats,
+  classifyGameResilience,
+  generateResilienceInsights,
 } from '@/lib/utils';
-import { createTestGame, createWinGame, createLossGame, createDrawGame } from '../../fixtures/game';
+import { 
+  createTestGame, 
+  createWinGame, 
+  createLossGame, 
+  createDrawGame,
+  createGameWithAnalysis,
+} from '../../fixtures/game';
 import type { Game } from '@/lib/types';
 
 describe('Utils', () => {
@@ -931,6 +947,356 @@ describe('Utils', () => {
       
       expect(worst).not.toBeNull();
       expect(worst?.winRate).toBeLessThan(50);
+    });
+  });
+
+  // ============================================
+  // PHASE 6: GAME PHASE ANALYSIS
+  // ============================================
+
+  describe('classifyGamePhase', () => {
+    it('classifies moves 1-15 as opening', () => {
+      expect(classifyGamePhase(1)).toBe('opening');
+      expect(classifyGamePhase(10)).toBe('opening');
+      expect(classifyGamePhase(15)).toBe('opening');
+    });
+
+    it('classifies moves 16-40 as middlegame', () => {
+      expect(classifyGamePhase(16)).toBe('middlegame');
+      expect(classifyGamePhase(25)).toBe('middlegame');
+      expect(classifyGamePhase(40)).toBe('middlegame');
+    });
+
+    it('classifies moves 41+ as endgame', () => {
+      expect(classifyGamePhase(41)).toBe('endgame');
+      expect(classifyGamePhase(60)).toBe('endgame');
+      expect(classifyGamePhase(100)).toBe('endgame');
+    });
+  });
+
+  describe('getPhaseLabel', () => {
+    it('returns correct labels for each phase', () => {
+      expect(getPhaseLabel('opening')).toBe('Opening');
+      expect(getPhaseLabel('middlegame')).toBe('Middlegame');
+      expect(getPhaseLabel('endgame')).toBe('Endgame');
+    });
+  });
+
+  describe('calculatePhasePerformance', () => {
+    it('returns empty stats for no games', () => {
+      const result = calculatePhasePerformance([]);
+      
+      expect(result.gamesAnalyzed).toBe(0);
+      expect(result.opening.blunders).toBe(0);
+      expect(result.middlegame.blunders).toBe(0);
+      expect(result.endgame.blunders).toBe(0);
+    });
+
+    it('returns empty stats for games without analysis', () => {
+      const games = [
+        createTestGame({ id: '1' }),
+        createTestGame({ id: '2' }),
+      ];
+      
+      const result = calculatePhasePerformance(games);
+      
+      expect(result.gamesAnalyzed).toBe(0);
+    });
+
+    it('calculates phase stats from games with analysis', () => {
+      const games = [
+        createGameWithAnalysis({ 
+          id: '1', 
+          moveCount: 30, // Medium game
+          analysis: { blunders: 2, mistakes: 3, inaccuracies: 4, acpl: 40, accuracy: 80, analyzedAt: new Date() }
+        }),
+        createGameWithAnalysis({ 
+          id: '2', 
+          moveCount: 50, // Long game
+          analysis: { blunders: 3, mistakes: 2, inaccuracies: 3, acpl: 35, accuracy: 82, analyzedAt: new Date() }
+        }),
+      ];
+      
+      const result = calculatePhasePerformance(games);
+      
+      expect(result.gamesAnalyzed).toBe(2);
+      expect(result.opening.blunders).toBeGreaterThanOrEqual(0);
+      expect(result.middlegame.blunders).toBeGreaterThanOrEqual(0);
+    });
+
+    it('identifies weakest and strongest phases', () => {
+      const games = [
+        createGameWithAnalysis({ 
+          id: '1', 
+          moveCount: 50,
+          analysis: { blunders: 5, mistakes: 5, inaccuracies: 5, acpl: 50, accuracy: 75, analyzedAt: new Date() }
+        }),
+      ];
+      
+      const result = calculatePhasePerformance(games);
+      
+      expect(['opening', 'middlegame', 'endgame']).toContain(result.weakestPhase);
+      expect(['opening', 'middlegame', 'endgame']).toContain(result.strongestPhase);
+    });
+  });
+
+  // ============================================
+  // PHASE 7: RECOMMENDATIONS
+  // ============================================
+
+  describe('generateRecommendations', () => {
+    it('returns empty array for fewer than 10 games', () => {
+      const games = [
+        createTestGame({ id: '1' }),
+        createTestGame({ id: '2' }),
+      ];
+      
+      const recommendations = generateRecommendations(games);
+      
+      expect(recommendations).toHaveLength(0);
+    });
+
+    it('generates opening recommendations for weak openings', () => {
+      const games: Game[] = [];
+      
+      // Create many games with a weak opening
+      for (let i = 0; i < 10; i++) {
+        games.push(createLossGame({ 
+          id: `weak-${i}`, 
+          opening: { eco: 'A00', name: 'Bad Opening' },
+          playerColor: 'white',
+        }));
+      }
+      // Add some wins in other openings
+      for (let i = 0; i < 5; i++) {
+        games.push(createWinGame({ 
+          id: `good-${i}`, 
+          opening: { eco: 'B20', name: 'Good Opening' },
+          playerColor: 'white',
+        }));
+      }
+      
+      const recommendations = generateRecommendations(games);
+      
+      const openingRec = recommendations.find(r => r.type === 'opening_study');
+      expect(openingRec).toBeDefined();
+    });
+
+    it('limits recommendations to 6', () => {
+      // Create a scenario with many potential recommendations
+      const games: Game[] = [];
+      for (let i = 0; i < 30; i++) {
+        games.push(createLossGame({ 
+          id: `loss-${i}`,
+          termination: 'timeout',
+          opening: { eco: 'A00', name: 'Weak Opening' },
+          playerColor: 'white',
+        }));
+      }
+      
+      const recommendations = generateRecommendations(games);
+      
+      expect(recommendations.length).toBeLessThanOrEqual(6);
+    });
+
+    it('sorts recommendations by priority', () => {
+      const games: Game[] = [];
+      for (let i = 0; i < 20; i++) {
+        games.push(createLossGame({ 
+          id: `loss-${i}`,
+          termination: 'timeout',
+          opening: { eco: 'A00', name: 'Weak Opening' },
+          playerColor: 'white',
+        }));
+      }
+      
+      const recommendations = generateRecommendations(games);
+      
+      if (recommendations.length >= 2) {
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        for (let i = 1; i < recommendations.length; i++) {
+          const prev = priorityOrder[recommendations[i - 1].priority as keyof typeof priorityOrder];
+          const curr = priorityOrder[recommendations[i].priority as keyof typeof priorityOrder];
+          expect(curr).toBeGreaterThanOrEqual(prev);
+        }
+      }
+    });
+  });
+
+  // ============================================
+  // PHASE 8: RESILIENCE ANALYSIS
+  // ============================================
+
+  describe('calculateResilienceStats', () => {
+    it('returns zero stats for games without analysis', () => {
+      const games = [
+        createTestGame({ id: '1' }),
+        createTestGame({ id: '2' }),
+      ];
+      
+      const stats = calculateResilienceStats(games);
+      
+      expect(stats.comebackWins).toBe(0);
+      expect(stats.blownWins).toBe(0);
+      expect(stats.volatileGames).toBe(0);
+    });
+
+    it('calculates stats from analyzed games', () => {
+      const games = [
+        createGameWithAnalysis({ 
+          id: '1', 
+          result: 'win',
+          analysis: { blunders: 3, mistakes: 2, inaccuracies: 3, acpl: 50, accuracy: 75, analyzedAt: new Date() }
+        }),
+        createGameWithAnalysis({ 
+          id: '2', 
+          result: 'loss',
+          analysis: { blunders: 2, mistakes: 3, inaccuracies: 4, acpl: 45, accuracy: 78, analyzedAt: new Date() }
+        }),
+        createGameWithAnalysis({ 
+          id: '3', 
+          result: 'win',
+          analysis: { blunders: 0, mistakes: 1, inaccuracies: 2, acpl: 20, accuracy: 92, analyzedAt: new Date() }
+        }),
+      ];
+      
+      const stats = calculateResilienceStats(games);
+      
+      expect(stats.mentalScore).toBeGreaterThanOrEqual(0);
+      expect(stats.mentalScore).toBeLessThanOrEqual(100);
+    });
+
+    it('identifies volatile games', () => {
+      const games = [
+        createGameWithAnalysis({ 
+          id: '1', 
+          analysis: { blunders: 5, mistakes: 5, inaccuracies: 5, acpl: 100, accuracy: 60, analyzedAt: new Date() }
+        }),
+      ];
+      
+      const stats = calculateResilienceStats(games);
+      
+      expect(stats.volatileGames).toBeGreaterThanOrEqual(1);
+    });
+
+    it('calculates comeback and blow rates', () => {
+      const games = [
+        // Potential comeback win (win with errors)
+        createGameWithAnalysis({ 
+          id: '1', 
+          result: 'win',
+          analysis: { blunders: 2, mistakes: 2, inaccuracies: 2, acpl: 40, accuracy: 75, analyzedAt: new Date() }
+        }),
+        // Potential blown win (loss with errors)
+        createGameWithAnalysis({ 
+          id: '2', 
+          result: 'loss',
+          analysis: { blunders: 2, mistakes: 2, inaccuracies: 2, acpl: 40, accuracy: 75, analyzedAt: new Date() }
+        }),
+        // Clean win
+        createGameWithAnalysis({ 
+          id: '3', 
+          result: 'win',
+          analysis: { blunders: 0, mistakes: 0, inaccuracies: 1, acpl: 15, accuracy: 95, analyzedAt: new Date() }
+        }),
+      ];
+      
+      const stats = calculateResilienceStats(games);
+      
+      expect(stats.comebackRate).toBeGreaterThanOrEqual(0);
+      expect(stats.comebackRate).toBeLessThanOrEqual(100);
+      expect(stats.blowRate).toBeGreaterThanOrEqual(0);
+      expect(stats.blowRate).toBeLessThanOrEqual(100);
+    });
+  });
+
+  describe('classifyGameResilience', () => {
+    it('classifies a game with default values', () => {
+      const game = createTestGame({ id: '1', result: 'win' });
+      
+      const result = classifyGameResilience(game);
+      
+      expect(result.gameId).toBe('1');
+      expect(result.result).toBe('win');
+      expect(result.isComeback).toBe(false);
+      expect(result.isBlownWin).toBe(false);
+    });
+
+    it('identifies a comeback win', () => {
+      const game = createWinGame({ id: '1' });
+      
+      const result = classifyGameResilience(game, -300, 50); // Was down 300cp, got up to +50
+      
+      expect(result.isComeback).toBe(true);
+      expect(result.isBlownWin).toBe(false);
+    });
+
+    it('identifies a blown win', () => {
+      const game = createLossGame({ id: '1' });
+      
+      const result = classifyGameResilience(game, -50, 300); // Was up 300cp, ended losing
+      
+      expect(result.isComeback).toBe(false);
+      expect(result.isBlownWin).toBe(true);
+    });
+
+    it('counts eval swings from analysis data', () => {
+      const game = createGameWithAnalysis({
+        id: '1',
+        analysis: { blunders: 3, mistakes: 2, inaccuracies: 2, acpl: 50, accuracy: 75, analyzedAt: new Date() }
+      });
+      
+      const result = classifyGameResilience(game);
+      
+      // Eval swings = blunders * 2 + mistakes = 3 * 2 + 2 = 8
+      expect(result.evalSwings).toBe(8);
+    });
+  });
+
+  describe('generateResilienceInsights', () => {
+    it('returns empty array for insufficient data', () => {
+      const games = [
+        createTestGame({ id: '1' }),
+        createTestGame({ id: '2' }),
+      ];
+      
+      const insights = generateResilienceInsights(games);
+      
+      expect(insights).toHaveLength(0);
+    });
+
+    it('generates mental score insight with enough analyzed games', () => {
+      const games: Game[] = [];
+      for (let i = 0; i < 10; i++) {
+        games.push(createGameWithAnalysis({ 
+          id: `game-${i}`,
+          result: i % 2 === 0 ? 'win' : 'loss',
+          analysis: { blunders: 1, mistakes: 2, inaccuracies: 3, acpl: 35, accuracy: 80, analyzedAt: new Date() }
+        }));
+      }
+      
+      const insights = generateResilienceInsights(games);
+      
+      const mentalInsight = insights.find(i => i.id === 'mental-score');
+      expect(mentalInsight).toBeDefined();
+      expect(mentalInsight?.title).toBe('Mental Game Score');
+    });
+
+    it('generates comeback insight when applicable', () => {
+      const games: Game[] = [];
+      // Create many "comeback" style wins (wins with errors)
+      for (let i = 0; i < 10; i++) {
+        games.push(createGameWithAnalysis({ 
+          id: `comeback-${i}`,
+          result: 'win',
+          analysis: { blunders: 2, mistakes: 2, inaccuracies: 2, acpl: 40, accuracy: 75, analyzedAt: new Date() }
+        }));
+      }
+      
+      const insights = generateResilienceInsights(games);
+      
+      // Should have mental score insight at minimum
+      expect(insights.length).toBeGreaterThan(0);
     });
   });
 });
