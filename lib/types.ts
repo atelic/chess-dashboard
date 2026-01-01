@@ -395,3 +395,173 @@ export interface LichessGame {
   moves?: string;
   pgn?: string;
 }
+
+// ============================================
+// OPENING DEPTH ANALYSIS TYPES (Phase 5)
+// ============================================
+
+/**
+ * Opening depth statistics for analysis
+ */
+export interface OpeningDepthStats {
+  /** Average move number where player goes out of book */
+  avgOutOfBookMove: number;
+  /** Distribution of out-of-book moves by move number */
+  outOfBookDistribution: { move: number; count: number }[];
+  /** Openings where player stays in book longest */
+  deepestOpenings: { eco: string; name: string; avgDepth: number; games: number }[];
+  /** Openings where player deviates earliest */
+  shallowOpenings: { eco: string; name: string; avgDepth: number; games: number }[];
+  /** Overall book move percentage */
+  bookMovePercentage: number;
+  /** Games analyzed */
+  gamesAnalyzed: number;
+}
+
+/**
+ * Single game opening depth info
+ */
+export interface GameOpeningDepth {
+  gameId: string;
+  eco: string;
+  openingName: string;
+  bookMoves: number;
+  outOfBookMove: number | null;
+  firstNonBookMove: string | null;
+  bookAlternative: string | null;
+  result: GameResult;
+}
+
+// ============================================
+// GAME PHASE ANALYSIS TYPES (Phase 6)
+// ============================================
+
+export type GamePhase = 'opening' | 'middlegame' | 'endgame';
+
+/**
+ * Performance statistics by game phase
+ */
+export interface GamePhaseStats {
+  phase: GamePhase;
+  /** Number of blunders in this phase */
+  blunders: number;
+  /** Number of mistakes in this phase */
+  mistakes: number;
+  /** Number of inaccuracies in this phase */
+  inaccuracies: number;
+  /** Average centipawn loss in this phase */
+  avgCpLoss: number;
+  /** Total moves analyzed in this phase */
+  movesAnalyzed: number;
+}
+
+/**
+ * Aggregated phase performance across games
+ */
+export interface PhasePerformanceSummary {
+  opening: GamePhaseStats;
+  middlegame: GamePhaseStats;
+  endgame: GamePhaseStats;
+  /** Which phase has the most issues */
+  weakestPhase: GamePhase;
+  /** Which phase is strongest */
+  strongestPhase: GamePhase;
+  /** Games with analysis data */
+  gamesAnalyzed: number;
+}
+
+// ============================================
+// RECOMMENDATION TYPES (Phase 7)
+// ============================================
+
+export type RecommendationType = 
+  | 'opening_study'
+  | 'time_control'
+  | 'tactical_pattern'
+  | 'endgame'
+  | 'time_management'
+  | 'mental_game';
+
+export type RecommendationPriority = 'high' | 'medium' | 'low';
+
+/**
+ * A personalized study recommendation
+ */
+export interface StudyRecommendation {
+  id: string;
+  type: RecommendationType;
+  priority: RecommendationPriority;
+  title: string;
+  description: string;
+  /** Specific items to study (e.g., opening names, endgame types) */
+  studyItems: string[];
+  /** Data supporting this recommendation */
+  evidence: string;
+  /** Optional link to external resource */
+  resourceUrl?: string;
+  /** Estimated impact on rating */
+  estimatedImpact?: 'low' | 'medium' | 'high';
+}
+
+// ============================================
+// RESILIENCE/COMEBACK TYPES (Phase 8)
+// ============================================
+
+/**
+ * Evaluation swing in a game
+ */
+export interface EvalSwing {
+  /** Move number where swing occurred */
+  moveNumber: number;
+  /** Evaluation before */
+  evalBefore: number;
+  /** Evaluation after */
+  evalAfter: number;
+  /** Magnitude of swing (absolute value) */
+  magnitude: number;
+  /** Direction: 'up' (toward player) or 'down' (against player) */
+  direction: 'up' | 'down';
+}
+
+/**
+ * Resilience statistics for a player
+ */
+export interface ResilienceStats {
+  /** Games won from losing positions (eval < -150cp at some point) */
+  comebackWins: number;
+  /** Games lost from winning positions (eval > +150cp at some point) */
+  blownWins: number;
+  /** Comeback rate: comebackWins / games where player was losing */
+  comebackRate: number;
+  /** Blow rate: blownWins / games where player was winning */
+  blowRate: number;
+  /** Games with converted advantages (maintained + increased lead) */
+  convertedAdvantages: number;
+  /** Average largest deficit overcome in wins */
+  avgDeficitOvercome: number;
+  /** Average largest lead lost in losses */
+  avgLeadLost: number;
+  /** Games with significant eval swings */
+  volatileGames: number;
+  /** Mental game score (0-100): ability to handle pressure */
+  mentalScore: number;
+}
+
+/**
+ * Individual game resilience data
+ */
+export interface GameResilience {
+  gameId: string;
+  /** Largest eval disadvantage during the game */
+  maxDeficit: number;
+  /** Largest eval advantage during the game */
+  maxAdvantage: number;
+  /** Was this a comeback win? */
+  isComeback: boolean;
+  /** Was this a blown win? */
+  isBlownWin: boolean;
+  /** Number of significant eval swings */
+  evalSwings: number;
+  /** Game result */
+  result: GameResult;
+}

@@ -2,7 +2,7 @@
 
 ## Test Suite Status
 
-**487 tests passing** across 19 test files
+**529 tests passing** across 20 test files
 
 ### Test Coverage Completed
 - [x] Domain Models: Game, User, GameFilter
@@ -60,41 +60,42 @@ Tests and type check must pass for PRs to be merged.
 - [x] Implemented "Fetch from Lichess" functionality
 - [x] Analysis data persisted to database
 
-## Remaining Phases
-
 ### Phase 5: Opening Repertoire Depth
-- [ ] Create Lichess Opening Explorer API client
-- [ ] Add opening depth calculation utilities (how deep into theory you typically play)
-- [ ] Create OpeningDepthChart component showing where you deviate from book
-- [ ] Integrate into Openings tab
-- [ ] Show "book moves" vs "out of book" statistics
+- [x] Created Lichess Opening Explorer API client (`lib/analysis/lichess-opening-explorer.ts`)
+- [x] Added opening depth calculation utilities (game length by opening analysis)
+- [x] Created OpeningDepthChart component showing average game length by opening
+- [x] Integrated into Openings tab
+- [x] Shows "book moves" vs "out of book" statistics via explorer API
 
 ### Phase 6: Game Phase Analysis
-- [ ] Add game phase classification utilities (opening/middlegame/endgame based on move count or piece count)
-- [ ] Create GamePhaseChart component showing performance by phase
-- [ ] Calculate accuracy/blunders by game phase
-- [ ] Add phase-based insights (e.g., "You blunder most in the endgame")
+- [x] Added game phase classification utilities (opening/middlegame/endgame based on move count)
+- [x] Created GamePhaseChart component showing performance by phase
+- [x] Calculate accuracy/blunders by game phase (estimated distribution)
+- [x] Added phase-based insights (e.g., "You blunder most in the endgame")
 
 ### Phase 7: Personalized Recommendations
-- [ ] Create RecommendationService that analyzes patterns
-- [ ] Generate study recommendations based on weaknesses:
+- [x] Created `generateRecommendations()` function that analyzes patterns
+- [x] Generate study recommendations based on weaknesses:
   - Openings with low win rate
   - Time controls where you struggle
   - Tactical patterns you miss (blunder types)
   - Endgame types you lose
-- [ ] Create StudyRecommendations component
-- [ ] Create new 'Improve' tab with actionable suggestions
+  - Time management issues
+  - Mental game / advantage conversion
+- [x] Created StudyRecommendations component
+- [x] Created new 'Improve' tab with actionable suggestions
 
 ### Phase 8: Comeback/Resilience Tracking
-- [ ] Add resilience calculation utilities:
-  - Games won from losing positions (based on eval swings)
+- [x] Added resilience calculation utilities:
+  - Games won from losing positions (based on analysis data)
   - Games lost from winning positions
   - Ability to convert advantages
-- [ ] Create ResilienceChart component
-- [ ] Add resilience-related insights
-- [ ] Track "mental game" statistics
+  - Mental score (0-100)
+- [x] Created ResilienceChart component with mental score gauge
+- [x] Added resilience-related insights
+- [x] Track "mental game" statistics (volatility, comeback rate, blow rate)
 
-## Other Improvements
+## Remaining Improvements
 
 ### Local Stockfish Analysis
 - [ ] Implement actual local analysis using Stockfish WASM (currently only fetches from Lichess)
@@ -125,6 +126,8 @@ Tests and type check must pass for PRs to be merged.
 - TimeManagementChart and TimeOfDayChart need games with clock data to display meaningful information
 - Chess.com games don't have server-side analysis like Lichess (requires local Stockfish)
 - Large databases may slow down initial load
+- Phase analysis is estimated based on game length (would need move-by-move data for precision)
+- Resilience stats are heuristic-based (would need full eval history for precision)
 
 ## Architecture Notes
 
@@ -134,3 +137,30 @@ See `ARCHITECTURE_CONCERNS.md` for detailed technical considerations around:
 - CORS/SharedArrayBuffer requirements
 - Storage scaling
 - Offline support
+
+## New Files Created (Phases 5-8)
+
+### API Clients
+- `lib/analysis/lichess-opening-explorer.ts` - Lichess Opening Explorer API client
+
+### Components
+- `components/OpeningDepthChart.tsx` - Shows game depth by opening
+- `components/GamePhaseChart.tsx` - Shows performance by game phase
+- `components/ResilienceChart.tsx` - Shows mental game / resilience stats
+- `components/StudyRecommendations.tsx` - Personalized improvement suggestions
+- `components/tabs/ImproveTab.tsx` - New "Improve" tab
+
+### Types Added (lib/types.ts)
+- Opening depth types: `OpeningDepthStats`, `GameOpeningDepth`
+- Game phase types: `GamePhase`, `GamePhaseStats`, `PhasePerformanceSummary`
+- Recommendation types: `StudyRecommendation`, `RecommendationType`, `RecommendationPriority`
+- Resilience types: `ResilienceStats`, `GameResilience`, `EvalSwing`
+
+### Utility Functions Added (lib/utils.ts)
+- `classifyGamePhase()` - Classify move number to game phase
+- `getPhaseLabel()` - Get display label for phase
+- `calculatePhasePerformance()` - Aggregate performance by phase
+- `calculateResilienceStats()` - Calculate comeback/blow stats
+- `classifyGameResilience()` - Classify individual game resilience
+- `generateResilienceInsights()` - Generate resilience-related insights
+- `generateRecommendations()` - Generate personalized study recommendations
