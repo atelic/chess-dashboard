@@ -1,39 +1,27 @@
-import Database from 'better-sqlite3';
-import * as fs from 'fs';
-import * as path from 'path';
+import { createClient, type Client, type ResultSet, type InArgs } from '@libsql/client';
 import type { IDatabaseClient } from '@/lib/domain/repositories/interfaces';
 import { DatabaseError } from '@/lib/shared/errors';
 
 /**
- * SQLite implementation of IDatabaseClient using better-sqlite3
+ * Turso/libSQL implementation of IDatabaseClient
  */
-export class SQLiteClient implements IDatabaseClient {
-  private db: Database.Database;
+export class TursoClient implements IDatabaseClient {
+  private client: Client;
 
-  constructor(dbPath: string) {
-    // Ensure directory exists
-    const dir = path.dirname(dbPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    try {
-      this.db = new Database(dbPath);
-      // Enable WAL mode for better concurrent performance
-      this.db.pragma('journal_mode = WAL');
-      // Enable foreign keys
-      this.db.pragma('foreign_keys = ON');
-    } catch (error) {
-      throw new DatabaseError(
-        `Failed to open database at ${dbPath}`,
-        error instanceof Error ? error : undefined,
-      );
-    }
+  constructor(url: string, authToken?: string) {
+    this.client = createClient({
+      url,
+      authToken,
+    });
   }
 
-  query<T>(sql: string, params: unknown[] = []): T[] {
+  async query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
     try {
-      return this.db.prepare(sql).all(...params) as T[];
+      const result = await this.client.execute({ 
+        sql, 
+        args: params as InArgs,
+      });
+      return this.rowsToObjects<T>(result);
     } catch (error) {
       throw new DatabaseError(
         `Query failed: ${sql}`,
@@ -42,12 +30,15 @@ export class SQLiteClient implements IDatabaseClient {
     }
   }
 
-  execute(sql: string, params: unknown[] = []): { changes: number; lastInsertRowid: number } {
+  async execute(sql: string, params: unknown[] = []): Promise<{ changes: number; lastInsertRowid: number }> {
     try {
-      const result = this.db.prepare(sql).run(...params);
+      const result = await this.client.execute({ 
+        sql, 
+        args: params as InArgs,
+      });
       return {
-        changes: result.changes,
-        lastInsertRowid: Number(result.lastInsertRowid),
+        changes: result.rowsAffected,
+        lastInsertRowid: Number(result.lastInsertRowid ?? 0),
       };
     } catch (error) {
       throw new DatabaseError(
@@ -57,27 +48,26 @@ export class SQLiteClient implements IDatabaseClient {
     }
   }
 
-  transaction<T>(fn: () => T): T {
+  async batch(statements: { sql: string; params?: unknown[] }[]): Promise<void> {
     try {
-      return this.db.transaction(fn)();
+      await this.client.batch(
+        statements.map(s => ({ 
+          sql: s.sql, 
+          args: (s.params || []) as InArgs,
+        })),
+        'write',
+      );
     } catch (error) {
       throw new DatabaseError(
-        'Transaction failed',
+        'Batch operation failed',
         error instanceof Error ? error : undefined,
       );
     }
   }
 
-  close(): void {
-    this.db.close();
-  }
-
-  /**
-   * Execute raw SQL (for migrations)
-   */
-  exec(sql: string): void {
+  async exec(sql: string): Promise<void> {
     try {
-      this.db.exec(sql);
+      await this.client.executeMultiple(sql);
     } catch (error) {
       throw new DatabaseError(
         `Exec failed: ${sql.slice(0, 100)}...`,
@@ -85,31 +75,61 @@ export class SQLiteClient implements IDatabaseClient {
       );
     }
   }
+
+  close(): void {
+    this.client.close();
+  }
+
+  /**
+   * Convert libSQL rows to typed objects
+   */
+  private rowsToObjects<T>(result: ResultSet): T[] {
+    return result.rows.map((row) => {
+      const obj: Record<string, unknown> = {};
+      result.columns.forEach((col, i) => {
+        obj[col] = row[i];
+      });
+      return obj as T;
+    });
+  }
 }
 
 // ============================================
 // SINGLETON MANAGEMENT
 // ============================================
 
-let clientInstance: SQLiteClient | null = null;
+let clientInstance: TursoClient | null = null;
+let migrationsRun = false;
 
 /**
  * Get the database client (singleton)
  */
-export function getDatabase(): SQLiteClient {
+export async function getDatabase(): Promise<TursoClient> {
   if (!clientInstance) {
-    const dbPath = process.env.DATABASE_PATH || './data/chess.db';
-    clientInstance = new SQLiteClient(dbPath);
-    runMigrations(clientInstance);
+    const url = process.env.TURSO_DATABASE_URL;
+    const authToken = process.env.TURSO_AUTH_TOKEN;
+    
+    if (!url) {
+      throw new DatabaseError('TURSO_DATABASE_URL environment variable is not set');
+    }
+    
+    clientInstance = new TursoClient(url, authToken);
   }
+  
+  if (!migrationsRun) {
+    await runMigrations(clientInstance);
+    migrationsRun = true;
+  }
+  
   return clientInstance;
 }
 
 /**
  * Set the database client (for testing)
  */
-export function setDatabase(client: SQLiteClient | null): void {
+export function setDatabase(client: TursoClient | null): void {
   clientInstance = client;
+  migrationsRun = false;
 }
 
 /**
@@ -119,6 +139,7 @@ export function closeDatabase(): void {
   if (clientInstance) {
     clientInstance.close();
     clientInstance = null;
+    migrationsRun = false;
   }
 }
 
@@ -188,7 +209,6 @@ const MIGRATIONS = [
       ALTER TABLE games ADD COLUMN avg_move_time REAL;
       
       -- Analysis data columns (NULL = not analyzed, 0 = analyzed with zero errors)
-      -- Note: DEFAULT 0 was a mistake, fixed in migration 4
       ALTER TABLE games ADD COLUMN accuracy INTEGER;
       ALTER TABLE games ADD COLUMN blunders INTEGER DEFAULT 0;
       ALTER TABLE games ADD COLUMN mistakes INTEGER DEFAULT 0;
@@ -236,9 +256,9 @@ const MIGRATIONS = [
 /**
  * Run pending migrations
  */
-function runMigrations(client: SQLiteClient): void {
+async function runMigrations(client: TursoClient): Promise<void> {
   // Ensure migrations table exists
-  client.exec(`
+  await client.exec(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
       version INTEGER PRIMARY KEY,
       name TEXT NOT NULL,
@@ -247,7 +267,7 @@ function runMigrations(client: SQLiteClient): void {
   `);
 
   // Get applied migrations
-  const applied = client.query<{ version: number }>(
+  const applied = await client.query<{ version: number }>(
     'SELECT version FROM schema_migrations ORDER BY version',
   );
   const appliedVersions = new Set(applied.map((m) => m.version));
@@ -257,13 +277,14 @@ function runMigrations(client: SQLiteClient): void {
     if (!appliedVersions.has(migration.version)) {
       console.log(`Running migration ${migration.version}: ${migration.name}`);
       
-      client.transaction(() => {
-        client.exec(migration.sql);
-        client.execute(
-          'INSERT INTO schema_migrations (version, name) VALUES (?, ?)',
-          [migration.version, migration.name],
-        );
-      });
+      // Execute migration SQL
+      await client.exec(migration.sql);
+      
+      // Record migration
+      await client.execute(
+        'INSERT INTO schema_migrations (version, name) VALUES (?, ?)',
+        [migration.version, migration.name],
+      );
       
       console.log(`Migration ${migration.version} complete`);
     }

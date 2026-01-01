@@ -25,7 +25,7 @@ import { AppError } from '@/lib/shared/errors';
  */
 export async function GET(request: Request) {
   try {
-    const userService = createUserService();
+    const userService = await createUserService();
     const user = await userService.getCurrentUser();
 
     if (!user) {
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const gameService = createGameService();
+    const gameService = await createGameService();
     const { searchParams } = new URL(request.url);
 
     // Parse filter from query params

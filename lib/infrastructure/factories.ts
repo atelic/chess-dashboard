@@ -1,7 +1,7 @@
 import type { IRepositoryFactory, IGameRepository, IUserRepository } from '@/lib/domain/repositories/interfaces';
-import { SQLiteGameRepository } from './database/repositories/SQLiteGameRepository';
-import { SQLiteUserRepository } from './database/repositories/SQLiteUserRepository';
-import { getDatabase } from './database/client';
+import { TursoGameRepository } from './database/repositories/TursoGameRepository';
+import { TursoUserRepository } from './database/repositories/TursoUserRepository';
+import { getDatabase, TursoClient } from './database/client';
 import { GameService } from '@/lib/domain/services/GameService';
 import { UserService } from '@/lib/domain/services/UserService';
 import { SyncService } from '@/lib/domain/services/SyncService';
@@ -13,16 +13,25 @@ import { LichessClient } from './api-clients/LichessClient';
 // ============================================
 
 /**
- * SQLite repository factory.
- * To switch to PostgreSQL, create PostgresRepositoryFactory implementing same interface.
+ * Turso repository factory.
+ * To switch databases, create a new factory implementing IRepositoryFactory.
  */
-export class SQLiteRepositoryFactory implements IRepositoryFactory {
-  createGameRepository(): IGameRepository {
-    return new SQLiteGameRepository(getDatabase());
+export class TursoRepositoryFactory implements IRepositoryFactory {
+  private db: TursoClient | null = null;
+  
+  async getDb(): Promise<TursoClient> {
+    if (!this.db) {
+      this.db = await getDatabase();
+    }
+    return this.db;
   }
   
-  createUserRepository(): IUserRepository {
-    return new SQLiteUserRepository(getDatabase());
+  async createGameRepository(): Promise<IGameRepository> {
+    return new TursoGameRepository(await this.getDb());
+  }
+  
+  async createUserRepository(): Promise<IUserRepository> {
+    return new TursoUserRepository(await this.getDb());
   }
 }
 
@@ -30,20 +39,13 @@ export class SQLiteRepositoryFactory implements IRepositoryFactory {
 // FACTORY SINGLETON
 // ============================================
 
-let factory: IRepositoryFactory = new SQLiteRepositoryFactory();
+const factory = new TursoRepositoryFactory();
 
 /**
  * Get the current repository factory
  */
-export function getRepositoryFactory(): IRepositoryFactory {
+export function getRepositoryFactory(): TursoRepositoryFactory {
   return factory;
-}
-
-/**
- * Set the repository factory (for testing or swapping implementations)
- */
-export function setRepositoryFactory(f: IRepositoryFactory): void {
-  factory = f;
 }
 
 // ============================================
@@ -53,14 +55,14 @@ export function setRepositoryFactory(f: IRepositoryFactory): void {
 /**
  * Get a game repository instance
  */
-export function getGameRepository(): IGameRepository {
+export async function getGameRepository(): Promise<IGameRepository> {
   return factory.createGameRepository();
 }
 
 /**
  * Get a user repository instance
  */
-export function getUserRepository(): IUserRepository {
+export async function getUserRepository(): Promise<IUserRepository> {
   return factory.createUserRepository();
 }
 
@@ -71,24 +73,24 @@ export function getUserRepository(): IUserRepository {
 /**
  * Create a GameService instance
  */
-export function createGameService(): GameService {
-  return new GameService(factory.createGameRepository());
+export async function createGameService(): Promise<GameService> {
+  return new GameService(await factory.createGameRepository());
 }
 
 /**
  * Create a UserService instance
  */
-export function createUserService(): UserService {
-  return new UserService(factory.createUserRepository());
+export async function createUserService(): Promise<UserService> {
+  return new UserService(await factory.createUserRepository());
 }
 
 /**
  * Create a SyncService instance
  */
-export function createSyncService(): SyncService {
+export async function createSyncService(): Promise<SyncService> {
   return new SyncService(
-    factory.createGameRepository(),
-    factory.createUserRepository(),
+    await factory.createGameRepository(),
+    await factory.createUserRepository(),
     new ChessComClient(),
     new LichessClient(),
   );

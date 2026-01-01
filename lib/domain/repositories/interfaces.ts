@@ -139,17 +139,22 @@ export interface IDatabaseClient {
   /**
    * Execute a query and return results
    */
-  query<T>(sql: string, params?: unknown[]): T[];
+  query<T>(sql: string, params?: unknown[]): Promise<T[]>;
   
   /**
    * Execute a statement (INSERT, UPDATE, DELETE)
    */
-  execute(sql: string, params?: unknown[]): { changes: number; lastInsertRowid: number };
+  execute(sql: string, params?: unknown[]): Promise<{ changes: number; lastInsertRowid: number }>;
   
   /**
-   * Run operations in a transaction
+   * Execute multiple statements as an atomic batch
    */
-  transaction<T>(fn: () => T): T;
+  batch(statements: { sql: string; params?: unknown[] }[]): Promise<void>;
+  
+  /**
+   * Execute raw SQL (for migrations)
+   */
+  exec(sql: string): Promise<void>;
   
   /**
    * Close the database connection
@@ -162,6 +167,6 @@ export interface IDatabaseClient {
  * Allows swapping entire database implementations.
  */
 export interface IRepositoryFactory {
-  createGameRepository(): IGameRepository;
-  createUserRepository(): IUserRepository;
+  createGameRepository(): Promise<IGameRepository>;
+  createUserRepository(): Promise<IUserRepository>;
 }

@@ -12,6 +12,7 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@libsql/client": "^0.14.0",
     "@mliebelt/pgn-parser": "^1.4.19",
     "better-sqlite3": "^12.5.0",
     "next": "16.1.1",
@@ -25,6 +26,8 @@
     "@tailwindcss/postcss": "^4",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.2",

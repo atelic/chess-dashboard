@@ -87,11 +87,11 @@ export async function GET(request: Request) {
     // Update the game in the database with the analysis
     let saveWarning: string | undefined;
     try {
-      const userService = createUserService();
+      const userService = await createUserService();
       const user = await userService.getCurrentUser();
       
       if (user) {
-        const gameService = createGameService();
+        const gameService = await createGameService();
         await gameService.updateGameAnalysis(gameId, analysis);
       }
     } catch (dbError) {

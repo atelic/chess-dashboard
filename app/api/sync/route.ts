@@ -11,7 +11,7 @@ import { AppError } from '@/lib/shared/errors';
  */
 export async function POST(request: Request) {
   try {
-    const userService = createUserService();
+    const userService = await createUserService();
     const user = await userService.getCurrentUser();
 
     if (!user) {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       // No body or invalid JSON - use defaults
     }
 
-    const syncService = createSyncService();
+    const syncService = await createSyncService();
     const result = await syncService.syncGames(user.id, { fullSync });
 
     return NextResponse.json({
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
  */
 export async function DELETE(request: Request) {
   try {
-    const userService = createUserService();
+    const userService = await createUserService();
     const user = await userService.getCurrentUser();
 
     if (!user) {
@@ -71,7 +71,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const syncService = createSyncService();
+    const syncService = await createSyncService();
     const result = await syncService.fullResync(user.id);
 
     return NextResponse.json({

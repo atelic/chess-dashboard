@@ -1,10 +1,10 @@
 import type { IUserRepository } from '@/lib/domain/repositories/interfaces';
 import type { User, CreateUserData, UpdateUserData } from '@/lib/domain/models/User';
-import type { SQLiteClient } from '../client';
+import type { TursoClient } from '../client';
 import { UserNotFoundError, DatabaseError } from '@/lib/shared/errors';
 
 /**
- * SQLite row type for users table
+ * Database row type for users table
  */
 interface UserRow {
   id: number;
@@ -15,17 +15,17 @@ interface UserRow {
 }
 
 /**
- * SQLite implementation of IUserRepository
+ * Turso implementation of IUserRepository
  */
-export class SQLiteUserRepository implements IUserRepository {
-  constructor(private readonly db: SQLiteClient) {}
+export class TursoUserRepository implements IUserRepository {
+  constructor(private readonly db: TursoClient) {}
 
   // ============================================
   // QUERIES
   // ============================================
 
   async findById(id: number): Promise<User | null> {
-    const rows = this.db.query<UserRow>(
+    const rows = await this.db.query<UserRow>(
       'SELECT * FROM users WHERE id = ?',
       [id],
     );
@@ -38,7 +38,7 @@ export class SQLiteUserRepository implements IUserRepository {
   }
 
   async findFirst(): Promise<User | null> {
-    const rows = this.db.query<UserRow>(
+    const rows = await this.db.query<UserRow>(
       'SELECT * FROM users ORDER BY id ASC LIMIT 1',
     );
 
@@ -50,7 +50,7 @@ export class SQLiteUserRepository implements IUserRepository {
   }
 
   async exists(): Promise<boolean> {
-    const rows = this.db.query<{ count: number }>(
+    const rows = await this.db.query<{ count: number }>(
       'SELECT COUNT(*) as count FROM users',
     );
     return rows[0].count > 0;
@@ -61,7 +61,7 @@ export class SQLiteUserRepository implements IUserRepository {
   // ============================================
 
   async create(data: CreateUserData): Promise<User> {
-    const result = this.db.execute(
+    const result = await this.db.execute(
       `INSERT INTO users (chesscom_username, lichess_username, created_at)
        VALUES (?, ?, ?)`,
       [
@@ -103,7 +103,7 @@ export class SQLiteUserRepository implements IUserRepository {
     }
 
     params.push(id);
-    this.db.execute(
+    await this.db.execute(
       `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
       params,
     );
@@ -117,7 +117,7 @@ export class SQLiteUserRepository implements IUserRepository {
   }
 
   async updateLastSynced(userId: number, date: Date): Promise<void> {
-    const result = this.db.execute(
+    const result = await this.db.execute(
       'UPDATE users SET last_synced_at = ? WHERE id = ?',
       [date.toISOString(), userId],
     );
@@ -129,7 +129,7 @@ export class SQLiteUserRepository implements IUserRepository {
 
   async delete(userId: number): Promise<void> {
     // Games will be cascade deleted due to foreign key
-    this.db.execute('DELETE FROM users WHERE id = ?', [userId]);
+    await this.db.execute('DELETE FROM users WHERE id = ?', [userId]);
   }
 
   // ============================================

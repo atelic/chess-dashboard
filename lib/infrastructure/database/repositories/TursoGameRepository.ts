@@ -1,10 +1,10 @@
 import type { IGameRepository } from '@/lib/domain/repositories/interfaces';
 import type { Game, GameSource, PlayerColor, ClockData, AnalysisData } from '@/lib/domain/models/Game';
-import { GameFilter } from '@/lib/domain/models/GameFilter';
-import type { SQLiteClient } from '../client';
+import type { GameFilter } from '@/lib/domain/models/GameFilter';
+import type { TursoClient } from '../client';
 
 /**
- * SQLite row type for games table
+ * Database row type for games table
  */
 interface GameRow {
   id: string;
@@ -39,10 +39,10 @@ interface GameRow {
 }
 
 /**
- * SQLite implementation of IGameRepository
+ * Turso implementation of IGameRepository
  */
-export class SQLiteGameRepository implements IGameRepository {
-  constructor(private readonly db: SQLiteClient) {}
+export class TursoGameRepository implements IGameRepository {
+  constructor(private readonly db: TursoClient) {}
 
   // ============================================
   // QUERIES
@@ -62,12 +62,12 @@ export class SQLiteGameRepository implements IGameRepository {
 
     sql += ' ORDER BY played_at DESC';
 
-    const rows = this.db.query<GameRow>(sql, params);
+    const rows = await this.db.query<GameRow>(sql, params);
     return rows.map((row) => this.rowToGame(row));
   }
 
   async findById(id: string): Promise<Game | null> {
-    const rows = this.db.query<GameRow>(
+    const rows = await this.db.query<GameRow>(
       'SELECT * FROM games WHERE id = ?',
       [id],
     );
@@ -85,7 +85,7 @@ export class SQLiteGameRepository implements IGameRepository {
     }
 
     const placeholders = ids.map(() => '?').join(', ');
-    const rows = this.db.query<GameRow>(
+    const rows = await this.db.query<GameRow>(
       `SELECT * FROM games WHERE id IN (${placeholders}) ORDER BY played_at DESC`,
       ids,
     );
@@ -104,12 +104,12 @@ export class SQLiteGameRepository implements IGameRepository {
 
     sql += ' ORDER BY played_at DESC';
 
-    const rows = this.db.query<GameRow>(sql, params);
+    const rows = await this.db.query<GameRow>(sql, params);
     return rows.map((row) => this.rowToGame(row));
   }
 
   async findByOpponent(userId: number, opponent: string): Promise<Game[]> {
-    const rows = this.db.query<GameRow>(
+    const rows = await this.db.query<GameRow>(
       `SELECT * FROM games 
        WHERE user_id = ? AND LOWER(opponent_username) = LOWER(?)
        ORDER BY played_at DESC`,
@@ -131,12 +131,12 @@ export class SQLiteGameRepository implements IGameRepository {
       }
     }
 
-    const rows = this.db.query<{ count: number }>(sql, params);
+    const rows = await this.db.query<{ count: number }>(sql, params);
     return rows[0].count;
   }
 
   async existsById(id: string): Promise<boolean> {
-    const rows = this.db.query<{ count: number }>(
+    const rows = await this.db.query<{ count: number }>(
       'SELECT COUNT(*) as count FROM games WHERE id = ?',
       [id],
     );
@@ -144,7 +144,7 @@ export class SQLiteGameRepository implements IGameRepository {
   }
 
   async getLatestGameDate(userId: number, source: GameSource): Promise<Date | null> {
-    const rows = this.db.query<{ played_at: string }>(
+    const rows = await this.db.query<{ played_at: string }>(
       `SELECT played_at FROM games 
        WHERE user_id = ? AND source = ?
        ORDER BY played_at DESC LIMIT 1`,
@@ -162,7 +162,7 @@ export class SQLiteGameRepository implements IGameRepository {
    * Find games that don't have analysis data yet
    */
   async findGamesNeedingAnalysis(userId: number, limit: number = 50): Promise<Game[]> {
-    const rows = this.db.query<GameRow>(
+    const rows = await this.db.query<GameRow>(
       `SELECT * FROM games 
        WHERE user_id = ? AND analyzed_at IS NULL
        ORDER BY played_at DESC
@@ -180,7 +180,7 @@ export class SQLiteGameRepository implements IGameRepository {
     gameId: string,
     analysis: AnalysisData
   ): Promise<void> {
-    this.db.execute(
+    await this.db.execute(
       `UPDATE games SET 
         accuracy = ?,
         blunders = ?,
@@ -206,7 +206,7 @@ export class SQLiteGameRepository implements IGameRepository {
   // ============================================
 
   async save(game: Game & { userId: number }): Promise<void> {
-    this.db.execute(
+    await this.db.execute(
       `INSERT OR REPLACE INTO games (
         id, user_id, source, played_at, time_class, player_color, result,
         opening_eco, opening_name, opponent_username, opponent_rating,
@@ -251,71 +251,64 @@ export class SQLiteGameRepository implements IGameRepository {
       return 0;
     }
 
-    let saved = 0;
+    const statements = games.map((game) => ({
+      sql: `INSERT INTO games (
+        id, user_id, source, played_at, time_class, player_color, result,
+        opening_eco, opening_name, opponent_username, opponent_rating,
+        player_rating, termination, rating_change, move_count, rated, game_url,
+        initial_time, increment, time_remaining, avg_move_time,
+        accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        -- Clock data: preserve existing (static per game)
+        initial_time = COALESCE(games.initial_time, excluded.initial_time),
+        increment = COALESCE(games.increment, excluded.increment),
+        time_remaining = COALESCE(games.time_remaining, excluded.time_remaining),
+        avg_move_time = COALESCE(games.avg_move_time, excluded.avg_move_time),
+        -- Analysis data: prefer new data (re-analysis may have updated results)
+        accuracy = COALESCE(excluded.accuracy, games.accuracy),
+        blunders = COALESCE(excluded.blunders, games.blunders),
+        mistakes = COALESCE(excluded.mistakes, games.mistakes),
+        inaccuracies = COALESCE(excluded.inaccuracies, games.inaccuracies),
+        acpl = COALESCE(excluded.acpl, games.acpl),
+        analyzed_at = COALESCE(excluded.analyzed_at, games.analyzed_at)`,
+      params: [
+        game.id,
+        game.userId,
+        game.source,
+        game.playedAt.toISOString(),
+        game.timeClass,
+        game.playerColor,
+        game.result,
+        game.opening.eco,
+        game.opening.name,
+        game.opponent.username,
+        game.opponent.rating,
+        game.playerRating,
+        game.termination,
+        game.ratingChange ?? null,
+        game.moveCount,
+        game.rated ? 1 : 0,
+        game.gameUrl,
+        game.clock?.initialTime ?? null,
+        game.clock?.increment ?? null,
+        game.clock?.timeRemaining ?? null,
+        game.clock?.avgMoveTime ?? null,
+        game.analysis?.accuracy ?? null,
+        game.analysis?.blunders ?? null,
+        game.analysis?.mistakes ?? null,
+        game.analysis?.inaccuracies ?? null,
+        game.analysis?.acpl ?? null,
+        game.analysis?.analyzedAt?.toISOString() ?? null,
+      ],
+    }));
 
-    this.db.transaction(() => {
-      for (const game of games) {
-        // First, try to insert. If the game exists, update analysis data if we have new data
-        this.db.execute(
-          `INSERT INTO games (
-            id, user_id, source, played_at, time_class, player_color, result,
-            opening_eco, opening_name, opponent_username, opponent_rating,
-            player_rating, termination, rating_change, move_count, rated, game_url,
-            initial_time, increment, time_remaining, avg_move_time,
-            accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(id) DO UPDATE SET
-            -- Clock data: preserve existing (static per game)
-            initial_time = COALESCE(games.initial_time, excluded.initial_time),
-            increment = COALESCE(games.increment, excluded.increment),
-            time_remaining = COALESCE(games.time_remaining, excluded.time_remaining),
-            avg_move_time = COALESCE(games.avg_move_time, excluded.avg_move_time),
-            -- Analysis data: prefer new data (re-analysis may have updated results)
-            accuracy = COALESCE(excluded.accuracy, games.accuracy),
-            blunders = COALESCE(excluded.blunders, games.blunders),
-            mistakes = COALESCE(excluded.mistakes, games.mistakes),
-            inaccuracies = COALESCE(excluded.inaccuracies, games.inaccuracies),
-            acpl = COALESCE(excluded.acpl, games.acpl),
-            analyzed_at = COALESCE(excluded.analyzed_at, games.analyzed_at)`,
-          [
-            game.id,
-            game.userId,
-            game.source,
-            game.playedAt.toISOString(),
-            game.timeClass,
-            game.playerColor,
-            game.result,
-            game.opening.eco,
-            game.opening.name,
-            game.opponent.username,
-            game.opponent.rating,
-            game.playerRating,
-            game.termination,
-            game.ratingChange ?? null,
-            game.moveCount,
-            game.rated ? 1 : 0,
-            game.gameUrl,
-            game.clock?.initialTime ?? null,
-            game.clock?.increment ?? null,
-            game.clock?.timeRemaining ?? null,
-            game.clock?.avgMoveTime ?? null,
-            game.analysis?.accuracy ?? null,
-            game.analysis?.blunders ?? null,
-            game.analysis?.mistakes ?? null,
-            game.analysis?.inaccuracies ?? null,
-            game.analysis?.acpl ?? null,
-            game.analysis?.analyzedAt?.toISOString() ?? null,
-          ],
-        );
-        saved++;
-      }
-    });
-
-    return saved;
+    await this.db.batch(statements);
+    return games.length;
   }
 
   async deleteByUser(userId: number): Promise<number> {
-    const result = this.db.execute(
+    const result = await this.db.execute(
       'DELETE FROM games WHERE user_id = ?',
       [userId],
     );
