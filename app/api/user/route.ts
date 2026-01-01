@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createUserService } from '@/lib/infrastructure/factories';
-import { AppError } from '@/lib/shared/errors';
+import { AppError, ValidationError } from '@/lib/shared/errors';
+import { validateOptionalUsername } from '@/lib/shared/validation';
 
 /**
  * GET /api/user
@@ -48,7 +49,18 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { chesscomUsername, lichessUsername } = body;
+    
+    // Validate usernames (allow null/empty, but validate format if provided)
+    const chesscomUsername = validateOptionalUsername(body.chesscomUsername, 'chesscomUsername');
+    const lichessUsername = validateOptionalUsername(body.lichessUsername, 'lichessUsername');
+
+    // At least one username is required
+    if (!chesscomUsername && !lichessUsername) {
+      return NextResponse.json(
+        { error: 'At least one username (Chess.com or Lichess) is required', code: 'VALIDATION_ERROR' },
+        { status: 400 }
+      );
+    }
 
     const userService = await createUserService();
 
@@ -59,14 +71,14 @@ export async function POST(request: Request) {
     if (existingUser) {
       // Update existing user
       user = await userService.updateUser(existingUser.id, {
-        chesscomUsername: chesscomUsername || null,
-        lichessUsername: lichessUsername || null,
+        chesscomUsername,
+        lichessUsername,
       });
     } else {
       // Create new user
       user = await userService.createUser({
-        chesscomUsername: chesscomUsername || null,
-        lichessUsername: lichessUsername || null,
+        chesscomUsername,
+        lichessUsername,
       });
     }
 
@@ -81,6 +93,13 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('POST /api/user error:', error);
+
+    if (error instanceof ValidationError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code, field: error.field },
+        { status: 400 },
+      );
+    }
 
     if (error instanceof AppError) {
       return NextResponse.json(

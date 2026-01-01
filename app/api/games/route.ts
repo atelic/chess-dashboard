@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createGameService, createUserService } from '@/lib/infrastructure/factories';
 import { GameFilter } from '@/lib/domain/models/GameFilter';
-import { AppError } from '@/lib/shared/errors';
+import { AppError, ValidationError } from '@/lib/shared/errors';
+import {
+  validatePlayerColor,
+  validateResult,
+  validateOptionalEcoCode,
+} from '@/lib/shared/validation';
 
 /**
  * GET /api/games
@@ -56,19 +61,24 @@ export async function GET(request: Request) {
     // Build filter
     let filter = GameFilter.fromParams(filterParams);
 
-    // Special case: single ECO code for game links
-    const eco = searchParams.get('eco');
-    const color = searchParams.get('color');
-    const result = searchParams.get('result');
+    // Special case: single ECO code for game links (with validation)
+    const ecoParam = searchParams.get('eco');
+    const colorParam = searchParams.get('color');
+    const resultParam = searchParams.get('result');
 
-    if (eco) {
-      filter = filter.withOpenings([eco]);
+    if (ecoParam) {
+      const eco = validateOptionalEcoCode(ecoParam);
+      if (eco) {
+        filter = filter.withOpenings([eco]);
+      }
     }
-    if (color) {
-      filter = filter.withColors([color as 'white' | 'black']);
+    if (colorParam) {
+      const color = validatePlayerColor(colorParam);
+      filter = filter.withColors([color]);
     }
-    if (result) {
-      filter = filter.withResults([result as 'win' | 'loss' | 'draw']);
+    if (resultParam) {
+      const result = validateResult(resultParam);
+      filter = filter.withResults([result]);
     }
 
     const games = await gameService.getGames(user.id, filter.isEmpty() ? undefined : filter);
@@ -102,6 +112,13 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('GET /api/games error:', error);
+
+    if (error instanceof ValidationError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code, field: error.field },
+        { status: 400 },
+      );
+    }
 
     if (error instanceof AppError) {
       return NextResponse.json(

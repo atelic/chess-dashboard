@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createSyncService, createUserService } from '@/lib/infrastructure/factories';
-import { AppError } from '@/lib/shared/errors';
+import { AppError, ValidationError } from '@/lib/shared/errors';
+import { validateBooleanString } from '@/lib/shared/validation';
 
 /**
  * POST /api/sync
@@ -24,6 +25,13 @@ export async function POST(request: Request) {
     let fullSync = false;
     try {
       const body = await request.json();
+      // Validate fullSync is a boolean if provided
+      if (body.fullSync !== undefined && typeof body.fullSync !== 'boolean') {
+        return NextResponse.json(
+          { error: 'fullSync must be a boolean', code: 'VALIDATION_ERROR' },
+          { status: 400 },
+        );
+      }
       fullSync = body.fullSync === true;
     } catch {
       // No body or invalid JSON - use defaults
