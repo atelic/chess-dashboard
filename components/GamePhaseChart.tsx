@@ -237,6 +237,11 @@ export default function GamePhaseChart({ games }: GamePhaseChartProps) {
             </div>
           </div>
         )}
+
+        {/* Disclaimer */}
+        <p className="text-xs text-zinc-500 text-center">
+          Phase distribution is estimated based on game length. For precise analysis, move-by-move evaluation would be required.
+        </p>
       </div>
     </Card>
   );

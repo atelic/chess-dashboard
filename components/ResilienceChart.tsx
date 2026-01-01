@@ -317,6 +317,11 @@ export default function ResilienceChart({ games }: ResilienceChartProps) {
             </div>
           )}
         </div>
+
+        {/* Disclaimer */}
+        <p className="text-xs text-zinc-500 text-center">
+          Stats are estimated from error patterns. Full position evaluation history would provide more accurate resilience data.
+        </p>
       </div>
     </Card>
   );
