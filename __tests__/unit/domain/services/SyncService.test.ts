@@ -26,9 +26,17 @@ describe('SyncService', () => {
   const mockUserRepo: IUserRepository = {
     findById: vi.fn(),
     findFirst: vi.fn(),
+    findByEmail: vi.fn(),
+    findLegacyUserByUsername: vi.fn(),
+    findByResetToken: vi.fn(),
     exists: vi.fn(),
     create: vi.fn(),
+    createWithAuth: vi.fn(),
+    addAuthToUser: vi.fn(),
     update: vi.fn(),
+    updatePassword: vi.fn(),
+    setResetToken: vi.fn(),
+    clearResetToken: vi.fn(),
     updateLastSynced: vi.fn(),
     delete: vi.fn(),
   };

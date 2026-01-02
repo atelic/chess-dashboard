@@ -1,61 +1,51 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
+import { useSession, signOut } from 'next-auth/react';
+import { useCallback, useState } from 'react';
+import '@/lib/auth/types';
 
-interface User {
+export interface User {
   id: number;
+  email: string;
   chesscomUsername: string | null;
   lichessUsername: string | null;
-  createdAt: string;
-  lastSyncedAt: string | null;
 }
 
 interface UseUserReturn {
   user: User | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   error: string | null;
-  fetchUser: () => Promise<User | null>;
-  createOrUpdateUser: (chesscomUsername?: string, lichessUsername?: string) => Promise<User | null>;
+  updateChessUsernames: (chesscomUsername?: string, lichessUsername?: string) => Promise<User | null>;
   deleteUser: () => Promise<boolean>;
 }
 
+/**
+ * Hook for accessing and managing the current authenticated user.
+ * Uses NextAuth session for authentication state.
+ */
 export function useUser(): UseUserReturn {
-  const { user, setUser } = useAppStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: session, status, update: updateSession } = useSession();
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUser = useCallback(async (): Promise<User | null> => {
-    setIsLoading(true);
-    setError(null);
+  const isLoading = status === 'loading';
+  const isAuthenticated = status === 'authenticated';
 
-    try {
-      const response = await fetch('/api/user');
-      const data = await response.json();
+  // Transform session user to User type
+  const user: User | null = session?.user ? {
+    id: parseInt(session.user.id, 10),
+    email: session.user.email || '',
+    chesscomUsername: session.user.chesscomUsername ?? null,
+    lichessUsername: session.user.lichessUsername ?? null,
+  } : null;
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch user');
-      }
-
-      setUser(data.user);
-      return data.user;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch user';
-      setError(message);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setUser]);
-
-  const createOrUpdateUser = useCallback(
+  const updateChessUsernames = useCallback(
     async (chesscomUsername?: string, lichessUsername?: string): Promise<User | null> => {
-      setIsLoading(true);
       setError(null);
 
       try {
         const response = await fetch('/api/user', {
-          method: 'POST',
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chesscomUsername: chesscomUsername || null,
@@ -66,24 +56,31 @@ export function useUser(): UseUserReturn {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to save user');
+          throw new Error(data.error || 'Failed to update user');
         }
 
-        setUser(data.user);
-        return data.user;
+        // Update the session with new usernames
+        await updateSession({
+          chesscomUsername: chesscomUsername || null,
+          lichessUsername: lichessUsername || null,
+        });
+
+        return {
+          id: data.user.id,
+          email: data.user.email,
+          chesscomUsername: data.user.chesscomUsername,
+          lichessUsername: data.user.lichessUsername,
+        };
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to save user';
+        const message = err instanceof Error ? err.message : 'Failed to update user';
         setError(message);
         return null;
-      } finally {
-        setIsLoading(false);
       }
     },
-    [setUser],
+    [updateSession],
   );
 
   const deleteUser = useCallback(async (): Promise<boolean> => {
-    setIsLoading(true);
     setError(null);
 
     try {
@@ -97,30 +94,21 @@ export function useUser(): UseUserReturn {
         throw new Error(data.error || 'Failed to delete user');
       }
 
-      setUser(null);
+      await signOut({ callbackUrl: '/' });
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete user';
       setError(message);
       return false;
-    } finally {
-      setIsLoading(false);
     }
-  }, [setUser]);
-
-  // Fetch user on mount if not in store
-  useEffect(() => {
-    if (!user) {
-      fetchUser();
-    }
-  }, [user, fetchUser]);
+  }, []);
 
   return {
     user,
     isLoading,
+    isAuthenticated,
     error,
-    fetchUser,
-    createOrUpdateUser,
+    updateChessUsernames,
     deleteUser,
   };
 }

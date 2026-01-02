@@ -1,5 +1,5 @@
 import type { Game, GameSource, PlayerColor, AnalysisData } from '@/lib/domain/models/Game';
-import type { User, CreateUserData, UpdateUserData } from '@/lib/domain/models/User';
+import type { User, CreateUserData, UpdateUserData, CreateUserWithAuthData, AddAuthToUserData } from '@/lib/domain/models/User';
 import type { GameFilter } from '@/lib/domain/models/GameFilter';
 
 /**
@@ -97,7 +97,12 @@ export interface IUserRepository {
   findById(id: number): Promise<User | null>;
   
   /**
-   * Find the first user (for simple single-user mode)
+   * Find a user by email
+   */
+  findByEmail(email: string): Promise<User | null>;
+  
+  /**
+   * Find the first user (for simple single-user mode - legacy)
    */
   findFirst(): Promise<User | null>;
   
@@ -105,21 +110,60 @@ export interface IUserRepository {
    * Check if any user exists
    */
   exists(): Promise<boolean>;
+
+  /**
+   * Find a legacy user by chess username (for migration)
+   * Returns user if found with matching username and no email set
+   */
+  findLegacyUserByUsername(
+    chesscomUsername?: string | null,
+    lichessUsername?: string | null,
+  ): Promise<User | null>;
+
+  /**
+   * Find user by password reset token
+   */
+  findByResetToken(token: string): Promise<User | null>;
   
   // ============================================
   // MUTATIONS
   // ============================================
   
   /**
-   * Create a new user
+   * Create a new user (legacy - without auth)
    * Returns the created user with ID
    */
   create(data: CreateUserData): Promise<User>;
+
+  /**
+   * Create a new user with authentication
+   */
+  createWithAuth(data: CreateUserWithAuthData): Promise<User>;
+
+  /**
+   * Add authentication to an existing legacy user
+   */
+  addAuthToUser(userId: number, data: AddAuthToUserData): Promise<User>;
   
   /**
-   * Update an existing user
+   * Update an existing user's chess usernames
    */
   update(id: number, data: UpdateUserData): Promise<User>;
+
+  /**
+   * Update user's password hash
+   */
+  updatePassword(userId: number, passwordHash: string): Promise<void>;
+
+  /**
+   * Set password reset token
+   */
+  setResetToken(userId: number, token: string, expiresAt: Date): Promise<void>;
+
+  /**
+   * Clear password reset token
+   */
+  clearResetToken(userId: number): Promise<void>;
   
   /**
    * Update the last synced timestamp
@@ -130,6 +174,41 @@ export interface IUserRepository {
    * Delete a user and all their data
    */
   delete(userId: number): Promise<void>;
+}
+
+/**
+ * Abstract interface for session data access.
+ */
+export interface ISessionRepository {
+  /**
+   * Find a session by token
+   */
+  findByToken(sessionToken: string): Promise<{ userId: number; expiresAt: Date } | null>;
+
+  /**
+   * Create a new session
+   */
+  create(sessionToken: string, userId: number, expiresAt: Date): Promise<void>;
+
+  /**
+   * Update session expiration
+   */
+  updateExpiration(sessionToken: string, expiresAt: Date): Promise<void>;
+
+  /**
+   * Delete a session
+   */
+  delete(sessionToken: string): Promise<void>;
+
+  /**
+   * Delete all sessions for a user
+   */
+  deleteByUser(userId: number): Promise<void>;
+
+  /**
+   * Delete expired sessions
+   */
+  deleteExpired(): Promise<number>;
 }
 
 /**
@@ -169,4 +248,5 @@ export interface IDatabaseClient {
 export interface IRepositoryFactory {
   createGameRepository(): Promise<IGameRepository>;
   createUserRepository(): Promise<IUserRepository>;
+  createSessionRepository(): Promise<ISessionRepository>;
 }

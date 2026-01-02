@@ -18,9 +18,11 @@ export default function AdvancedFilters({
   games, 
   filters, 
   onFiltersChange, 
-  onRefetch,
+  onRefetch: _onRefetch,
   isLoading 
 }: AdvancedFiltersProps) {
+  // Note: _onRefetch is available for future server-side filtering
+  void _onRefetch;
   const [isExpanded, setIsExpanded] = useState(false);
   const [viewMode, setViewMode] = useState<'all' | 'last100' | 'dateRange'>('all');
   const [startDateStr, setStartDateStr] = useState('');

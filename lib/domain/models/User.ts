@@ -1,19 +1,33 @@
 /**
  * User domain model.
- * Represents a user profile with chess platform credentials.
+ * Represents a user profile with authentication and chess platform credentials.
  */
 export interface User {
   readonly id: number;
+  readonly email: string | null;
+  readonly passwordHash: string | null;
   readonly chesscomUsername: string | null;
   readonly lichessUsername: string | null;
   readonly createdAt: Date;
   readonly lastSyncedAt: Date | null;
+  readonly resetToken: string | null;
+  readonly resetTokenExpiresAt: Date | null;
 }
 
 /**
- * Data required to create a new user
+ * Data required to create a new user (legacy - without auth)
  */
 export interface CreateUserData {
+  chesscomUsername?: string | null;
+  lichessUsername?: string | null;
+}
+
+/**
+ * Data required to create a new user with authentication
+ */
+export interface CreateUserWithAuthData {
+  email: string;
+  passwordHash: string;
   chesscomUsername?: string | null;
   lichessUsername?: string | null;
 }
@@ -26,6 +40,14 @@ export interface UpdateUserData {
   lichessUsername?: string | null;
 }
 
+/**
+ * Data for adding auth credentials to an existing legacy user
+ */
+export interface AddAuthToUserData {
+  email: string;
+  passwordHash: string;
+}
+
 // ============================================
 // FACTORY FUNCTIONS
 // ============================================
@@ -35,10 +57,14 @@ export interface UpdateUserData {
  */
 export function createUserData(data: CreateUserData): Omit<User, 'id'> {
   return {
+    email: null,
+    passwordHash: null,
     chesscomUsername: data.chesscomUsername || null,
     lichessUsername: data.lichessUsername || null,
     createdAt: new Date(),
     lastSyncedAt: null,
+    resetToken: null,
+    resetTokenExpiresAt: null,
   };
 }
 
@@ -65,6 +91,27 @@ export function hasChessCom(user: User): boolean {
  */
 export function hasLichess(user: User): boolean {
   return Boolean(user.lichessUsername);
+}
+
+/**
+ * Check if user has completed authentication setup
+ */
+export function hasAuth(user: User): boolean {
+  return Boolean(user.email && user.passwordHash);
+}
+
+/**
+ * Check if user is a legacy user (no auth, just chess usernames)
+ */
+export function isLegacyUser(user: User): boolean {
+  return !user.email && hasAnyPlatform(user);
+}
+
+/**
+ * Check if user needs onboarding (has auth but no chess accounts)
+ */
+export function needsOnboarding(user: User): boolean {
+  return hasAuth(user) && !hasAnyPlatform(user);
 }
 
 /**

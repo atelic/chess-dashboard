@@ -131,3 +131,57 @@ export class ValidationError extends AppError {
     this.name = 'ValidationError';
   }
 }
+
+// ============================================
+// AUTHENTICATION ERRORS
+// ============================================
+
+/**
+ * Authentication failed (invalid credentials)
+ */
+export class AuthenticationError extends AppError {
+  constructor(message = 'Invalid credentials') {
+    super(message, 'AUTHENTICATION_ERROR', 401);
+    this.name = 'AuthenticationError';
+  }
+}
+
+/**
+ * User not authenticated (no session)
+ */
+export class UnauthorizedError extends AppError {
+  constructor(message = 'Authentication required') {
+    super(message, 'UNAUTHORIZED', 401);
+    this.name = 'UnauthorizedError';
+  }
+}
+
+/**
+ * Email already registered
+ */
+export class EmailExistsError extends AppError {
+  constructor() {
+    super('Email already registered', 'EMAIL_EXISTS', 409);
+    this.name = 'EmailExistsError';
+  }
+}
+
+/**
+ * Invalid or expired password reset token
+ */
+export class InvalidResetTokenError extends AppError {
+  constructor() {
+    super('Invalid or expired reset token', 'INVALID_RESET_TOKEN', 400);
+    this.name = 'InvalidResetTokenError';
+  }
+}
+
+/**
+ * Password mismatch (for change password)
+ */
+export class PasswordMismatchError extends AppError {
+  constructor() {
+    super('Current password is incorrect', 'PASSWORD_MISMATCH', 400);
+    this.name = 'PasswordMismatchError';
+  }
+}

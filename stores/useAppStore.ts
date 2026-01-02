@@ -8,14 +8,6 @@ import type { GameResult, PlayerColor } from '@/lib/shared/types';
 // TYPES
 // ============================================
 
-interface User {
-  id: number;
-  chesscomUsername: string | null;
-  lichessUsername: string | null;
-  createdAt: string;
-  lastSyncedAt: string | null;
-}
-
 interface SyncStatus {
   isSyncing: boolean;
   lastSynced: Date | null;
@@ -39,10 +31,6 @@ interface ExpandedSection {
 }
 
 interface AppState {
-  // User
-  user: User | null;
-  setUser: (user: User | null) => void;
-
   // Sync status
   syncStatus: SyncStatus;
   setSyncing: (isSyncing: boolean) => void;
@@ -96,10 +84,6 @@ const defaultExpandedSection: ExpandedSection = {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      // User
-      user: null,
-      setUser: (user) => set({ user }),
-
       // Sync status
       syncStatus: defaultSyncStatus,
       setSyncing: (isSyncing) =>
@@ -143,8 +127,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'chess-dashboard-storage',
       partialize: (state) => ({
-        // Only persist user and filter
-        user: state.user,
+        // Only persist filter settings
         filter: state.filter,
       }),
     },
@@ -155,7 +138,6 @@ export const useAppStore = create<AppState>()(
 // SELECTORS
 // ============================================
 
-export const selectUser = (state: AppState) => state.user;
 export const selectSyncStatus = (state: AppState) => state.syncStatus;
 export const selectFilter = (state: AppState) => state.filter;
 export const selectExpandedSection = (state: AppState) => state.expandedSection;

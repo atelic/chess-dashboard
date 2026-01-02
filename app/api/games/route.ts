@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createGameService, createUserService } from '@/lib/infrastructure/factories';
+import { getAuthenticatedUser } from '@/lib/auth/helpers';
 import { GameFilter } from '@/lib/domain/models/GameFilter';
-import { AppError, ValidationError } from '@/lib/shared/errors';
+import { AppError, ValidationError, UnauthorizedError } from '@/lib/shared/errors';
 import {
   validatePlayerColor,
   validateResult,
@@ -10,7 +11,7 @@ import {
 
 /**
  * GET /api/games
- * Get games for the current user with optional filtering
+ * Get games for the authenticated user with optional filtering
  * 
  * Query params:
  * - timeClasses: comma-separated (bullet,blitz,rapid,classical)
@@ -30,15 +31,11 @@ import {
  */
 export async function GET(request: Request) {
   try {
-    const userService = await createUserService();
-    const user = await userService.getCurrentUser();
+    // Get authenticated user from session
+    const authUser = await getAuthenticatedUser();
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'No user found. Please set up your profile first.', code: 'USER_NOT_FOUND' },
-        { status: 404 },
-      );
-    }
+    const userService = await createUserService();
+    const user = await userService.getUserById(authUser.id);
 
     const gameService = await createGameService();
     const { searchParams } = new URL(request.url);
@@ -112,6 +109,13 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('GET /api/games error:', error);
+
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: 401 },
+      );
+    }
 
     if (error instanceof ValidationError) {
       return NextResponse.json(

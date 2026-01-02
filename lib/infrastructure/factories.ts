@@ -1,6 +1,7 @@
-import type { IRepositoryFactory, IGameRepository, IUserRepository } from '@/lib/domain/repositories/interfaces';
+import type { IRepositoryFactory, IGameRepository, IUserRepository, ISessionRepository } from '@/lib/domain/repositories/interfaces';
 import { TursoGameRepository } from './database/repositories/TursoGameRepository';
 import { TursoUserRepository } from './database/repositories/TursoUserRepository';
+import { TursoSessionRepository } from './database/repositories/TursoSessionRepository';
 import { getDatabase, TursoClient } from './database/client';
 import { GameService } from '@/lib/domain/services/GameService';
 import { UserService } from '@/lib/domain/services/UserService';
@@ -33,6 +34,10 @@ export class TursoRepositoryFactory implements IRepositoryFactory {
   async createUserRepository(): Promise<IUserRepository> {
     return new TursoUserRepository(await this.getDb());
   }
+
+  async createSessionRepository(): Promise<ISessionRepository> {
+    return new TursoSessionRepository(await this.getDb());
+  }
 }
 
 // ============================================
@@ -64,6 +69,13 @@ export async function getGameRepository(): Promise<IGameRepository> {
  */
 export async function getUserRepository(): Promise<IUserRepository> {
   return factory.createUserRepository();
+}
+
+/**
+ * Get a session repository instance
+ */
+export async function getSessionRepository(): Promise<ISessionRepository> {
+  return factory.createSessionRepository();
 }
 
 // ============================================

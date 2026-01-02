@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 import { useUser } from '@/hooks/useUser';
 import { useSync } from '@/hooks/useSync';
 import { useToast } from '@/components/ui/Toast';
@@ -17,12 +19,11 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps) {
   const router = useRouter();
-  const { user, deleteUser, createOrUpdateUser } = useUser();
+  const { user, updateChessUsernames } = useUser();
   const { sync, fullResync, isSyncing, lastSynced } = useSync();
   const { showToast } = useToast();
   const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
 
   // Edit form state
   const [editChesscom, setEditChesscom] = useState('');
@@ -53,19 +54,10 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
     }
   };
 
-  const handleReset = async () => {
+  const handleLogout = async () => {
     setShowMenu(false);
-    setIsResetting(true);
-
-    const success = await deleteUser();
-    if (success) {
-      showToast('Profile reset. Redirecting to setup...', 'info');
-      router.replace('/');
-    } else {
-      showToast('Failed to reset profile', 'error');
-    }
-
-    setIsResetting(false);
+    await signOut({ redirect: false });
+    router.push('/');
   };
 
   const handleOpenEditModal = () => {
@@ -131,7 +123,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
         (!user?.lichessUsername && editLichess.trim());
 
       // Update user
-      const updatedUser = await createOrUpdateUser(editChesscom.trim(), editLichess.trim());
+      const updatedUser = await updateChessUsernames(editChesscom.trim(), editLichess.trim());
 
       if (!updatedUser) {
         showToast('Failed to save profile', 'error');
@@ -164,13 +156,10 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
   };
 
   const formatLastSynced = () => {
-    if (!lastSynced && !user?.lastSyncedAt) return 'Never';
-
-    const syncDate = lastSynced || (user?.lastSyncedAt ? new Date(user.lastSyncedAt) : null);
-    if (!syncDate) return 'Never';
+    if (!lastSynced) return 'Never';
 
     const now = new Date();
-    const diffMs = now.getTime() - syncDate.getTime();
+    const diffMs = now.getTime() - lastSynced.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
@@ -181,7 +170,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
     return `${diffDays}d ago`;
   };
 
-  const displayUsername = user?.chesscomUsername || user?.lichessUsername || 'Player';
+  const displayUsername = user?.chesscomUsername || user?.lichessUsername || user?.email || 'Player';
   const isProcessing = isValidating || isSaving || isSyncing;
 
   return (
@@ -219,7 +208,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                 variant="secondary"
                 size="sm"
                 onClick={handleSync}
-                disabled={isSyncing || isResetting}
+                disabled={isSyncing}
               >
                 {isSyncing ? (
                   <>
@@ -241,7 +230,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                 <button
                   onClick={() => setShowMenu(!showMenu)}
                   className="p-2 rounded-lg hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-zinc-100"
-                  disabled={isSyncing || isResetting}
+                  disabled={isSyncing}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -265,7 +254,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        Edit Profile
+                        Edit Usernames
                       </button>
                       <hr className="border-zinc-700" />
                       <button
@@ -279,14 +268,26 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                         Full Resync
                       </button>
                       <hr className="border-zinc-700" />
+                      <Link
+                        href="/settings"
+                        onClick={() => setShowMenu(false)}
+                        className="w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-700 flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Settings
+                      </Link>
+                      <hr className="border-zinc-700" />
                       <button
-                        onClick={handleReset}
+                        onClick={handleLogout}
                         className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-zinc-700 rounded-b-lg flex items-center gap-2"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
-                        Reset Profile
+                        Sign Out
                       </button>
                     </div>
                   </>
@@ -312,7 +313,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
               className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-xl font-semibold text-zinc-100 mb-2">Edit Profile</h2>
+              <h2 className="text-xl font-semibold text-zinc-100 mb-2">Edit Usernames</h2>
               <p className="text-sm text-zinc-400 mb-6">
                 Update your chess platform usernames. Adding a new platform will automatically sync games.
               </p>

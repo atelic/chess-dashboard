@@ -1,6 +1,6 @@
 'use client';
 
-import type { Game, TerminationStats } from '@/lib/types';
+import type { Game } from '@/lib/types';
 import { calculateTerminationStats } from '@/lib/utils';
 import Card from './ui/Card';
 

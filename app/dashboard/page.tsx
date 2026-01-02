@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, isLoading: userLoading } = useUser();
   const { games: apiGames, isLoading: gamesLoading, error, fetchGames, totalCount } = useGames();
-  const { filter, setFilter, resetFilter } = useAppStore();
+  const { setFilter } = useAppStore();
 
   // Local filter state for the AdvancedFilters UI component
   const [filters, setFilters] = useState<FilterState>(getDefaultFilters());
