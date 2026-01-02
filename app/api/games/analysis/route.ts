@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { fetchLichessGameAnalysis } from '@/lib/infrastructure/api-clients/LichessClient';
 import { fetchChessComGameAnalysis } from '@/lib/infrastructure/api-clients/ChessComClient';
-import { createGameService, createUserService } from '@/lib/infrastructure/factories';
+import { createGameService } from '@/lib/infrastructure/factories';
+import { getAuthenticatedUser } from '@/lib/auth/helpers';
 import type { AnalysisData } from '@/lib/types';
-import { AppError, ValidationError } from '@/lib/shared/errors';
+import { AppError, ValidationError, UnauthorizedError } from '@/lib/shared/errors';
 import {
   validateGameId,
   validatePlayerColor,
@@ -17,10 +18,13 @@ import {
  * GET /api/games/analysis?gameId=xxx&playerColor=white&source=lichess
  * GET /api/games/analysis?gameId=xxx&playerColor=white&source=chesscom&username=xxx&gameUrl=xxx&gameDate=xxx
  * 
- * Fetch analysis for a Lichess or Chess.com game
+ * Fetch analysis for a Lichess or Chess.com game (requires authentication)
  */
 export async function GET(request: Request) {
   try {
+    // Verify user is authenticated (throws if not)
+    await getAuthenticatedUser();
+
     const { searchParams } = new URL(request.url);
     
     // Validate required parameters
@@ -83,13 +87,8 @@ export async function GET(request: Request) {
     // Update the game in the database with the analysis
     let saveWarning: string | undefined;
     try {
-      const userService = await createUserService();
-      const user = await userService.getCurrentUser();
-      
-      if (user) {
-        const gameService = await createGameService();
-        await gameService.updateGameAnalysis(gameId, analysis);
-      }
+      const gameService = await createGameService();
+      await gameService.updateGameAnalysis(gameId, analysis);
     } catch (dbError) {
       console.error('Failed to save analysis to database:', dbError);
       saveWarning = 'Analysis fetched but could not be saved. It may not persist on reload.';
@@ -98,6 +97,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ analysis, warning: saveWarning });
   } catch (error) {
     console.error('GET /api/games/analysis error:', error);
+
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: 401 }
+      );
+    }
 
     if (error instanceof ValidationError) {
       return NextResponse.json(

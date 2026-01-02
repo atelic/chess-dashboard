@@ -1,108 +1,115 @@
 # AGENTS.md - Chess Dashboard
 
-Guidelines for AI agents working in this codebase.
+**Generated**: 2026-01-02 | **Commit**: 659074c | **Branch**: main
 
-## Build/Lint/Test Commands
+## Overview
+
+Next.js 16 chess analytics dashboard. Imports games from Chess.com/Lichess, stores in Turso/libSQL, analyzes with Stockfish WASM. Multi-user auth via NextAuth v5.
+
+## Structure
+
+```
+app/                    # Next.js App Router
+  api/                  # REST endpoints (games, sync, auth, user)
+  dashboard/            # Main authenticated view
+  (auth pages)          # login, register, forgot-password, etc.
+components/             # React components (see components/AGENTS.md)
+lib/                    # Core logic - DDD architecture (see lib/AGENTS.md)
+  domain/               # Models, Services, Repository interfaces
+  infrastructure/       # Turso repos, Chess.com/Lichess clients
+  auth/                 # NextAuth config, rate limiting, helpers
+  analysis/             # Stockfish WASM, Lichess cloud eval
+hooks/                  # useGames, useSync, useUser
+stores/                 # Zustand (useAppStore)
+__tests__/              # Vitest + Playwright (see __tests__/AGENTS.md)
+```
+
+## Where to Look
+
+| Task | Location | Notes |
+|------|----------|-------|
+| Add API endpoint | `app/api/` | Use `getAuthenticatedUser()` from `lib/auth/helpers` |
+| Add chart/visualization | `components/` | Wrap in Card, use Recharts |
+| Add game stat calculation | `lib/utils.ts` | 2100+ lines - group by section headers |
+| Modify game sync logic | `lib/domain/services/SyncService.ts` | Orchestrates Chess.com + Lichess |
+| Change auth behavior | `lib/auth/config.ts` | NextAuth v5 credentials provider |
+| Add database query | `lib/infrastructure/database/repositories/` | Implement interface from `lib/domain/repositories/interfaces.ts` |
+| Add/modify types | `lib/types.ts` | Central type definitions |
+
+## Commands
 
 ```bash
-npm install          # Install dependencies
-npm run dev          # Development server (hot reload)
-npm run build        # Production build
-npm run lint         # ESLint with Next.js config
-# No test framework configured yet
+npm run dev             # Dev server (localhost:3000)
+npm run build           # Production build
+npm run lint            # ESLint
+npm run test            # Vitest unit tests
+npm run test:e2e        # Playwright E2E tests
+npm run test:all        # Both test suites
 ```
 
-## Project Structure
+## Conventions
 
-```
-app/                    # Next.js App Router (layout.tsx, page.tsx, globals.css)
-components/
-  ui/                   # Reusable primitives (Button, Card, Input, Tabs, Toast, Spinner)
-  tabs/                 # Tab content (OverviewTab, OpeningsTab, OpponentsTab, InsightsTab)
-  *.tsx                 # Feature components (Dashboard, charts, forms)
-hooks/useGames.ts       # Data fetching hook
-lib/
-  api/                  # Chess.com and Lichess API clients
-  types.ts              # TypeScript type definitions
-  utils.ts              # Utility functions (stats, filtering, insights)
-```
+### TypeScript
+- `import type { X }` for type-only imports
+- Path alias: `@/*` maps to root
+- Types in `@/lib/types` (NOT `@/lib/shared/types`)
 
-## Tech Stack
+### React
+- `'use client'` directive for interactive components
+- UI primitives use `forwardRef` with `displayName`
+- Hooks return `{ state, actions }` pattern
 
-- **Framework**: Next.js 16 with App Router
-- **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS v4
-- **Charts**: Recharts
-
-## TypeScript Conventions
-
-- Use `import type { ... }` for type-only imports
-- Define props interfaces: `interface ComponentNameProps { ... }`
-- Union types for constrained values: `type TimeClass = 'bullet' | 'blitz' | 'rapid' | 'classical'`
-- Path alias: `@/*` maps to project root
-
-## React Patterns
-
-```typescript
-'use client';  // Required for components with hooks/interactivity
-
-// UI primitives use forwardRef
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className = '', ...props }, ref) => { ... }
-);
-Button.displayName = 'Button';
-
-// Custom hooks return objects with state and actions
-function useGames(): UseGamesReturn {
-  // Use useCallback for returned functions, useMemo for computed values
-}
-```
-
-## Styling (Tailwind CSS - Dark Theme)
-
+### Styling (Tailwind v4 - Dark Theme)
 | Element | Classes |
 |---------|---------|
-| Page background | `bg-zinc-950` |
-| Cards | `bg-zinc-900 border border-zinc-800 rounded-xl p-6` |
-| Inputs | `bg-zinc-800` |
+| Background | `bg-zinc-950` |
+| Card | `bg-zinc-900 border border-zinc-800 rounded-xl p-6` |
 | Primary text | `text-zinc-100` |
-| Secondary text | `text-zinc-400` |
-| Muted text | `text-zinc-500` |
-| Primary button | `bg-blue-600 text-white hover:bg-blue-700` |
-| Success | `text-green-400`, `bg-green-500/10` |
-| Error | `text-red-400`, `bg-red-900/20 border-red-800` |
+| Muted text | `text-zinc-400` / `text-zinc-500` |
+| Primary button | `bg-blue-600 hover:bg-blue-700 text-white` |
+| Success | `text-green-400` |
+| Error | `text-red-400` |
 
-## Naming Conventions
-
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `WinRateChart`, `StatsOverview` |
-| Types/Interfaces | PascalCase | `Game`, `FilterState` |
-| Functions/Variables | camelCase | `calculateStats`, `activeTab` |
-| Constants (arrays) | SCREAMING_SNAKE_CASE | `TIME_CLASSES`, `RESULTS` |
-
-## Import Order
-
+### Import Order
 ```typescript
 'use client';
 import { useState } from 'react';           // 1. React/external
-import { LineChart } from 'recharts';
-import type { Game } from '@/lib/types';    // 2. Type imports
+import type { Game } from '@/lib/types';    // 2. Types
 import { calculateStats } from '@/lib/utils'; // 3. Internal (@/)
 import Card from './ui/Card';               // 4. Relative
 ```
 
-## Error Handling
+## Anti-Patterns
 
-```typescript
-try {
-  await fetchGames(username);
-} catch (error) {
-  const message = error instanceof Error ? error.message : 'Unknown error';
-  setState(prev => ({ ...prev, error: message }));
-}
-// Display: className="bg-red-900/20 border-red-800 text-red-400"
-```
+| Forbidden | Reason |
+|-----------|--------|
+| Edit `next.config.ts` headers | COOP/COEP required for Stockfish WASM SharedArrayBuffer |
+| Import types from `@/lib/shared/types` | Use `@/lib/types` exclusively |
+| Skip `getAuthenticatedUser()` in API routes | All `/api/` routes (except auth) require session check |
+| Modify `public/stockfish/*` | Vendored WASM files, excluded from lint |
+
+## Architecture Notes
+
+### DDD Layers
+- **Domain** (`lib/domain/`): Business logic, interfaces, models
+- **Infrastructure** (`lib/infrastructure/`): Concrete implementations (Turso, API clients)
+- **Shared** (`lib/shared/`): Cross-cutting (errors, base types)
+
+### Auth Flow
+- NextAuth v5 with Credentials provider
+- 30-day JWT sessions enriched with chess usernames
+- Rate limiting: 5 login attempts/min, 15-min lockout after 5 failures
+- `proxy.ts` contains middleware logic but is **not active** (should be `middleware.ts`)
+
+### Analysis Pipeline
+1. Try Lichess Cloud Eval (fast, pre-computed)
+2. Fallback to Stockfish WASM (slower, local)
+3. Store results in `games.analysis` column
+
+### Testing
+- **529 tests** across 20 files
+- **70% coverage threshold** (branches, functions, lines, statements)
+- MSW for API mocking, in-memory SQLite for DB tests
 
 ## Key Types
 
@@ -116,56 +123,15 @@ interface Game {
   result: 'win' | 'loss' | 'draw';
   opening: { eco: string; name: string };
   opponent: { username: string; rating: number };
-  playerRating: number;
-  termination: TerminationType;
-  moveCount: number;
-  ratingChange?: number;
+  clock?: ClockData;
+  analysis?: AnalysisData;
 }
 ```
 
-## Component Patterns
+## CI/CD
 
-### Chart Components
-- Wrap in `Card` with title/subtitle props
-- Use `ResponsiveContainer` from Recharts
-- Handle empty state: `<div className="h-64 flex items-center justify-center text-zinc-500">No data</div>`
-
-### Tab Components
-- Accept `games: Game[]` as primary prop
-- Calculate derived data using utils at component top
-- Compose multiple chart components
-
-### Utility Functions (`lib/utils.ts`)
-- Group with comment headers: `// ============================================`
-- Return typed data points (e.g., `OpeningDataPoint[]`)
-- Filter functions accept `Partial<FilterState>`
-
-## CSS Variables (globals.css)
-
-```css
-:root {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --primary: #3b82f6;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --warning: #eab308;
-}
-```
-
-## Common Tasks
-
-### Adding a New Chart
-1. Create `components/NewChart.tsx` with `'use client'` directive
-2. Define `interface NewChartProps { data: DataPoint[] }`
-3. Wrap in Card, use ResponsiveContainer, handle empty state
-
-### Adding a Utility Function
-1. Add to `lib/utils.ts` under appropriate section header
-2. Define return type in `lib/types.ts` if needed
-3. Export and import via `@/lib/utils`
-
-### Adding an API Endpoint
-1. Add response types to `lib/types.ts`
-2. Create async function in `lib/api/*.ts`
-3. Map response to internal `Game` type
+GitHub Actions (`.github/workflows/ci.yml`):
+- **Security**: `npm audit`
+- **Test + Typecheck**: Must pass (blocking)
+- **Lint**: Non-blocking (pre-existing issues)
+- **Build**: Runs after test + typecheck pass

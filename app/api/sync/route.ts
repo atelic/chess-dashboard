@@ -1,25 +1,22 @@
 import { NextResponse } from 'next/server';
 import { createSyncService, createUserService } from '@/lib/infrastructure/factories';
-import { AppError } from '@/lib/shared/errors';
+import { getAuthenticatedUser } from '@/lib/auth/helpers';
+import { AppError, UnauthorizedError } from '@/lib/shared/errors';
 
 /**
  * POST /api/sync
- * Trigger a sync of games from configured platforms
+ * Trigger a sync of games from configured platforms for the authenticated user
  * 
  * Body:
  * - fullSync: boolean (optional) - If true, fetch all games. Otherwise, incremental sync.
  */
 export async function POST(request: Request) {
   try {
-    const userService = await createUserService();
-    const user = await userService.getCurrentUser();
+    // Get authenticated user from session
+    const authUser = await getAuthenticatedUser();
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'No user found. Please set up your profile first.', code: 'USER_NOT_FOUND' },
-        { status: 404 },
-      );
-    }
+    const userService = await createUserService();
+    const user = await userService.getUserById(authUser.id);
 
     let fullSync = false;
     try {
@@ -48,6 +45,13 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('POST /api/sync error:', error);
 
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: 401 },
+      );
+    }
+
     if (error instanceof AppError) {
       return NextResponse.json(
         { error: error.message, code: error.code },
@@ -64,19 +68,15 @@ export async function POST(request: Request) {
 
 /**
  * DELETE /api/sync
- * Delete all games and perform a full resync
+ * Delete all games and perform a full resync for the authenticated user
  */
-export async function DELETE(request: Request) {
+export async function DELETE() {
   try {
-    const userService = await createUserService();
-    const user = await userService.getCurrentUser();
+    // Get authenticated user from session
+    const authUser = await getAuthenticatedUser();
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'No user found. Please set up your profile first.', code: 'USER_NOT_FOUND' },
-        { status: 404 },
-      );
-    }
+    const userService = await createUserService();
+    const user = await userService.getUserById(authUser.id);
 
     const syncService = await createSyncService();
     const result = await syncService.fullResync(user.id);
@@ -89,6 +89,13 @@ export async function DELETE(request: Request) {
     });
   } catch (error) {
     console.error('DELETE /api/sync error:', error);
+
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: 401 },
+      );
+    }
 
     if (error instanceof AppError) {
       return NextResponse.json(

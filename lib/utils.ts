@@ -17,7 +17,6 @@ import type {
   TerminationStats,
   Insight,
   FilterState,
-  GameSource,
   DateStats,
   TimeStats,
   TimeClassTimeStats,
@@ -466,7 +465,7 @@ export function calculateDynamicBrackets(games: Game[]): { min: number; max: num
 export function calculateRatingBrackets(games: Game[]): RatingBracketStats[] {
   if (games.length === 0) return [];
 
-  const { min, size } = calculateDynamicBrackets(games);
+  const { size } = calculateDynamicBrackets(games);
   const brackets = new Map<string, {
     minRating: number;
     maxRating: number;
@@ -1680,8 +1679,6 @@ export function calculatePhasePerformance(games: Game[]): PhasePerformanceSummar
     
     // Distribute errors based on typical phase lengths
     // Assume errors are uniformly distributed (rough approximation)
-    const totalErrors = analysis.blunders + analysis.mistakes + analysis.inaccuracies;
-    
     if (moveCount <= 20) {
       // Short game - attribute to opening/middlegame
       phaseStats.opening.blunders += Math.round(analysis.blunders * 0.6);
@@ -1757,7 +1754,7 @@ export function calculatePhasePerformance(games: Game[]): PhasePerformanceSummar
   ];
 
   // Filter out phases with no data
-  const activePhasesWeak = phases.filter(([phase, rate]) => {
+  const activePhasesWeak = phases.filter(([phase]) => {
     if (phase === 'opening') return phaseStats.opening.games > 0;
     if (phase === 'middlegame') return phaseStats.middlegame.games > 0;
     return phaseStats.endgame.games > 0;
@@ -2085,7 +2082,6 @@ export function generateRecommendations(games: Game[]): StudyRecommendation[] {
   }
 
   // 6. Rating performance recommendations
-  const higherRated = games.filter(g => g.opponent.rating > g.playerRating + 100);
   const lowerRated = games.filter(g => g.opponent.rating < g.playerRating - 100);
   
   if (lowerRated.length >= 10) {

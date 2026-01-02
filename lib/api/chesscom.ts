@@ -45,6 +45,7 @@ async function fetchArchiveGames(archiveUrl: string): Promise<ChessComGame[]> {
 }
 
 // Map Chess.com result to termination type
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function mapChessComTermination(result: string): TerminationType {
   const map: Record<string, TerminationType> = {
     'checkmated': 'checkmate',

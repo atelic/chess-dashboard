@@ -7,7 +7,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import GamesTable from '@/components/games/GamesTable';
-import { useAppStore } from '@/stores/useAppStore';
+import { useUser } from '@/hooks/useUser';
 import { fetchChessComMonthlyArchive, extractChessComAnalysis } from '@/lib/infrastructure/api-clients/ChessComClient';
 
 interface BulkFetchProgress {
@@ -22,13 +22,9 @@ interface GamesTabProps {
   onAnalyze?: (gameId: string) => Promise<void>;
 }
 
-const TIME_CLASSES = ['all', 'bullet', 'blitz', 'rapid', 'classical'] as const;
-const RESULTS = ['all', 'win', 'loss', 'draw'] as const;
-const SOURCES = ['all', 'chesscom', 'lichess'] as const;
-
-type TimeClass = typeof TIME_CLASSES[number];
-type Result = typeof RESULTS[number];
-type Source = typeof SOURCES[number];
+type TimeClass = 'all' | 'bullet' | 'blitz' | 'rapid' | 'classical';
+type Result = 'all' | 'win' | 'loss' | 'draw';
+type Source = 'all' | 'chesscom' | 'lichess';
 
 export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
   const [search, setSearch] = useState('');
@@ -39,7 +35,7 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
   const [bulkFetchProgress, setBulkFetchProgress] = useState<BulkFetchProgress | null>(null);
   const [bulkFetchError, setBulkFetchError] = useState<string | null>(null);
   
-  const user = useAppStore(state => state.user);
+  const { user } = useUser();
   
   const PAGE_SIZE = 25;
 

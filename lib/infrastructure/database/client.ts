@@ -270,6 +270,32 @@ const MIGRATIONS = [
       WHERE analyzed_at IS NULL;
     `,
   },
+  {
+    version: 5,
+    name: 'add_auth_support',
+    sql: `
+      -- Add authentication fields to users table
+      ALTER TABLE users ADD COLUMN email TEXT UNIQUE;
+      ALTER TABLE users ADD COLUMN password_hash TEXT;
+      ALTER TABLE users ADD COLUMN reset_token TEXT;
+      ALTER TABLE users ADD COLUMN reset_token_expires_at TEXT;
+
+      -- Sessions table for NextAuth database sessions
+      CREATE TABLE IF NOT EXISTS sessions (
+        session_token TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        expires_at TEXT NOT NULL
+      );
+
+      -- Index for efficient session lookups
+      CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
+      
+      -- Index for password reset token lookups
+      CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
+      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+    `,
+  },
 ];
 
 /**

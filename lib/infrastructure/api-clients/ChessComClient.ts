@@ -424,7 +424,6 @@ export class ChessComClient implements IChessClient {
 
     // Daily chess format: "1/86400" (1 day per move)
     if (timeControl.includes('/')) {
-      const parts = timeControl.split('/');
       // For daily chess, we don't track clock data the same way
       return null;
     }
