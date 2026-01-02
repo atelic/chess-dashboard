@@ -43,13 +43,13 @@ export const authConfig: NextAuthConfig = {
           // Return user object for session
           return {
             id: String(user.id),
-            email: user.email!,
+            email: user.email ?? email,
             name: user.chesscomUsername || user.lichessUsername || user.email,
             chesscomUsername: user.chesscomUsername,
             lichessUsername: user.lichessUsername,
           };
-        } catch {
-          // Record failed login attempt
+        } catch (err) {
+          console.error('[Auth] Login failed for', email, err instanceof Error ? err.message : err);
           recordFailedLogin(email);
           return null;
         }

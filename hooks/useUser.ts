@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useCallback, useState } from 'react';
 import '@/lib/auth/types';
 
@@ -94,6 +94,7 @@ export function useUser(): UseUserReturn {
         throw new Error(data.error || 'Failed to delete user');
       }
 
+      await signOut({ callbackUrl: '/' });
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete user';

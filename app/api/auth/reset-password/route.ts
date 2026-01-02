@@ -36,6 +36,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (body.password.length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters long', code: 'VALIDATION_ERROR', field: 'password' },
+        { status: 400 },
+      );
+    }
+
     const userService = await createUserService();
     await userService.resetPassword(body.token, body.password);
 

@@ -64,7 +64,7 @@ export class TursoSessionRepository implements ISessionRepository {
 
   async deleteExpired(): Promise<number> {
     const result = await this.db.execute(
-      "DELETE FROM sessions WHERE expires_at < datetime('now')",
+      "DELETE FROM sessions WHERE expires_at < datetime('now', 'utc')",
     );
     return result.changes;
   }
