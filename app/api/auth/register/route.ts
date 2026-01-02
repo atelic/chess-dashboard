@@ -48,9 +48,11 @@ export async function POST(request: Request) {
     });
 
     // Send welcome email (non-blocking, don't fail registration if email fails)
-    sendWelcomeEmail(user.email!).catch((err) => {
-      console.error('Failed to send welcome email:', err);
-    });
+    if (user.email) {
+      sendWelcomeEmail(user.email).catch((err) => {
+        console.error('Failed to send welcome email:', err);
+      });
+    }
 
     return NextResponse.json({
       success: true,

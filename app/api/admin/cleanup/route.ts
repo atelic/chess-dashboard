@@ -19,9 +19,9 @@ export async function POST(request: Request) {
   const expectedSecret = process.env.ADMIN_SECRET;
   
   // In development, allow without secret
-  // In production, require the secret
-  if (process.env.NODE_ENV === 'production' && expectedSecret) {
-    if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
+  // In production, ALWAYS require the secret
+  if (process.env.NODE_ENV === 'production') {
+    if (!expectedSecret || !authHeader || authHeader !== `Bearer ${expectedSecret}`) {
       return NextResponse.json(
         { error: 'Unauthorized', code: 'UNAUTHORIZED' },
         { status: 401 },

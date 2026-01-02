@@ -16,13 +16,13 @@ export interface AuthenticatedUser {
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser> {
   const session = await auth();
   
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.email) {
     throw new UnauthorizedError();
   }
 
   return {
     id: parseInt(session.user.id, 10),
-    email: session.user.email!,
+    email: session.user.email,
     chesscomUsername: session.user.chesscomUsername ?? null,
     lichessUsername: session.user.lichessUsername ?? null,
   };
