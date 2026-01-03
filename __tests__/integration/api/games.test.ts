@@ -34,7 +34,7 @@ const mockGames = [
     timeClass: 'rapid' as const,
     playerColor: 'black' as const,
     result: 'loss' as const,
-    opening: { eco: 'C50', name: "Italian Game" },
+    opening: { eco: 'C50', name: 'Italian Game' },
     opponent: { username: 'opponent2', rating: 1700 },
     playerRating: 1590,
     termination: 'resignation' as const,

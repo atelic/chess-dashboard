@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 import type { UserStats } from '@/lib/types';
 import Card from './ui/Card';
 
