@@ -1,4 +1,4 @@
-import type { IGameRepository } from '../repositories/interfaces';
+import type { IGameRepository, PaginationOptions, PaginatedResult } from '../repositories/interfaces';
 import type { Game, PlayerColor, GameResult, AnalysisData } from '../models/Game';
 import { GameFilter } from '../models/GameFilter';
 
@@ -50,6 +50,14 @@ export class GameService {
    */
   async getGames(userId: number, filter?: GameFilter): Promise<Game[]> {
     return this.gameRepository.findAll(userId, filter);
+  }
+
+  async getGamesPaginated(
+    userId: number, 
+    filter?: GameFilter, 
+    pagination?: PaginationOptions
+  ): Promise<PaginatedResult<Game>> {
+    return this.gameRepository.findPaginated(userId, filter, pagination);
   }
 
   /**

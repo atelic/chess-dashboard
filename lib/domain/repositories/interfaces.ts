@@ -2,6 +2,19 @@ import type { Game, GameSource, PlayerColor, AnalysisData } from '@/lib/domain/m
 import type { User, CreateUserData, UpdateUserData } from '@/lib/domain/models/User';
 import type { GameFilter } from '@/lib/domain/models/GameFilter';
 
+export interface PaginationOptions {
+  limit?: number;
+  offset?: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
 /**
  * Abstract interface for game data access.
  * Implementations: SQLiteGameRepository, PostgresGameRepository, etc.
@@ -12,9 +25,14 @@ export interface IGameRepository {
   // ============================================
   
   /**
-   * Find all games for a user, optionally filtered
+   * Find all games for a user, optionally filtered and paginated
    */
-  findAll(userId: number, filter?: GameFilter): Promise<Game[]>;
+  findAll(userId: number, filter?: GameFilter, pagination?: PaginationOptions): Promise<Game[]>;
+  
+  /**
+   * Find games with pagination metadata
+   */
+  findPaginated(userId: number, filter?: GameFilter, pagination?: PaginationOptions): Promise<PaginatedResult<Game>>;
   
   /**
    * Find a single game by ID

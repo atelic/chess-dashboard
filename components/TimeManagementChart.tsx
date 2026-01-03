@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import {
   BarChart,
   Bar,
@@ -33,7 +33,7 @@ const TIME_CLASS_COLORS: Record<TimeClass, string> = {
   classical: '#3b82f6', // blue
 };
 
-export default function TimeManagementChart({ games }: TimeManagementChartProps) {
+const TimeManagementChart = memo(function TimeManagementChart({ games }: TimeManagementChartProps) {
   const timeStats = useMemo(() => calculateTimeStats(games), [games]);
   const pressureStats = useMemo(() => analyzeTimePressure(games), [games]);
 
@@ -204,4 +204,6 @@ export default function TimeManagementChart({ games }: TimeManagementChartProps)
       </div>
     </Card>
   );
-}
+});
+
+export default TimeManagementChart;

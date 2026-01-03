@@ -1,6 +1,7 @@
 'use client';
 
-import type { Game, TerminationStats } from '@/lib/types';
+import { memo, useMemo } from 'react';
+import type { Game } from '@/lib/types';
 import { calculateTerminationStats } from '@/lib/utils';
 import Card from './ui/Card';
 
@@ -8,8 +9,8 @@ interface TerminationChartProps {
   games: Game[];
 }
 
-export default function TerminationChart({ games }: TerminationChartProps) {
-  const stats = calculateTerminationStats(games);
+const TerminationChart = memo(function TerminationChart({ games }: TerminationChartProps) {
+  const stats = useMemo(() => calculateTerminationStats(games), [games]);
 
   if (stats.length === 0) {
     return (
@@ -98,4 +99,6 @@ export default function TerminationChart({ games }: TerminationChartProps) {
       </div>
     </Card>
   );
-}
+});
+
+export default TerminationChart;

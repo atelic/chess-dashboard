@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -55,7 +56,15 @@ function formatOpeningLabel(eco: string, name: string, maxLength: number = 25): 
   return `${eco} ${truncated}`;
 }
 
-export default function OpeningsChart({ data }: OpeningsChartProps) {
+const OpeningsChart = memo(function OpeningsChart({ data }: OpeningsChartProps) {
+  const chartData = useMemo(() => 
+    data.map((d) => ({
+      ...d,
+      label: formatOpeningLabel(d.eco, d.name),
+    })), 
+    [data]
+  );
+
   if (data.length === 0) {
     return (
       <Card title="Results by Opening">
@@ -65,12 +74,6 @@ export default function OpeningsChart({ data }: OpeningsChartProps) {
       </Card>
     );
   }
-
-  // Add display labels to data
-  const chartData = data.map((d) => ({
-    ...d,
-    label: formatOpeningLabel(d.eco, d.name),
-  }));
 
   return (
     <Card title="Results by Opening" subtitle="Top 10 most played openings">
@@ -113,4 +116,6 @@ export default function OpeningsChart({ data }: OpeningsChartProps) {
       </div>
     </Card>
   );
-}
+});
+
+export default OpeningsChart;

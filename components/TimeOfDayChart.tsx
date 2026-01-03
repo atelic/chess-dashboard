@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import {
   BarChart,
   Bar,
@@ -37,7 +37,7 @@ function getWinRateColor(winRate: number, games: number): string {
   return '#22c55e'; // green
 }
 
-export default function TimeOfDayChart({ games }: TimeOfDayChartProps) {
+const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartProps) {
   const hourlyStats = useMemo(() => calculateHourlyStats(games), [games]);
   const dayOfWeekStats = useMemo(() => calculateDayOfWeekStats(games), [games]);
   const heatmapData = useMemo(() => calculateTimeHeatmap(games), [games]);
@@ -232,4 +232,6 @@ export default function TimeOfDayChart({ games }: TimeOfDayChartProps) {
       </div>
     </Card>
   );
-}
+});
+
+export default TimeOfDayChart;
