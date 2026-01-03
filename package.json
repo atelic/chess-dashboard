@@ -13,7 +13,8 @@
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:all": "vitest run && playwright test"
+    "test:all": "vitest run && playwright test",
+    "prepare": "husky"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
@@ -41,11 +42,21 @@
     "dotenv": "^16.4.7",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "husky": "^9.1.7",
     "jsdom": "^27.4.0",
+    "lint-staged": "^16.2.7",
     "msw": "^2.12.7",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
     "typescript": "^5",
     "vitest": "^4.0.16"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix --max-warnings=0"
+    ],
+    "*.{js,jsx,mjs}": [
+      "eslint --fix --max-warnings=0"
+    ]
   }
 }

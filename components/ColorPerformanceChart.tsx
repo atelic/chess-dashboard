@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -44,7 +45,15 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   return null;
 }
 
-export default function ColorPerformanceChart({ data }: ColorPerformanceChartProps) {
+const ColorPerformanceChart = memo(function ColorPerformanceChart({ data }: ColorPerformanceChartProps) {
+  const chartData = useMemo(() => 
+    data.map((d) => ({
+      ...d,
+      label: d.color.charAt(0).toUpperCase() + d.color.slice(1),
+    })),
+    [data]
+  );
+
   if (data.length === 0) {
     return (
       <Card title="Performance by Color">
@@ -54,12 +63,6 @@ export default function ColorPerformanceChart({ data }: ColorPerformanceChartPro
       </Card>
     );
   }
-
-  // Format data with proper labels
-  const chartData = data.map((d) => ({
-    ...d,
-    label: d.color.charAt(0).toUpperCase() + d.color.slice(1),
-  }));
 
   return (
     <Card title="Performance by Color" subtitle="Win rate as White vs Black">
@@ -93,4 +96,6 @@ export default function ColorPerformanceChart({ data }: ColorPerformanceChartPro
       </div>
     </Card>
   );
-}
+});
+
+export default ColorPerformanceChart;

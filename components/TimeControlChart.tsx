@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import type { TimeControlDataPoint } from '@/lib/types';
 import Card from './ui/Card';
@@ -41,7 +42,15 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
   return null;
 }
 
-export default function TimeControlChart({ data }: TimeControlChartProps) {
+const TimeControlChart = memo(function TimeControlChart({ data }: TimeControlChartProps) {
+  const chartData = useMemo(() => 
+    data.map((d) => ({
+      ...d,
+      name: LABELS[d.timeClass],
+    })),
+    [data]
+  );
+
   if (data.length === 0) {
     return (
       <Card title="Time Control Distribution">
@@ -51,12 +60,6 @@ export default function TimeControlChart({ data }: TimeControlChartProps) {
       </Card>
     );
   }
-
-  // Convert data to chart-compatible format
-  const chartData = data.map((d) => ({
-    ...d,
-    name: LABELS[d.timeClass],
-  }));
 
   return (
     <Card title="Time Control Distribution" subtitle="Games by time control">
@@ -95,4 +98,6 @@ export default function TimeControlChart({ data }: TimeControlChartProps) {
       </div>
     </Card>
   );
-}
+});
+
+export default TimeControlChart;

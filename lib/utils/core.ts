@@ -34,7 +34,7 @@ import type {
   ResilienceStats,
   GameResilience,
   StudyRecommendation,
-} from './types';
+} from '../types';
 
 // ============================================
 // EXCLUDED OPENINGS

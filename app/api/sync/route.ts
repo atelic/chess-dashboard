@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createSyncService, createUserService } from '@/lib/infrastructure/factories';
 import { AppError } from '@/lib/shared/errors';
+import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from '@/lib/shared/rate-limit';
 
 /**
  * POST /api/sync
@@ -11,6 +12,22 @@ import { AppError } from '@/lib/shared/errors';
  */
 export async function POST(request: Request) {
   try {
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit(`sync:${clientId}`, RATE_LIMITS.sync);
+    
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Try again later.', code: 'RATE_LIMIT_EXCEEDED' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((rateLimit.resetTime - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+          }
+        }
+      );
+    }
+
     const userService = await createUserService();
     const user = await userService.getCurrentUser();
 
@@ -68,6 +85,22 @@ export async function POST(request: Request) {
  */
 export async function DELETE(request: Request) {
   try {
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit(`sync:${clientId}`, RATE_LIMITS.sync);
+    
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Try again later.', code: 'RATE_LIMIT_EXCEEDED' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((rateLimit.resetTime - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+          }
+        }
+      );
+    }
+
     const userService = await createUserService();
     const user = await userService.getCurrentUser();
 

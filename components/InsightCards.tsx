@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, memo } from 'react';
 import type { Game, Insight } from '@/lib/types';
 import { generateInsights } from '@/lib/utils';
 
@@ -11,7 +12,7 @@ interface InsightCardProps {
   insight: Insight;
 }
 
-function InsightCard({ insight }: InsightCardProps) {
+const InsightCard = memo(function InsightCard({ insight }: InsightCardProps) {
   const bgColors = {
     positive: 'bg-green-950/30 border-green-900/50',
     negative: 'bg-red-950/30 border-red-900/50',
@@ -46,10 +47,36 @@ function InsightCard({ insight }: InsightCardProps) {
       </div>
     </div>
   );
-}
+});
 
 export default function InsightCards({ games }: InsightCardsProps) {
-  const insights = generateInsights(games);
+  // Memoize expensive insight generation
+  const insights = useMemo(() => generateInsights(games), [games]);
+
+  // Memoize grouped and ordered insights
+  const orderedInsights = useMemo(() => {
+    const positiveInsights = insights.filter(i => i.type === 'positive');
+    const negativeInsights = insights.filter(i => i.type === 'negative');
+    const neutralInsights = insights.filter(i => i.type === 'neutral');
+    const warningInsights = insights.filter(i => i.type === 'warning');
+
+    const ordered: Insight[] = [];
+    const maxLen = Math.max(
+      positiveInsights.length,
+      neutralInsights.length,
+      negativeInsights.length,
+      warningInsights.length
+    );
+
+    for (let i = 0; i < maxLen; i++) {
+      if (positiveInsights[i]) ordered.push(positiveInsights[i]);
+      if (neutralInsights[i]) ordered.push(neutralInsights[i]);
+      if (negativeInsights[i]) ordered.push(negativeInsights[i]);
+      if (warningInsights[i]) ordered.push(warningInsights[i]);
+    }
+
+    return ordered;
+  }, [insights]);
 
   if (insights.length === 0) {
     return (
@@ -59,28 +86,6 @@ export default function InsightCards({ games }: InsightCardsProps) {
         <p className="text-sm">Play more games to generate insights about your play style.</p>
       </div>
     );
-  }
-
-  // Group insights by type for display
-  const positiveInsights = insights.filter(i => i.type === 'positive');
-  const negativeInsights = insights.filter(i => i.type === 'negative');
-  const neutralInsights = insights.filter(i => i.type === 'neutral');
-  const warningInsights = insights.filter(i => i.type === 'warning');
-
-  // Interleave for visual variety: positive, neutral, negative, warning pattern
-  const orderedInsights: Insight[] = [];
-  const maxLen = Math.max(
-    positiveInsights.length,
-    neutralInsights.length,
-    negativeInsights.length,
-    warningInsights.length
-  );
-
-  for (let i = 0; i < maxLen; i++) {
-    if (positiveInsights[i]) orderedInsights.push(positiveInsights[i]);
-    if (neutralInsights[i]) orderedInsights.push(neutralInsights[i]);
-    if (negativeInsights[i]) orderedInsights.push(negativeInsights[i]);
-    if (warningInsights[i]) orderedInsights.push(warningInsights[i]);
   }
 
   return (

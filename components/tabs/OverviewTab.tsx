@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { Game } from '@/lib/types';
 import {
   calculateStats,
@@ -21,12 +22,13 @@ interface OverviewTabProps {
 }
 
 export default function OverviewTab({ games }: OverviewTabProps) {
-  const stats = calculateStats(games);
-  const winRateData = calculateWinRateOverTime(games);
-  const openingData = calculateOpeningStats(games);
-  const ratingData = calculateRatingProgression(games);
-  const timeControlData = calculateTimeControlDistribution(games);
-  const colorPerformanceData = calculateColorPerformance(games);
+  // Memoize expensive calculations to prevent recalculation on every render
+  const stats = useMemo(() => calculateStats(games), [games]);
+  const winRateData = useMemo(() => calculateWinRateOverTime(games), [games]);
+  const openingData = useMemo(() => calculateOpeningStats(games), [games]);
+  const ratingData = useMemo(() => calculateRatingProgression(games), [games]);
+  const timeControlData = useMemo(() => calculateTimeControlDistribution(games), [games]);
+  const colorPerformanceData = useMemo(() => calculateColorPerformance(games), [games]);
 
   return (
     <div className="space-y-6">

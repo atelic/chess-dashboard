@@ -13,6 +13,7 @@ import {
 describe('GameService', () => {
   const mockGameRepo: IGameRepository = {
     findAll: vi.fn(),
+    findPaginated: vi.fn(),
     findById: vi.fn(),
     findByIds: vi.fn(),
     findByEco: vi.fn(),

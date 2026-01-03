@@ -12,6 +12,7 @@ import {
   validateGameUrl,
   validateDateString,
 } from '@/lib/shared/validation';
+import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from '@/lib/shared/rate-limit';
 
 /**
  * GET /api/games/analysis?gameId=xxx&playerColor=white&source=lichess
@@ -21,6 +22,22 @@ import {
  */
 export async function GET(request: Request) {
   try {
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit(`analysis:${clientId}`, RATE_LIMITS.analysis);
+    
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Try again later.', code: 'RATE_LIMIT_EXCEEDED' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((rateLimit.resetTime - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+          }
+        }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     
     // Validate required parameters

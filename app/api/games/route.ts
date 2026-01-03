@@ -6,7 +6,12 @@ import {
   validatePlayerColor,
   validateResult,
   validateOptionalEcoCode,
+  validatePaginationLimit,
+  validatePaginationOffset,
 } from '@/lib/shared/validation';
+
+const DEFAULT_LIMIT = 100;
+const MAX_LIMIT = 1000;
 
 /**
  * GET /api/games
@@ -42,6 +47,10 @@ export async function GET(request: Request) {
 
     const gameService = await createGameService();
     const { searchParams } = new URL(request.url);
+
+    const limit = validatePaginationLimit(searchParams.get('limit'), DEFAULT_LIMIT, MAX_LIMIT);
+    const offset = validatePaginationOffset(searchParams.get('offset'));
+    const paginate = searchParams.get('paginate') !== 'false';
 
     // Parse filter from query params
     const filterParams: Record<string, string | undefined> = {
@@ -81,10 +90,17 @@ export async function GET(request: Request) {
       filter = filter.withResults([result]);
     }
 
-    const games = await gameService.getGames(user.id, filter.isEmpty() ? undefined : filter);
+    const filterToUse = filter.isEmpty() ? undefined : filter;
+    
+    // Use paginated query for efficiency
+    const result = await gameService.getGamesPaginated(
+      user.id, 
+      filterToUse, 
+      paginate ? { limit, offset } : undefined
+    );
 
     // Serialize games for JSON response
-    const serializedGames = games.map((game) => ({
+    const serializedGames = result.data.map((game) => ({
       id: game.id,
       source: game.source,
       playedAt: game.playedAt.toISOString(),
@@ -106,10 +122,18 @@ export async function GET(request: Request) {
       } : undefined,
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       games: serializedGames,
       count: serializedGames.length,
+      total: result.total,
+      limit: result.limit,
+      offset: result.offset,
+      hasMore: result.hasMore,
     });
+
+    // Add cache headers for GET requests
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300');
+    return response;
   } catch (error) {
     console.error('GET /api/games error:', error);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import {
   LineChart,
   Line,
@@ -79,7 +79,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   return null;
 }
 
-export default function RatingChart({ data }: RatingChartProps) {
+const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
   // Determine available sources and time classes
   const availableSeries = useMemo(() => {
     const series = new Set<string>();
@@ -296,4 +296,6 @@ export default function RatingChart({ data }: RatingChartProps) {
       )}
     </Card>
   );
-}
+});
+
+export default RatingChart;

@@ -2,21 +2,29 @@
 
 ## Test Suite Status
 
-**529 tests passing** across 20 test files
+**647 tests passing** across 25 test files
 
 ### Test Coverage Completed
 - [x] Domain Models: Game, User, GameFilter
-- [x] Domain Services: GameService, UserService, SyncService
+- [x] Domain Services: GameService, UserService, SyncService, AnalysisService
 - [x] Infrastructure: ChessComClient, LichessClient
 - [x] Repositories: TursoGameRepository, TursoUserRepository
 - [x] UI Components: Button, Input, Card, Tabs, Spinner, Toast, Dashboard
-- [x] Utility Functions: lib/utils.ts (72 tests)
+- [x] Utility Functions: lib/utils/ (72 tests) - refactored to `lib/utils/core.ts` with barrel export
 - [x] Error Handling: Custom error classes
+- [x] Input Validation: validation.ts (65 tests including pagination validators)
+- [x] API Route Integration Tests: /api/user (11), /api/games (13), /api/sync (11)
+- [x] AnalysisService: 18 tests (position analysis, game analysis, quick analysis)
 
 ### Test Coverage Remaining
-- [ ] API Route Integration Tests (/api/user, /api/games, /api/sync)
 - [ ] E2E Tests with Playwright
 - [ ] More feature components (charts, filters)
+
+### Recent Improvements
+- [x] Replaced SELECT * with explicit columns in repositories
+- [x] Added pagination validators (limit, offset) with strict numeric validation
+- [x] Added optional type validators (TimeClass, Source, Result, PlayerColor)
+- [x] Refactored lib/utils.ts (2118 lines) to lib/utils/core.ts with barrel export for better organization
 
 ## CI/CD
 

@@ -1,7 +1,22 @@
-import type { IGameRepository } from '@/lib/domain/repositories/interfaces';
+import type { IGameRepository, PaginationOptions, PaginatedResult } from '@/lib/domain/repositories/interfaces';
 import type { Game, GameSource, PlayerColor, ClockData, AnalysisData } from '@/lib/domain/models/Game';
 import type { GameFilter } from '@/lib/domain/models/GameFilter';
 import type { TursoClient } from '../client';
+
+const DEFAULT_LIMIT = 100;
+const MAX_LIMIT = 1000;
+
+/**
+ * Explicit column list for SELECT queries to avoid SELECT *
+ * Must match GameRow interface properties (snake_case DB columns)
+ */
+const GAME_SELECT_COLUMNS = `
+  id, user_id, source, played_at, time_class, player_color, result,
+  opening_eco, opening_name, opponent_username, opponent_rating,
+  player_rating, termination, rating_change, move_count, rated, game_url,
+  initial_time, increment, time_remaining, avg_move_time,
+  accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
+`.replace(/\s+/g, ' ').trim();
 
 /**
  * Database row type for games table
@@ -48,8 +63,8 @@ export class TursoGameRepository implements IGameRepository {
   // QUERIES
   // ============================================
 
-  async findAll(userId: number, filter?: GameFilter): Promise<Game[]> {
-    let sql = 'SELECT * FROM games WHERE user_id = ?';
+  async findAll(userId: number, filter?: GameFilter, pagination?: PaginationOptions): Promise<Game[]> {
+    let sql = `SELECT ${GAME_SELECT_COLUMNS} FROM games WHERE user_id = ?`;
     const params: unknown[] = [userId];
 
     if (filter && !filter.isEmpty()) {
@@ -62,13 +77,38 @@ export class TursoGameRepository implements IGameRepository {
 
     sql += ' ORDER BY played_at DESC';
 
+    if (pagination) {
+      const limit = Math.min(pagination.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
+      const offset = pagination.offset ?? 0;
+      sql += ` LIMIT ? OFFSET ?`;
+      params.push(limit, offset);
+    }
+
     const rows = await this.db.query<GameRow>(sql, params);
     return rows.map((row) => this.rowToGame(row));
   }
 
+  async findPaginated(userId: number, filter?: GameFilter, pagination?: PaginationOptions): Promise<PaginatedResult<Game>> {
+    const limit = Math.min(pagination?.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
+    const offset = pagination?.offset ?? 0;
+
+    const [games, total] = await Promise.all([
+      this.findAll(userId, filter, { limit, offset }),
+      this.count(userId, filter),
+    ]);
+
+    return {
+      data: games,
+      total,
+      limit,
+      offset,
+      hasMore: offset + games.length < total,
+    };
+  }
+
   async findById(id: string): Promise<Game | null> {
     const rows = await this.db.query<GameRow>(
-      'SELECT * FROM games WHERE id = ?',
+      `SELECT ${GAME_SELECT_COLUMNS} FROM games WHERE id = ?`,
       [id],
     );
 
@@ -86,7 +126,7 @@ export class TursoGameRepository implements IGameRepository {
 
     const placeholders = ids.map(() => '?').join(', ');
     const rows = await this.db.query<GameRow>(
-      `SELECT * FROM games WHERE id IN (${placeholders}) ORDER BY played_at DESC`,
+      `SELECT ${GAME_SELECT_COLUMNS} FROM games WHERE id IN (${placeholders}) ORDER BY played_at DESC`,
       ids,
     );
 
@@ -94,7 +134,7 @@ export class TursoGameRepository implements IGameRepository {
   }
 
   async findByEco(userId: number, eco: string, color?: PlayerColor): Promise<Game[]> {
-    let sql = 'SELECT * FROM games WHERE user_id = ? AND opening_eco = ?';
+    let sql = `SELECT ${GAME_SELECT_COLUMNS} FROM games WHERE user_id = ? AND opening_eco = ?`;
     const params: unknown[] = [userId, eco];
 
     if (color) {
@@ -110,7 +150,7 @@ export class TursoGameRepository implements IGameRepository {
 
   async findByOpponent(userId: number, opponent: string): Promise<Game[]> {
     const rows = await this.db.query<GameRow>(
-      `SELECT * FROM games 
+      `SELECT ${GAME_SELECT_COLUMNS} FROM games 
        WHERE user_id = ? AND LOWER(opponent_username) = LOWER(?)
        ORDER BY played_at DESC`,
       [userId, opponent],
@@ -163,7 +203,7 @@ export class TursoGameRepository implements IGameRepository {
    */
   async findGamesNeedingAnalysis(userId: number, limit: number = 50): Promise<Game[]> {
     const rows = await this.db.query<GameRow>(
-      `SELECT * FROM games 
+      `SELECT ${GAME_SELECT_COLUMNS} FROM games 
        WHERE user_id = ? AND analyzed_at IS NULL
        ORDER BY played_at DESC
        LIMIT ?`,
