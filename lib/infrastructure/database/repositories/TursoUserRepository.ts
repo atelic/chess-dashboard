@@ -14,6 +14,8 @@ interface UserRow {
   last_synced_at: string | null;
 }
 
+const USER_SELECT_COLUMNS = 'id, chesscom_username, lichess_username, created_at, last_synced_at';
+
 /**
  * Turso implementation of IUserRepository
  */
@@ -26,7 +28,7 @@ export class TursoUserRepository implements IUserRepository {
 
   async findById(id: number): Promise<User | null> {
     const rows = await this.db.query<UserRow>(
-      'SELECT * FROM users WHERE id = ?',
+      `SELECT ${USER_SELECT_COLUMNS} FROM users WHERE id = ?`,
       [id],
     );
 
@@ -39,7 +41,7 @@ export class TursoUserRepository implements IUserRepository {
 
   async findFirst(): Promise<User | null> {
     const rows = await this.db.query<UserRow>(
-      'SELECT * FROM users ORDER BY id ASC LIMIT 1',
+      `SELECT ${USER_SELECT_COLUMNS} FROM users ORDER BY id ASC LIMIT 1`,
     );
 
     if (rows.length === 0) {

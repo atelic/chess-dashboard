@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import type { UserStats } from '@/lib/types';
 import Card from './ui/Card';
 
@@ -7,7 +8,7 @@ interface StatsOverviewProps {
   stats: UserStats;
 }
 
-export default function StatsOverview({ stats }: StatsOverviewProps) {
+const StatsOverview = memo(function StatsOverview({ stats }: StatsOverviewProps) {
   const statCards = [
     {
       label: 'Total Games',
@@ -53,4 +54,6 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
       ))}
     </div>
   );
-}
+});
+
+export default StatsOverview;

@@ -2,29 +2,21 @@
 
 import { useState, useCallback } from 'react';
 import { useAppStore } from '@/stores/useAppStore';
-import type { TerminationType } from '@/lib/shared/types';
+import type { Game } from '@/lib/types';
 
-// ============================================
-// TYPES
-// ============================================
+export type { Game };
 
-export interface Game {
+interface ApiGameResponse {
   id: string;
   source: 'chesscom' | 'lichess';
   playedAt: string;
   timeClass: 'bullet' | 'blitz' | 'rapid' | 'classical';
   playerColor: 'white' | 'black';
   result: 'win' | 'loss' | 'draw';
-  opening: {
-    eco: string;
-    name: string;
-  };
-  opponent: {
-    username: string;
-    rating: number;
-  };
+  opening: { eco: string; name: string };
+  opponent: { username: string; rating: number };
   playerRating: number;
-  termination: TerminationType;
+  termination: string;
   moveCount: number;
   ratingChange?: number;
   rated: boolean;
@@ -42,6 +34,18 @@ export interface Game {
     inaccuracies: number;
     acpl?: number;
     analyzedAt?: string;
+  };
+}
+
+function deserializeGame(apiGame: ApiGameResponse): Game {
+  return {
+    ...apiGame,
+    playedAt: new Date(apiGame.playedAt),
+    termination: apiGame.termination as Game['termination'],
+    analysis: apiGame.analysis ? {
+      ...apiGame.analysis,
+      analyzedAt: apiGame.analysis.analyzedAt ? new Date(apiGame.analysis.analyzedAt) : undefined,
+    } : undefined,
   };
 }
 
@@ -127,7 +131,7 @@ export function useGames(): UseGamesReturn {
         throw new Error(data.error || 'Failed to fetch games');
       }
 
-      setGames(data.games);
+      setGames(data.games.map(deserializeGame));
       setTotalCount(data.count);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch games';
@@ -155,7 +159,7 @@ export function useGames(): UseGamesReturn {
           throw new Error(data.error || 'Failed to fetch games');
         }
 
-        return data.games;
+        return data.games.map(deserializeGame);
       } catch (err) {
         console.error('Failed to fetch games by ECO:', err);
         return [];
@@ -179,7 +183,7 @@ export function useGames(): UseGamesReturn {
         throw new Error(data.error || 'Failed to fetch games');
       }
 
-      return data.games;
+      return data.games.map(deserializeGame);
     } catch (err) {
       console.error('Failed to fetch games by opponent:', err);
       return [];

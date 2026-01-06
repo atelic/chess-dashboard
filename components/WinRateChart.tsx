@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import {
   LineChart,
   Line,
@@ -40,7 +41,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   return null;
 }
 
-export default function WinRateChart({ data }: WinRateChartProps) {
+const WinRateChart = memo(function WinRateChart({ data }: WinRateChartProps) {
   if (data.length === 0) {
     return (
       <Card title="Win Rate Over Time">
@@ -86,4 +87,6 @@ export default function WinRateChart({ data }: WinRateChartProps) {
       </div>
     </Card>
   );
-}
+});
+
+export default WinRateChart;

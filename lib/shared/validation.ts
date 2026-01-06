@@ -301,9 +301,6 @@ export function validateCommaSeparatedList<T>(
 // BOOLEAN VALIDATORS
 // ============================================
 
-/**
- * Validate a boolean string value
- */
 export function validateBooleanString(
   value: string | null | undefined,
   field: string
@@ -316,4 +313,90 @@ export function validateBooleanString(
   if (value === 'false') return false;
 
   throw new ValidationError(`${field} must be "true" or "false"`, field);
+}
+
+// ============================================
+// PAGINATION VALIDATORS
+// ============================================
+
+export function validatePaginationLimit(
+  value: string | null | undefined,
+  defaultValue: number,
+  maxValue: number
+): number {
+  if (value === null || value === undefined || value === '') {
+    return defaultValue;
+  }
+
+  if (!/^\d+$/.test(value)) {
+    throw new ValidationError('limit must be a valid number', 'limit');
+  }
+
+  const num = parseInt(value, 10);
+
+  if (num < 1) {
+    throw new ValidationError('limit must be at least 1', 'limit');
+  }
+
+  return Math.min(num, maxValue);
+}
+
+export function validatePaginationOffset(
+  value: string | null | undefined
+): number {
+  if (value === null || value === undefined || value === '') {
+    return 0;
+  }
+
+  if (!/^\d+$/.test(value)) {
+    throw new ValidationError('offset must be a valid number', 'offset');
+  }
+
+  const num = parseInt(value, 10);
+
+  if (num < 0) {
+    throw new ValidationError('offset cannot be negative', 'offset');
+  }
+
+  return num;
+}
+
+// ============================================
+// OPTIONAL TYPE VALIDATORS
+// ============================================
+
+export function validateOptionalTimeClass(
+  value: string | null | undefined
+): 'bullet' | 'blitz' | 'rapid' | 'classical' | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return validateTimeClass(value);
+}
+
+export function validateOptionalSource(
+  value: string | null | undefined
+): 'lichess' | 'chesscom' | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return validateSource(value);
+}
+
+export function validateOptionalResult(
+  value: string | null | undefined
+): 'win' | 'loss' | 'draw' | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return validateResult(value);
+}
+
+export function validateOptionalPlayerColor(
+  value: string | null | undefined
+): 'white' | 'black' | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return validatePlayerColor(value);
 }

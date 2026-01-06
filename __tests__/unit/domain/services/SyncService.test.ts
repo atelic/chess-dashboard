@@ -9,6 +9,7 @@ import { createTestGame, createLichessGame } from '@/__tests__/fixtures/game';
 describe('SyncService', () => {
   const mockGameRepo: IGameRepository = {
     findAll: vi.fn(),
+    findPaginated: vi.fn(),
     findById: vi.fn(),
     findByIds: vi.fn(),
     findByEco: vi.fn(),
