@@ -6,12 +6,10 @@ import {
   validatePlayerColor,
   validateResult,
   validateOptionalEcoCode,
-  validatePaginationLimit,
   validatePaginationOffset,
 } from '@/lib/shared/validation';
 
-const DEFAULT_LIMIT = 100;
-const MAX_LIMIT = 1000;
+const MAX_LIMIT = 10000;
 
 /**
  * GET /api/games
@@ -48,9 +46,11 @@ export async function GET(request: Request) {
     const gameService = await createGameService();
     const { searchParams } = new URL(request.url);
 
-    const limit = validatePaginationLimit(searchParams.get('limit'), DEFAULT_LIMIT, MAX_LIMIT);
+    // Only paginate if limit is explicitly provided
+    const limitParam = searchParams.get('limit');
+    const hasExplicitPagination = limitParam !== null;
+    const limit = hasExplicitPagination ? Math.min(parseInt(limitParam, 10) || MAX_LIMIT, MAX_LIMIT) : undefined;
     const offset = validatePaginationOffset(searchParams.get('offset'));
-    const paginate = searchParams.get('paginate') !== 'false';
 
     // Parse filter from query params
     const filterParams: Record<string, string | undefined> = {
@@ -91,12 +91,12 @@ export async function GET(request: Request) {
     }
 
     const filterToUse = filter.isEmpty() ? undefined : filter;
-    
-    // Use paginated query for efficiency
+
+    // Only apply pagination if limit was explicitly provided
     const result = await gameService.getGamesPaginated(
-      user.id, 
-      filterToUse, 
-      paginate ? { limit, offset } : undefined
+      user.id,
+      filterToUse,
+      hasExplicitPagination ? { limit: limit!, offset } : undefined
     );
 
     // Serialize games for JSON response

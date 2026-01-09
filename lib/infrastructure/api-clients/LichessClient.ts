@@ -94,8 +94,11 @@ export class LichessClient implements IChessClient {
       accuracy: 'true',   // Get accuracy percentages (if analyzed)
     });
 
-    // Set max - if fetchAll, use a very high number (Lichess will return all)
-    if (!fetchAll) {
+    // Set max - if fetchAll, use a high number to ensure all games are fetched
+    // Without this, large accounts may experience timeout issues
+    if (fetchAll) {
+      params.set('max', '10000');
+    } else {
       params.set('max', maxGames.toString());
     }
 
@@ -213,9 +216,9 @@ export class LichessClient implements IChessClient {
       opening,
       opponent: {
         username: opponent.user?.name || 'Anonymous',
-        rating: opponent.rating,
+        rating: opponent.rating ?? 0,
       },
-      playerRating: player.rating,
+      playerRating: player.rating ?? 0,
       termination,
       moveCount,
       ratingChange,

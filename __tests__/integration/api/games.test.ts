@@ -160,23 +160,23 @@ describe('API: /api/games', () => {
       expect(data.offset).toBe(1);
     });
 
-    it('caps limit at MAX_LIMIT (1000)', async () => {
+    it('caps limit at MAX_LIMIT (10000)', async () => {
       mockUserService.getCurrentUser.mockResolvedValue(mockUser);
       mockGameService.getGamesPaginated.mockResolvedValue({
         data: [],
         total: 0,
-        limit: 1000,
+        limit: 10000,
         offset: 0,
         hasMore: false,
       });
 
-      const request = createRequest('/api/games?limit=5000');
+      const request = createRequest('/api/games?limit=50000');
       await GET(request);
 
       expect(mockGameService.getGamesPaginated).toHaveBeenCalledWith(
         1,
         undefined,
-        { limit: 1000, offset: 0 }
+        { limit: 10000, offset: 0 }
       );
     });
 

@@ -89,8 +89,24 @@ export class TursoGameRepository implements IGameRepository {
   }
 
   async findPaginated(userId: number, filter?: GameFilter, pagination?: PaginationOptions): Promise<PaginatedResult<Game>> {
-    const limit = Math.min(pagination?.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
-    const offset = pagination?.offset ?? 0;
+    // If no pagination provided, return all games
+    if (!pagination) {
+      const [games, total] = await Promise.all([
+        this.findAll(userId, filter),
+        this.count(userId, filter),
+      ]);
+
+      return {
+        data: games,
+        total,
+        limit: total,
+        offset: 0,
+        hasMore: false,
+      };
+    }
+
+    const limit = Math.min(pagination.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
+    const offset = pagination.offset ?? 0;
 
     const [games, total] = await Promise.all([
       this.findAll(userId, filter, { limit, offset }),
@@ -262,16 +278,16 @@ export class TursoGameRepository implements IGameRepository {
         game.timeClass,
         game.playerColor,
         game.result,
-        game.opening.eco,
-        game.opening.name,
-        game.opponent.username,
-        game.opponent.rating,
-        game.playerRating,
-        game.termination,
+        game.opening?.eco ?? 'Unknown',
+        game.opening?.name ?? 'Unknown Opening',
+        game.opponent?.username ?? 'Unknown',
+        game.opponent?.rating ?? null,
+        game.playerRating ?? null,
+        game.termination ?? 'other',
         game.ratingChange ?? null,
-        game.moveCount,
+        game.moveCount ?? 0,
         game.rated ? 1 : 0,
-        game.gameUrl,
+        game.gameUrl ?? null,
         game.clock?.initialTime ?? null,
         game.clock?.increment ?? null,
         game.clock?.timeRemaining ?? null,
@@ -320,16 +336,16 @@ export class TursoGameRepository implements IGameRepository {
         game.timeClass,
         game.playerColor,
         game.result,
-        game.opening.eco,
-        game.opening.name,
-        game.opponent.username,
-        game.opponent.rating,
-        game.playerRating,
-        game.termination,
+        game.opening?.eco ?? 'Unknown',
+        game.opening?.name ?? 'Unknown Opening',
+        game.opponent?.username ?? 'Unknown',
+        game.opponent?.rating ?? null,
+        game.playerRating ?? null,
+        game.termination ?? 'other',
         game.ratingChange ?? null,
-        game.moveCount,
+        game.moveCount ?? 0,
         game.rated ? 1 : 0,
-        game.gameUrl,
+        game.gameUrl ?? null,
         game.clock?.initialTime ?? null,
         game.clock?.increment ?? null,
         game.clock?.timeRemaining ?? null,
