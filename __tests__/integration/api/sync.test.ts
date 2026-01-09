@@ -137,7 +137,7 @@ describe('API: /api/sync', () => {
 
       const request = new NextRequest('http://localhost/api/sync', { method: 'POST' });
       const response = await POST(request);
-      const data = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
       expect(mockSyncService.syncGames).toHaveBeenCalledWith(1, { fullSync: false });

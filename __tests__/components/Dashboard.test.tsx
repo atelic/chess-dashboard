@@ -7,7 +7,7 @@ import { createTestGame, createWinGame, createLossGame } from '../fixtures/game'
 // Mock the tab components to simplify testing
 vi.mock('@/components/tabs/OverviewTab', () => ({
   default: ({ games }: { games: unknown[] }) => (
-    <div data-testid="overview-tab">Overview Tab - {games.length} games</div>
+    <div data-testid="dashboard-tab">Dashboard Tab - {games.length} games</div>
   ),
 }));
 
@@ -17,27 +17,9 @@ vi.mock('@/components/tabs/GamesTab', () => ({
   ),
 }));
 
-vi.mock('@/components/tabs/OpeningsTab', () => ({
+vi.mock('@/components/tabs/AnalysisTab', () => ({
   default: ({ games }: { games: unknown[] }) => (
-    <div data-testid="openings-tab">Openings Tab - {games.length} games</div>
-  ),
-}));
-
-vi.mock('@/components/tabs/DaysTab', () => ({
-  default: ({ games }: { games: unknown[] }) => (
-    <div data-testid="days-tab">Days Tab - {games.length} games</div>
-  ),
-}));
-
-vi.mock('@/components/tabs/OpponentsTab', () => ({
-  default: ({ games }: { games: unknown[] }) => (
-    <div data-testid="opponents-tab">Opponents Tab - {games.length} games</div>
-  ),
-}));
-
-vi.mock('@/components/tabs/InsightsTab', () => ({
-  default: ({ games }: { games: unknown[] }) => (
-    <div data-testid="insights-tab">Insights Tab - {games.length} games</div>
+    <div data-testid="analysis-tab">Analysis Tab - {games.length} games</div>
   ),
 }));
 
@@ -52,14 +34,13 @@ describe('Dashboard', () => {
     it('shows loading indicator when isLoading is true', () => {
       render(<Dashboard games={[]} isLoading={true} />);
       
-      expect(screen.getByRole('status')).toBeInTheDocument();
       expect(screen.getByText('Loading games...')).toBeInTheDocument();
     });
 
     it('does not show tabs during loading', () => {
       render(<Dashboard games={[]} isLoading={true} />);
       
-      expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     });
   });
 
@@ -79,7 +60,7 @@ describe('Dashboard', () => {
     it('does not show tabs in empty state', () => {
       render(<Dashboard games={[]} isLoading={false} />);
       
-      expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     });
   });
 
@@ -87,38 +68,35 @@ describe('Dashboard', () => {
     it('renders tab navigation', () => {
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      expect(screen.getByRole('navigation', { name: 'Tabs' })).toBeInTheDocument();
+      expect(screen.getByRole('tablist')).toBeInTheDocument();
     });
 
     it('renders all expected tabs', () => {
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      expect(screen.getByRole('button', { name: /Overview/ })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Games/ })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Openings/ })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Days/ })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Opponents/ })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Insights/ })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Dashboard/ })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Games/ })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Analysis/ })).toBeInTheDocument();
     });
 
-    it('shows Overview tab content by default', () => {
+    it('shows Dashboard tab content by default', () => {
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      expect(screen.getByTestId('overview-tab')).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-tab')).toBeInTheDocument();
     });
 
-    it('marks Overview tab as current by default', () => {
+    it('marks Dashboard tab as selected by default', () => {
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      const overviewTab = screen.getByRole('button', { name: /Overview/ });
-      expect(overviewTab).toHaveAttribute('aria-current', 'page');
+      const dashboardTab = screen.getByRole('tab', { name: /Dashboard/ });
+      expect(dashboardTab).toHaveAttribute('aria-selected', 'true');
     });
 
     it('does not show other tab content initially', () => {
       render(<Dashboard games={mockGames} isLoading={false} />);
       
       expect(screen.queryByTestId('games-tab')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('openings-tab')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('analysis-tab')).not.toBeInTheDocument();
     });
   });
 
@@ -127,56 +105,29 @@ describe('Dashboard', () => {
       const user = userEvent.setup();
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      await user.click(screen.getByRole('button', { name: /Games/ }));
+      await user.click(screen.getByRole('tab', { name: /Games/ }));
       
       expect(screen.getByTestId('games-tab')).toBeInTheDocument();
-      expect(screen.queryByTestId('overview-tab')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('dashboard-tab')).not.toBeInTheDocument();
     });
 
-    it('updates aria-current when tab is selected', async () => {
+    it('updates aria-selected when tab is selected', async () => {
       const user = userEvent.setup();
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      await user.click(screen.getByRole('button', { name: /Games/ }));
+      await user.click(screen.getByRole('tab', { name: /Games/ }));
       
-      expect(screen.getByRole('button', { name: /Games/ })).toHaveAttribute('aria-current', 'page');
-      expect(screen.getByRole('button', { name: /Overview/ })).not.toHaveAttribute('aria-current');
+      expect(screen.getByRole('tab', { name: /Games/ })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByRole('tab', { name: /Dashboard/ })).toHaveAttribute('aria-selected', 'false');
     });
 
-    it('switches to Openings tab when clicked', async () => {
+    it('switches to Analysis tab when clicked', async () => {
       const user = userEvent.setup();
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      await user.click(screen.getByRole('button', { name: /Openings/ }));
+      await user.click(screen.getByRole('tab', { name: /Analysis/ }));
       
-      expect(screen.getByTestId('openings-tab')).toBeInTheDocument();
-    });
-
-    it('switches to Days tab when clicked', async () => {
-      const user = userEvent.setup();
-      render(<Dashboard games={mockGames} isLoading={false} />);
-      
-      await user.click(screen.getByRole('button', { name: /Days/ }));
-      
-      expect(screen.getByTestId('days-tab')).toBeInTheDocument();
-    });
-
-    it('switches to Opponents tab when clicked', async () => {
-      const user = userEvent.setup();
-      render(<Dashboard games={mockGames} isLoading={false} />);
-      
-      await user.click(screen.getByRole('button', { name: /Opponents/ }));
-      
-      expect(screen.getByTestId('opponents-tab')).toBeInTheDocument();
-    });
-
-    it('switches to Insights tab when clicked', async () => {
-      const user = userEvent.setup();
-      render(<Dashboard games={mockGames} isLoading={false} />);
-      
-      await user.click(screen.getByRole('button', { name: /Insights/ }));
-      
-      expect(screen.getByTestId('insights-tab')).toBeInTheDocument();
+      expect(screen.getByTestId('analysis-tab')).toBeInTheDocument();
     });
 
     it('can navigate back to previous tab', async () => {
@@ -184,12 +135,12 @@ describe('Dashboard', () => {
       render(<Dashboard games={mockGames} isLoading={false} />);
       
       // Navigate to Games tab
-      await user.click(screen.getByRole('button', { name: /Games/ }));
+      await user.click(screen.getByRole('tab', { name: /Games/ }));
       expect(screen.getByTestId('games-tab')).toBeInTheDocument();
       
-      // Navigate back to Overview
-      await user.click(screen.getByRole('button', { name: /Overview/ }));
-      expect(screen.getByTestId('overview-tab')).toBeInTheDocument();
+      // Navigate back to Dashboard
+      await user.click(screen.getByRole('tab', { name: /Dashboard/ }));
+      expect(screen.getByTestId('dashboard-tab')).toBeInTheDocument();
       expect(screen.queryByTestId('games-tab')).not.toBeInTheDocument();
     });
   });
@@ -198,17 +149,16 @@ describe('Dashboard', () => {
     it('passes games to active tab component', () => {
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      // The mock component displays the game count
-      expect(screen.getByTestId('overview-tab')).toHaveTextContent('3 games');
+      expect(screen.getByTestId('dashboard-tab')).toHaveTextContent('3 games');
     });
 
     it('passes games when switching tabs', async () => {
       const user = userEvent.setup();
       render(<Dashboard games={mockGames} isLoading={false} />);
       
-      await user.click(screen.getByRole('button', { name: /Insights/ }));
+      await user.click(screen.getByRole('tab', { name: /Analysis/ }));
       
-      expect(screen.getByTestId('insights-tab')).toHaveTextContent('3 games');
+      expect(screen.getByTestId('analysis-tab')).toHaveTextContent('3 games');
     });
   });
 
@@ -217,7 +167,7 @@ describe('Dashboard', () => {
       const singleGame = [createWinGame({ id: '1' })];
       render(<Dashboard games={singleGame} isLoading={false} />);
       
-      expect(screen.getByTestId('overview-tab')).toHaveTextContent('1 games');
+      expect(screen.getByTestId('dashboard-tab')).toHaveTextContent('1 games');
     });
 
     it('handles large number of games', () => {
@@ -226,7 +176,7 @@ describe('Dashboard', () => {
       );
       render(<Dashboard games={manyGames} isLoading={false} />);
       
-      expect(screen.getByTestId('overview-tab')).toHaveTextContent('1000 games');
+      expect(screen.getByTestId('dashboard-tab')).toHaveTextContent('1000 games');
     });
   });
 });

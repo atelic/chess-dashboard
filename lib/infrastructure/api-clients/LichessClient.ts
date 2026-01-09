@@ -310,7 +310,10 @@ export class LichessClient implements IChessClient {
     if (normalized === 'bullet' || normalized === 'ultrabullet') return 'bullet';
     if (normalized === 'blitz') return 'blitz';
     if (normalized === 'rapid') return 'rapid';
-    return 'classical';
+    if (normalized === 'classical') return 'classical';
+    // Default to rapid for unknown speeds (e.g., correspondence)
+    // This prevents correspondence games from inflating classical stats
+    return 'rapid';
   }
 
   /**

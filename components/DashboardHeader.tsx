@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { RefreshCw, MoreVertical, Clock, User, Trash2, RotateCcw, Loader2 } from 'lucide-react';
 import { useUser } from '@/hooks/useUser';
 import { useSync } from '@/hooks/useSync';
 import { useToast } from '@/components/ui/Toast';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import Spinner from '@/components/ui/Spinner';
+import { KnightIcon } from '@/components/icons/ChessPieces';
 import { validateChessComUser } from '@/lib/api/chesscom';
 import { validateLichessUser } from '@/lib/api/lichess';
 
@@ -126,7 +127,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
       // Check what changed
       const chesscomChanged = editChesscom.trim() !== (user?.chesscomUsername || '');
       const lichessChanged = editLichess.trim() !== (user?.lichessUsername || '');
-      const addedNewPlatform = 
+      const addedNewPlatform =
         (!user?.chesscomUsername && editChesscom.trim()) ||
         (!user?.lichessUsername && editLichess.trim());
 
@@ -186,31 +187,25 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
 
   return (
     <>
-      <header className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Logo and Title */}
             <div className="flex items-center gap-3">
-              <svg
-                className="w-8 h-8 text-blue-500"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-              </svg>
+              <div className="p-2 rounded-lg bg-primary/10">
+                <KnightIcon className="h-6 w-6 text-primary" />
+              </div>
               <div>
-                <h1 className="text-xl font-bold text-zinc-100">Chess Dashboard</h1>
-                <p className="text-sm text-zinc-500">{displayUsername}&apos;s games</p>
+                <h1 className="text-xl font-bold text-foreground">Chess Dashboard</h1>
+                <p className="text-sm text-muted-foreground">{displayUsername}&apos;s games</p>
               </div>
             </div>
 
             {/* Controls */}
             <div className="flex items-center gap-4">
               {/* Last synced indicator */}
-              <div className="hidden sm:flex items-center gap-2 text-sm text-zinc-500">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
                 <span>Synced: {formatLastSynced()}</span>
               </div>
 
@@ -223,14 +218,12 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
               >
                 {isSyncing ? (
                   <>
-                    <Spinner size="sm" className="mr-2" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Syncing...
                   </>
                 ) : (
                   <>
-                    <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
+                    <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
                   </>
                 )}
@@ -240,12 +233,10 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
               <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="p-2 rounded-lg hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-zinc-100"
+                  className="p-2 rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
                   disabled={isSyncing || isResetting}
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                  </svg>
+                  <MoreVertical className="h-5 w-5" />
                 </button>
 
                 {showMenu && (
@@ -257,35 +248,29 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                     />
 
                     {/* Menu */}
-                    <div className="absolute right-0 mt-2 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-20">
+                    <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-20">
                       <button
                         onClick={handleOpenEditModal}
-                        className="w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-700 rounded-t-lg flex items-center gap-2"
+                        className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent rounded-t-lg flex items-center gap-2"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+                        <User className="h-4 w-4" />
                         Edit Profile
                       </button>
-                      <hr className="border-zinc-700" />
+                      <hr className="border-border" />
                       <button
                         onClick={handleFullResync}
                         disabled={isSyncing}
-                        className="w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-700 flex items-center gap-2 disabled:opacity-50"
+                        className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2 disabled:opacity-50"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
+                        <RotateCcw className="h-4 w-4" />
                         Full Resync
                       </button>
-                      <hr className="border-zinc-700" />
+                      <hr className="border-border" />
                       <button
                         onClick={handleReset}
-                        className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-zinc-700 rounded-b-lg flex items-center gap-2"
+                        className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-accent rounded-b-lg flex items-center gap-2"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <Trash2 className="h-4 w-4" />
                         Reset Profile
                       </button>
                     </div>
@@ -309,11 +294,11 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
           {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-              className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md shadow-xl"
+              className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-xl animate-fade-in"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-xl font-semibold text-zinc-100 mb-2">Edit Profile</h2>
-              <p className="text-sm text-zinc-400 mb-6">
+              <h2 className="text-xl font-semibold text-foreground mb-2">Edit Profile</h2>
+              <p className="text-sm text-muted-foreground mb-6">
                 Update your chess platform usernames. Adding a new platform will automatically sync games.
               </p>
 

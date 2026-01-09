@@ -14,8 +14,8 @@ describe('Card', () => {
       render(<Card data-testid="card">Content</Card>);
       
       const card = screen.getByTestId('card');
-      expect(card).toHaveClass('bg-zinc-900');
-      expect(card).toHaveClass('border-zinc-800');
+      expect(card).toHaveClass('bg-card');
+      expect(card).toHaveClass('border-border');
       expect(card).toHaveClass('rounded-xl');
     });
   });
@@ -57,7 +57,7 @@ describe('Card', () => {
       
       const subtitle = screen.getByText('Card subtitle');
       expect(subtitle).toHaveClass('text-sm');
-      expect(subtitle).toHaveClass('text-zinc-400');
+      expect(subtitle).toHaveClass('text-muted-foreground');
     });
 
     it('renders both title and subtitle', () => {
@@ -79,7 +79,7 @@ describe('Card', () => {
       render(<Card className="extra-padding" data-testid="card">Content</Card>);
       
       const card = screen.getByTestId('card');
-      expect(card).toHaveClass('bg-zinc-900');
+      expect(card).toHaveClass('bg-card');
       expect(card).toHaveClass('extra-padding');
     });
 

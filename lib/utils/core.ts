@@ -17,7 +17,6 @@ import type {
   TerminationStats,
   Insight,
   FilterState,
-  GameSource,
   DateStats,
   TimeStats,
   TimeClassTimeStats,
@@ -79,8 +78,8 @@ export function mapTimeClass(timeClass: string): TimeClass {
   const normalized = timeClass.toLowerCase();
   if (normalized === 'bullet' || normalized === 'ultrabullet') return 'bullet';
   if (normalized === 'blitz') return 'blitz';
-  if (normalized === 'rapid') return 'rapid';
-  if (normalized === 'classical' || normalized === 'standard' || normalized === 'correspondence') return 'classical';
+  if (normalized === 'rapid' || normalized === 'correspondence') return 'rapid';
+  if (normalized === 'classical' || normalized === 'standard') return 'classical';
   return 'blitz';
 }
 
@@ -214,12 +213,35 @@ export function calculateOpeningStats(games: Game[]): OpeningDataPoint[] {
   return result.sort((a, b) => b.total - a.total).slice(0, 10);
 }
 
-export function calculateRatingProgression(games: Game[]): RatingDataPoint[] {
+export interface RatingProgressionOptions {
+  excludeProvisional?: boolean;
+}
+
+export function calculateRatingProgression(
+  games: Game[],
+  options: RatingProgressionOptions = {}
+): RatingDataPoint[] {
   if (games.length === 0) return [];
 
   const sorted = [...games].sort((a, b) => a.playedAt.getTime() - b.playedAt.getTime());
 
-  return sorted.map((game) => ({
+  let gamesToProcess = sorted;
+
+  // When excludeProvisional is true, skip the first game for each source+timeClass combo
+  // (the first game has a provisional rating that's not representative)
+  if (options.excludeProvisional) {
+    const firstGameKeys = new Set<string>();
+    gamesToProcess = sorted.filter((game) => {
+      const key = `${game.source}-${game.timeClass}`;
+      if (!firstGameKeys.has(key)) {
+        firstGameKeys.add(key);
+        return false; // Skip first game of each source+timeClass
+      }
+      return true;
+    });
+  }
+
+  return gamesToProcess.map((game) => ({
     date: formatDate(game.playedAt),
     rating: game.playerRating,
     source: game.source,
@@ -466,7 +488,7 @@ export function calculateDynamicBrackets(games: Game[]): { min: number; max: num
 export function calculateRatingBrackets(games: Game[]): RatingBracketStats[] {
   if (games.length === 0) return [];
 
-  const { min, size } = calculateDynamicBrackets(games);
+  const { size } = calculateDynamicBrackets(games);
   const brackets = new Map<string, {
     minRating: number;
     maxRating: number;
@@ -1680,8 +1702,6 @@ export function calculatePhasePerformance(games: Game[]): PhasePerformanceSummar
     
     // Distribute errors based on typical phase lengths
     // Assume errors are uniformly distributed (rough approximation)
-    const totalErrors = analysis.blunders + analysis.mistakes + analysis.inaccuracies;
-    
     if (moveCount <= 20) {
       // Short game - attribute to opening/middlegame
       phaseStats.opening.blunders += Math.round(analysis.blunders * 0.6);
@@ -1757,7 +1777,7 @@ export function calculatePhasePerformance(games: Game[]): PhasePerformanceSummar
   ];
 
   // Filter out phases with no data
-  const activePhasesWeak = phases.filter(([phase, rate]) => {
+  const activePhasesWeak = phases.filter(([phase]) => {
     if (phase === 'opening') return phaseStats.opening.games > 0;
     if (phase === 'middlegame') return phaseStats.middlegame.games > 0;
     return phaseStats.endgame.games > 0;
@@ -2085,7 +2105,6 @@ export function generateRecommendations(games: Game[]): StudyRecommendation[] {
   }
 
   // 6. Rating performance recommendations
-  const higherRated = games.filter(g => g.opponent.rating > g.playerRating + 100);
   const lowerRated = games.filter(g => g.opponent.rating < g.playerRating - 100);
   
   if (lowerRated.length >= 10) {

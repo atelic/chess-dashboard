@@ -59,14 +59,14 @@ describe('Input', () => {
       render(<Input error="Error" />);
       
       const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('border-red-500');
+      expect(input).toHaveClass('border-destructive');
     });
 
     it('error message has correct styling', () => {
       render(<Input error="Error message" />);
       
       const errorText = screen.getByText('Error message');
-      expect(errorText).toHaveClass('text-red-400');
+      expect(errorText).toHaveClass('text-destructive');
     });
   });
 
@@ -88,7 +88,7 @@ describe('Input', () => {
       render(<Input helperText="Some help" />);
       
       const helperText = screen.getByText('Some help');
-      expect(helperText).toHaveClass('text-zinc-500');
+      expect(helperText).toHaveClass('text-muted-foreground');
     });
   });
 

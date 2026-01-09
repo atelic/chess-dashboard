@@ -1,20 +1,91 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #141414;
-  --card-border: #262626;
-  --muted: #a1a1aa;
-  --primary: #3b82f6;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --warning: #eab308;
+  /* Shadcn/ui color tokens (OKLCH format for Tailwind 4) */
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.17 0 0);
+  --card-foreground: oklch(0.985 0 0);
+
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.623 0.214 259);
+  --primary-foreground: oklch(0.985 0 0);
+
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --success: oklch(0.627 0.194 149);
+  --success-foreground: oklch(0.985 0 0);
+
+  --warning: oklch(0.795 0.184 86);
+  --warning-foreground: oklch(0.145 0 0);
+
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.623 0.214 259);
+
+  /* Border radius */
+  --radius: 0.625rem;
+
+  /* Chart colors */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Chess accent colors (subtle) */
+  --chess-light-square: rgba(240, 217, 181, 0.08);
+  --chess-dark-square: rgba(181, 136, 99, 0.08);
+  --chess-light-solid: #f0d9b5;
+  --chess-dark-solid: #b58863;
+
+  /* Legacy variables for compatibility */
+  --card-border: oklch(0.269 0 0);
 }
 
+/* Tailwind theme mapping */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -25,7 +96,11 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Toast animation */
+/* ============================================
+   ANIMATION KEYFRAMES
+   ============================================ */
+
+/* Toast slide in */
 @keyframes slide-in {
   from {
     transform: translateX(100%);
@@ -37,48 +112,223 @@ body {
   }
 }
 
+/* Fade in with upward motion */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade out with upward motion */
+@keyframes fade-out-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* Subtle pulse */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Shimmer for skeleton loading */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Scale in for modals */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation utility classes */
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
 }
 
-/* Custom scrollbar */
+.animate-fade-in-up {
+  animation: fade-in-up 0.2s ease-out;
+}
+
+.animate-fade-out-up {
+  animation: fade-out-up 0.15s ease-out forwards;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--muted) 0%, var(--border) 50%, var(--muted) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+/* ============================================
+   INTERACTIVE COMPONENT STYLES
+   ============================================ */
+
+/* Interactive card hover effect */
+.card-interactive {
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+
+.card-interactive:hover {
+  border-color: var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.005);
+}
+
+/* Button active state */
+.btn-press:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   ACCESSIBILITY - REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #18181b;
+  background: oklch(0.17 0 0);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: oklch(0.35 0 0);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: oklch(0.45 0 0);
 }
 
-/* Chart tooltip styles */
+/* ============================================
+   RECHARTS TOOLTIP STYLING
+   ============================================ */
+
 .recharts-tooltip-wrapper {
   outline: none !important;
 }
 
 .recharts-default-tooltip {
-  background-color: #18181b !important;
-  border: 1px solid #3f3f46 !important;
+  background-color: oklch(0.17 0 0) !important;
+  border: 1px solid oklch(0.35 0 0) !important;
   border-radius: 8px !important;
   padding: 8px 12px !important;
 }
 
 .recharts-tooltip-label {
-  color: #fafafa !important;
+  color: oklch(0.985 0 0) !important;
   font-weight: 600 !important;
   margin-bottom: 4px !important;
 }
 
 .recharts-tooltip-item {
-  color: #a1a1aa !important;
+  color: oklch(0.708 0 0) !important;
   font-size: 14px !important;
+}
+
+/* ============================================
+   TYPOGRAPHY SCALE
+   ============================================ */
+
+.text-display {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.text-h1 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.text-h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.text-h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.text-small {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.text-data {
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   CHESS THEMING
+   ============================================ */
+
+/* Subtle chess board pattern for empty states */
+.chess-pattern {
+  background-image:
+    linear-gradient(45deg, var(--chess-light-square) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--chess-light-square) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--chess-dark-square) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--chess-dark-square) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
 }

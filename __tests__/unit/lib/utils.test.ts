@@ -108,7 +108,10 @@ describe('Utils', () => {
     it('maps classical correctly', () => {
       expect(mapTimeClass('classical')).toBe('classical');
       expect(mapTimeClass('standard')).toBe('classical');
-      expect(mapTimeClass('correspondence')).toBe('classical');
+    });
+
+    it('maps correspondence to rapid', () => {
+      expect(mapTimeClass('correspondence')).toBe('rapid');
     });
 
     it('defaults to blitz for unknown', () => {
@@ -302,12 +305,55 @@ describe('Utils', () => {
         createTestGame({ id: '2', playedAt: new Date('2025-01-01'), playerRating: 900 }),
         createTestGame({ id: '3', playedAt: new Date('2025-01-02'), playerRating: 950 }),
       ];
-      
+
       const result = calculateRatingProgression(games);
-      
+
       expect(result[0].rating).toBe(900);
       expect(result[1].rating).toBe(950);
       expect(result[2].rating).toBe(1000);
+    });
+
+    it('excludes first game per source+timeClass when excludeProvisional is true', () => {
+      const games = [
+        createTestGame({ id: '1', playedAt: new Date('2025-01-01'), source: 'chesscom', timeClass: 'blitz', playerRating: 800 }),
+        createTestGame({ id: '2', playedAt: new Date('2025-01-02'), source: 'chesscom', timeClass: 'blitz', playerRating: 850 }),
+        createTestGame({ id: '3', playedAt: new Date('2025-01-03'), source: 'chesscom', timeClass: 'blitz', playerRating: 900 }),
+        createTestGame({ id: '4', playedAt: new Date('2025-01-01'), source: 'chesscom', timeClass: 'rapid', playerRating: 1000 }),
+        createTestGame({ id: '5', playedAt: new Date('2025-01-02'), source: 'chesscom', timeClass: 'rapid', playerRating: 1050 }),
+        createTestGame({ id: '6', playedAt: new Date('2025-01-01'), source: 'lichess', timeClass: 'blitz', playerRating: 1200 }),
+        createTestGame({ id: '7', playedAt: new Date('2025-01-02'), source: 'lichess', timeClass: 'blitz', playerRating: 1250 }),
+      ];
+
+      const result = calculateRatingProgression(games, { excludeProvisional: true });
+
+      // Should exclude: id=1 (first chesscom-blitz), id=4 (first chesscom-rapid), id=6 (first lichess-blitz)
+      // Should include: id=2, id=3, id=5, id=7
+      expect(result).toHaveLength(4);
+      expect(result.map(r => r.rating)).toEqual([850, 1050, 1250, 900]);
+    });
+
+    it('includes all games when excludeProvisional is false', () => {
+      const games = [
+        createTestGame({ id: '1', playedAt: new Date('2025-01-01'), source: 'chesscom', timeClass: 'blitz', playerRating: 800 }),
+        createTestGame({ id: '2', playedAt: new Date('2025-01-02'), source: 'chesscom', timeClass: 'blitz', playerRating: 850 }),
+      ];
+
+      const result = calculateRatingProgression(games, { excludeProvisional: false });
+
+      expect(result).toHaveLength(2);
+      expect(result[0].rating).toBe(800);
+      expect(result[1].rating).toBe(850);
+    });
+
+    it('defaults to including all games when options not provided', () => {
+      const games = [
+        createTestGame({ id: '1', playedAt: new Date('2025-01-01'), source: 'chesscom', timeClass: 'blitz', playerRating: 800 }),
+        createTestGame({ id: '2', playedAt: new Date('2025-01-02'), source: 'chesscom', timeClass: 'blitz', playerRating: 850 }),
+      ];
+
+      const result = calculateRatingProgression(games);
+
+      expect(result).toHaveLength(2);
     });
   });
 

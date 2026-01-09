@@ -45,7 +45,7 @@ async function fetchArchiveGames(archiveUrl: string): Promise<ChessComGame[]> {
 }
 
 // Map Chess.com result to termination type
-function mapChessComTermination(result: string): TerminationType {
+export function mapChessComTermination(result: string): TerminationType {
   const map: Record<string, TerminationType> = {
     'checkmated': 'checkmate',
     'win': 'checkmate', // Default assumption for win

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import Tabs, { Tab } from '@/components/ui/Tabs';
 
 describe('Tabs', () => {
@@ -18,17 +19,17 @@ describe('Tabs', () => {
       expect(screen.getByText('Third Tab')).toBeInTheDocument();
     });
 
-    it('renders tabs as buttons', () => {
+    it('renders tabs with tab role', () => {
       render(<Tabs tabs={defaultTabs} activeTab="tab1" onChange={() => {}} />);
       
-      const buttons = screen.getAllByRole('button');
-      expect(buttons).toHaveLength(3);
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs).toHaveLength(3);
     });
 
-    it('renders within a nav element', () => {
+    it('renders within a tablist element', () => {
       render(<Tabs tabs={defaultTabs} activeTab="tab1" onChange={() => {}} />);
       
-      expect(screen.getByRole('navigation')).toBeInTheDocument();
+      expect(screen.getByRole('tablist')).toBeInTheDocument();
     });
   });
 
@@ -36,60 +37,63 @@ describe('Tabs', () => {
     it('applies active styling to active tab', () => {
       render(<Tabs tabs={defaultTabs} activeTab="tab1" onChange={() => {}} />);
       
-      const activeTab = screen.getByText('First Tab').closest('button');
-      expect(activeTab).toHaveClass('border-blue-500');
-      expect(activeTab).toHaveClass('text-blue-400');
+      const activeTab = screen.getByRole('tab', { name: 'First Tab' });
+      expect(activeTab).toHaveAttribute('data-state', 'active');
+      expect(activeTab).toHaveAttribute('aria-selected', 'true');
     });
 
     it('does not apply active styling to inactive tabs', () => {
       render(<Tabs tabs={defaultTabs} activeTab="tab1" onChange={() => {}} />);
       
-      const inactiveTab = screen.getByText('Second Tab').closest('button');
-      expect(inactiveTab).toHaveClass('border-transparent');
-      expect(inactiveTab).toHaveClass('text-zinc-400');
+      const inactiveTab = screen.getByRole('tab', { name: 'Second Tab' });
+      expect(inactiveTab).toHaveAttribute('data-state', 'inactive');
+      expect(inactiveTab).toHaveAttribute('aria-selected', 'false');
     });
 
-    it('sets aria-current on active tab', () => {
+    it('sets aria-selected on active tab', () => {
       render(<Tabs tabs={defaultTabs} activeTab="tab2" onChange={() => {}} />);
       
-      const activeTab = screen.getByText('Second Tab').closest('button');
-      expect(activeTab).toHaveAttribute('aria-current', 'page');
+      const activeTab = screen.getByRole('tab', { name: 'Second Tab' });
+      expect(activeTab).toHaveAttribute('aria-selected', 'true');
     });
 
-    it('does not set aria-current on inactive tabs', () => {
+    it('does not set aria-selected=true on inactive tabs', () => {
       render(<Tabs tabs={defaultTabs} activeTab="tab2" onChange={() => {}} />);
       
-      const inactiveTab = screen.getByText('First Tab').closest('button');
-      expect(inactiveTab).not.toHaveAttribute('aria-current');
+      const inactiveTab = screen.getByRole('tab', { name: 'First Tab' });
+      expect(inactiveTab).toHaveAttribute('aria-selected', 'false');
     });
   });
 
   describe('click handling', () => {
-    it('calls onChange when tab is clicked', () => {
+    it('calls onChange when tab is clicked', async () => {
+      const user = userEvent.setup();
       const handleChange = vi.fn();
       render(<Tabs tabs={defaultTabs} activeTab="tab1" onChange={handleChange} />);
       
-      fireEvent.click(screen.getByText('Second Tab'));
+      await user.click(screen.getByRole('tab', { name: 'Second Tab' }));
       
       expect(handleChange).toHaveBeenCalledWith('tab2');
     });
 
-    it('calls onChange with correct tab id', () => {
+    it('calls onChange with correct tab id', async () => {
+      const user = userEvent.setup();
       const handleChange = vi.fn();
       render(<Tabs tabs={defaultTabs} activeTab="tab1" onChange={handleChange} />);
       
-      fireEvent.click(screen.getByText('Third Tab'));
+      await user.click(screen.getByRole('tab', { name: 'Third Tab' }));
       
       expect(handleChange).toHaveBeenCalledWith('tab3');
     });
 
-    it('allows clicking the already active tab', () => {
+    it('does not fire onChange when clicking already active tab', async () => {
+      const user = userEvent.setup();
       const handleChange = vi.fn();
       render(<Tabs tabs={defaultTabs} activeTab="tab1" onChange={handleChange} />);
       
-      fireEvent.click(screen.getByText('First Tab'));
+      await user.click(screen.getByRole('tab', { name: 'First Tab' }));
       
-      expect(handleChange).toHaveBeenCalledWith('tab1');
+      expect(handleChange).not.toHaveBeenCalled();
     });
   });
 
@@ -116,8 +120,8 @@ describe('Tabs', () => {
     it('renders nothing when tabs array is empty', () => {
       render(<Tabs tabs={[]} activeTab="" onChange={() => {}} />);
       
-      const buttons = screen.queryAllByRole('button');
-      expect(buttons).toHaveLength(0);
+      const tabs = screen.queryAllByRole('tab');
+      expect(tabs).toHaveLength(0);
     });
   });
 });

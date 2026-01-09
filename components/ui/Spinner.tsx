@@ -1,3 +1,7 @@
+'use client';
+
+import { cn } from '@/lib/utils';
+
 interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -9,13 +13,13 @@ export default function Spinner({ size = 'md', className = '' }: SpinnerProps) {
     md: 'h-8 w-8',
     lg: 'h-12 w-12',
   };
-  
+
   return (
     <svg
       role="status"
       aria-label="Loading"
       data-size={size}
-      className={`animate-spin text-blue-500 ${sizes[size]} ${className}`}
+      className={cn('animate-spin text-primary', sizes[size], className)}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

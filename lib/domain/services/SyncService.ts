@@ -1,7 +1,7 @@
 import type { IGameRepository, IUserRepository } from '../repositories/interfaces';
-import type { Game, GameSource } from '../models/Game';
+import type { GameSource } from '../models/Game';
 import type { IChessClient, FetchGamesOptions } from '@/lib/infrastructure/api-clients/types';
-import { UserNotFoundError, SyncError } from '@/lib/shared/errors';
+import { UserNotFoundError } from '@/lib/shared/errors';
 
 // ============================================
 // TYPES

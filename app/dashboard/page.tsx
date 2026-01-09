@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, isLoading: userLoading } = useUser();
   const { games: apiGames, isLoading: gamesLoading, error, fetchGames, totalCount } = useGames();
-  const { filter, setFilter, resetFilter } = useAppStore();
+  const { setFilter } = useAppStore();
 
   // Local filter state for the AdvancedFilters UI component
   const [filters, setFilters] = useState<FilterState>(getDefaultFilters());
@@ -42,6 +42,13 @@ export default function DashboardPage() {
   const filteredGames = useMemo(() => {
     return filterGames(games, filters);
   }, [games, filters]);
+
+  // Determine if we're in "All Time" mode (no date range, no game limit)
+  const isAllTime = useMemo(() => {
+    const hasNoDateRange = !filters.dateRange.start && !filters.dateRange.end;
+    const hasNoGameLimit = filters.maxGames === 0;
+    return hasNoDateRange && hasNoGameLimit;
+  }, [filters.dateRange.start, filters.dateRange.end, filters.maxGames]);
 
   // Redirect to setup if no user
   useEffect(() => {
@@ -130,7 +137,7 @@ export default function DashboardPage() {
         )}
 
         {/* Dashboard */}
-        <Dashboard games={filteredGames} isLoading={gamesLoading} />
+        <Dashboard games={filteredGames} isLoading={gamesLoading} isAllTime={isAllTime} />
 
         {/* Source Attribution */}
         {games.length > 0 && (

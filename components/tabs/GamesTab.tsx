@@ -22,13 +22,9 @@ interface GamesTabProps {
   onAnalyze?: (gameId: string) => Promise<void>;
 }
 
-const TIME_CLASSES = ['all', 'bullet', 'blitz', 'rapid', 'classical'] as const;
-const RESULTS = ['all', 'win', 'loss', 'draw'] as const;
-const SOURCES = ['all', 'chesscom', 'lichess'] as const;
-
-type TimeClass = typeof TIME_CLASSES[number];
-type Result = typeof RESULTS[number];
-type Source = typeof SOURCES[number];
+type TimeClass = 'all' | 'bullet' | 'blitz' | 'rapid' | 'classical';
+type Result = 'all' | 'win' | 'loss' | 'draw';
+type Source = 'all' | 'chesscom' | 'lichess';
 
 export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
   const [search, setSearch] = useState('');

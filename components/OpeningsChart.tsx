@@ -29,14 +29,14 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
     const data = payload[0].payload;
     const winRate = data.total > 0 ? ((data.wins / data.total) * 100).toFixed(1) : '0';
     return (
-      <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-lg">
-        <p className="text-zinc-100 font-medium mb-1">{label}</p>
-        <p className="text-xs text-zinc-400 mb-2">{data.name}</p>
+      <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+        <p className="text-foreground font-medium mb-1">{label}</p>
+        <p className="text-xs text-muted-foreground mb-2">{data.name}</p>
         <div className="space-y-1 text-sm">
-          <p className="text-green-400">Wins: {data.wins}</p>
-          <p className="text-red-400">Losses: {data.losses}</p>
-          <p className="text-yellow-400">Draws: {data.draws}</p>
-          <p className="text-zinc-300 pt-1 border-t border-zinc-700">
+          <p className="text-success">Wins: {data.wins}</p>
+          <p className="text-destructive">Losses: {data.losses}</p>
+          <p className="text-warning">Draws: {data.draws}</p>
+          <p className="text-foreground pt-1 border-t border-border">
             Win Rate: {winRate}%
           </p>
         </div>

@@ -66,8 +66,8 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
     if (validPayload.length === 0) return null;
 
     return (
-      <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-lg">
-        <p className="text-zinc-100 font-medium mb-2">{label}</p>
+      <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+        <p className="text-foreground font-medium mb-2">{label}</p>
         {validPayload.map((entry, index) => (
           <p key={index} style={{ color: entry.color }} className="text-sm">
             {entry.name}: {entry.value}
@@ -173,14 +173,14 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
         {/* Source filter */}
         {availableSources.length > 1 && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-400">Platform:</span>
+            <span className="text-sm text-muted-foreground">Platform:</span>
             <div className="flex gap-1">
               <button
                 onClick={() => setSelectedSource('all')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   selectedSource === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
                 }`}
               >
                 All
@@ -191,8 +191,8 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
                   onClick={() => setSelectedSource(source)}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     selectedSource === source
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {SOURCE_LABELS[source]}
@@ -205,14 +205,14 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
         {/* Time class filter */}
         {availableTimeClasses.length > 1 && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-400">Time Control:</span>
+            <span className="text-sm text-muted-foreground">Time Control:</span>
             <div className="flex gap-1">
               <button
                 onClick={() => setSelectedTimeClass('all')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   selectedTimeClass === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
                 }`}
               >
                 All
@@ -223,8 +223,8 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
                   onClick={() => setSelectedTimeClass(tc)}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     selectedTimeClass === tc
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {TIME_CLASS_LABELS[tc]}

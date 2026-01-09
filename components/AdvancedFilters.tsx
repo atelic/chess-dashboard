@@ -10,15 +10,14 @@ interface AdvancedFiltersProps {
   games: Game[];
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
-  onRefetch: (startDate: Date | undefined, endDate: Date | undefined, maxGames: number) => void;
+  onRefetch?: (startDate: Date | undefined, endDate: Date | undefined, maxGames: number) => void;
   isLoading: boolean;
 }
 
 export default function AdvancedFilters({ 
   games, 
   filters, 
-  onFiltersChange, 
-  onRefetch,
+  onFiltersChange,
   isLoading 
 }: AdvancedFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
