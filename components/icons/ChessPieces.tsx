@@ -18,6 +18,7 @@ export function KnightIcon({ className, ...props }: ChessIconProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-6 w-6', className)}
+      aria-hidden="true"
       {...props}
     >
       <path
@@ -52,6 +53,7 @@ export function KingIcon({ className, ...props }: ChessIconProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-6 w-6', className)}
+      aria-hidden="true"
       {...props}
     >
       <path d="M 22.5,11.63 L 22.5,6" style={{ fill: 'none', strokeLinejoin: 'miter' }} />
@@ -82,6 +84,7 @@ export function PawnIcon({ className, ...props }: ChessIconProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-6 w-6', className)}
+      aria-hidden="true"
       {...props}
     >
       <circle cx="12" cy="6" r="3" />
@@ -102,6 +105,7 @@ export function RookIcon({ className, ...props }: ChessIconProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-6 w-6', className)}
+      aria-hidden="true"
       {...props}
     >
       <path d="M6 2h2v3h2V2h4v3h2V2h2v5H6V2z" />
@@ -123,6 +127,7 @@ export function BishopIcon({ className, ...props }: ChessIconProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-6 w-6', className)}
+      aria-hidden="true"
       {...props}
     >
       <path d="M12 2c-1 0-2 1-2 2.5C10 6 11 7 12 8c1-1 2-2 2-3.5C14 3 13 2 12 2z" />
@@ -145,6 +150,7 @@ export function QueenIcon({ className, ...props }: ChessIconProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-6 w-6', className)}
+      aria-hidden="true"
       {...props}
     >
       <circle cx="6" cy="4" r="1.5" />
@@ -178,6 +184,7 @@ export function WinIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-4 w-4 text-success', className)}
+      aria-hidden="true"
     >
       <polyline points="20 6 9 17 4 12" />
     </svg>
@@ -194,6 +201,7 @@ export function LossIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-4 w-4 text-destructive', className)}
+      aria-hidden="true"
     >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
@@ -211,6 +219,7 @@ export function DrawIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-4 w-4 text-warning', className)}
+      aria-hidden="true"
     >
       <line x1="5" y1="12" x2="19" y2="12" />
     </svg>

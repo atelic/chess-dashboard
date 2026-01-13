@@ -35,7 +35,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     case 'checkmate':
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 2L9 5H6v3l-3 3 3 3v3h3l3 3 3-3h3v-3l3-3-3-3V5h-3l-3-3zm0 5a4 4 0 110 8 4 4 0 010-8z" />
           </svg>
         ),
@@ -45,7 +45,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     case 'resignation':
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             {/* Flag pole */}
             <path strokeLinecap="round" d="M5 21V4" />
             {/* Waving flag */}
@@ -58,7 +58,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     case 'timeout':
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <path strokeLinecap="round" d="M12 6v6l4 2" />
           </svg>
@@ -69,7 +69,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     case 'stalemate':
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <path strokeLinecap="round" d="M8 12h8" />
           </svg>
@@ -80,7 +80,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     case 'insufficient':
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <path strokeLinecap="round" d="M12 8v4M12 16h.01" />
           </svg>
@@ -91,7 +91,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     case 'repetition':
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5" />
             <path strokeLinecap="round" d="M20.49 9A9 9 0 015.64 5.64M3.51 15a9 9 0 0014.85 3.36" />
           </svg>
@@ -102,7 +102,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     case 'agreement':
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M7 11l3 3 7-7" />
             <circle cx="12" cy="12" r="10" />
           </svg>
@@ -113,7 +113,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     case 'abandoned':
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
         ),
@@ -124,7 +124,7 @@ function getTerminationInfo(termination: TerminationType, result?: GameResult): 
     default:
       return {
         icon: (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <path strokeLinecap="round" d="M12 16h.01M12 8a2.5 2.5 0 011.5 4.5L12 14" />
           </svg>

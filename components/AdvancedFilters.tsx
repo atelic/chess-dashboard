@@ -165,6 +165,7 @@ export default function AdvancedFilters({
                 : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
             }`}
             disabled={isLoading}
+            aria-pressed={viewMode === 'all'}
           >
             All Time
           </button>
@@ -177,6 +178,7 @@ export default function AdvancedFilters({
                 : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
             }`}
             disabled={isLoading}
+            aria-pressed={viewMode === 'last100'}
           >
             Last 100
           </button>
@@ -189,6 +191,7 @@ export default function AdvancedFilters({
                 : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
             }`}
             disabled={isLoading}
+            aria-pressed={viewMode === 'dateRange'}
           >
             Date Range
           </button>
@@ -235,12 +238,14 @@ export default function AdvancedFilters({
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+            aria-expanded={isExpanded}
           >
-            <svg 
-              className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
-              fill="none" 
-              viewBox="0 0 24 24" 
+            <svg
+              className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
+              aria-hidden="true"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -266,6 +271,7 @@ export default function AdvancedFilters({
                       ? 'bg-blue-600 text-white'
                       : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                   }`}
+                  aria-pressed={filters.timeClasses.includes(tc.value)}
                 >
                   {tc.label}
                 </button>
@@ -285,8 +291,9 @@ export default function AdvancedFilters({
                     ? 'bg-blue-600 text-white'
                     : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                 }`}
+                aria-pressed={filters.colors.includes('white')}
               >
-                <span className="w-3 h-3 bg-white rounded-sm border border-zinc-500" />
+                <span className="w-3 h-3 bg-white rounded-sm border border-zinc-500" aria-hidden="true" />
                 White
               </button>
               <button
@@ -297,8 +304,9 @@ export default function AdvancedFilters({
                     ? 'bg-blue-600 text-white'
                     : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                 }`}
+                aria-pressed={filters.colors.includes('black')}
               >
-                <span className="w-3 h-3 bg-zinc-800 rounded-sm border border-zinc-500" />
+                <span className="w-3 h-3 bg-zinc-800 rounded-sm border border-zinc-500" aria-hidden="true" />
                 Black
               </button>
             </div>
@@ -318,6 +326,7 @@ export default function AdvancedFilters({
                       ? 'bg-blue-600 text-white'
                       : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                   }`}
+                  aria-pressed={filters.results.includes(r.value)}
                 >
                   {r.label}
                 </button>
@@ -339,6 +348,7 @@ export default function AdvancedFilters({
                       ? 'bg-blue-600 text-white'
                       : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                   }`}
+                  aria-pressed={filters.sources.includes(s.value)}
                 >
                   {s.label}
                 </button>
@@ -358,6 +368,7 @@ export default function AdvancedFilters({
                     ? 'bg-blue-600 text-white'
                     : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                 }`}
+                aria-pressed={filters.rated === true}
               >
                 Rated
               </button>
@@ -369,6 +380,7 @@ export default function AdvancedFilters({
                     ? 'bg-blue-600 text-white'
                     : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                 }`}
+                aria-pressed={filters.rated === false}
               >
                 Unrated
               </button>
@@ -415,6 +427,7 @@ export default function AdvancedFilters({
                         : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                     }`}
                     title={o.name}
+                    aria-pressed={filters.openings.includes(o.eco)}
                   >
                     {o.eco}
                   </button>

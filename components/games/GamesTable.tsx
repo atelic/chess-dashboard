@@ -113,14 +113,24 @@ export default function GamesTable({
                 <tr
                   className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${expandable ? 'cursor-pointer' : ''} ${isExpanded ? 'bg-zinc-800/30' : ''}`}
                   onClick={expandable ? () => toggleExpand(game.id) : undefined}
+                  onKeyDown={expandable ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleExpand(game.id);
+                    }
+                  } : undefined}
+                  tabIndex={expandable ? 0 : undefined}
+                  role={expandable ? 'button' : undefined}
+                  aria-expanded={expandable ? isExpanded : undefined}
                 >
                   {expandable && (
                     <td className="py-2 pr-2 text-zinc-500">
-                      <svg 
-                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
+                      <svg
+                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
@@ -140,7 +150,7 @@ export default function GamesTable({
                   {showOpponent && (
                     <td className="py-2 pr-4">
                       <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${game.playerColor === 'white' ? 'bg-white' : 'bg-zinc-700 border border-zinc-500'}`} />
+                        <span className={`w-2 h-2 rounded-full ${game.playerColor === 'white' ? 'bg-white' : 'bg-zinc-700 border border-zinc-500'}`} aria-hidden="true" />
                         <span className="text-zinc-300">{game.opponent.username}</span>
                         <span className="text-zinc-500">({game.opponent.rating})</span>
                       </div>
