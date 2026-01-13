@@ -122,6 +122,7 @@ export default function GamesTable({
                   tabIndex={expandable ? 0 : undefined}
                   role={expandable ? 'button' : undefined}
                   aria-expanded={expandable ? isExpanded : undefined}
+                  aria-label={expandable ? `${isExpanded ? 'Collapse' : 'Expand'} game details for ${formatDate(game.playedAt)} vs ${game.opponent.username}` : undefined}
                 >
                   {expandable && (
                     <td className="py-2 pr-2 text-zinc-500">

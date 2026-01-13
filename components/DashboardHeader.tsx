@@ -305,15 +305,15 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-profile-title"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' && !isProcessing) {
+                setShowEditModal(false);
+              }
+            }}
           >
             <div
               className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-xl animate-fade-in"
               onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape' && !isProcessing) {
-                  setShowEditModal(false);
-                }
-              }}
             >
               <h2 id="edit-profile-title" className="text-xl font-semibold text-foreground mb-2">Edit Profile</h2>
               <p className="text-sm text-muted-foreground mb-6">
