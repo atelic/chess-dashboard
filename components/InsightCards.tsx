@@ -30,7 +30,7 @@ const InsightCard = memo(function InsightCard({ insight }: InsightCardProps) {
   return (
     <div className={`p-4 rounded-lg border ${bgColors[insight.type]} transition-transform hover:scale-[1.02]`}>
       <div className="flex items-start gap-3">
-        <span className="text-2xl">{insight.icon}</span>
+        <span className="text-2xl" aria-hidden="true">{insight.icon}</span>
         <div className="flex-1 min-w-0">
           <h4 className={`font-medium ${textColors[insight.type]}`}>
             {insight.title}

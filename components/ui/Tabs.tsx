@@ -86,7 +86,7 @@ export default function Tabs({ tabs, activeTab, onChange }: LegacyTabsProps) {
       <TabsList>
         {tabs.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id}>
-            {tab.icon}
+            {tab.icon && <span aria-hidden="true">{tab.icon}</span>}
             {tab.label}
           </TabsTrigger>
         ))}

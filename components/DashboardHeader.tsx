@@ -205,7 +205,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
             <div className="flex items-center gap-4">
               {/* Last synced indicator */}
               <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-4 w-4" aria-hidden="true" />
                 <span>Synced: {formatLastSynced()}</span>
               </div>
 
@@ -218,12 +218,12 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
               >
                 {isSyncing ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
                     Syncing...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
                     Refresh
                   </>
                 )}
@@ -235,8 +235,11 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                   onClick={() => setShowMenu(!showMenu)}
                   className="p-2 rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
                   disabled={isSyncing || isResetting}
+                  aria-label="Open options menu"
+                  aria-expanded={showMenu}
+                  aria-haspopup="menu"
                 >
-                  <MoreVertical className="h-5 w-5" />
+                  <MoreVertical className="h-5 w-5" aria-hidden="true" />
                 </button>
 
                 {showMenu && (
@@ -245,32 +248,36 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                     <div
                       className="fixed inset-0 z-10"
                       onClick={() => setShowMenu(false)}
+                      aria-hidden="true"
                     />
 
                     {/* Menu */}
-                    <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-20">
+                    <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-20" role="menu" aria-label="Options">
                       <button
+                        role="menuitem"
                         onClick={handleOpenEditModal}
                         className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent rounded-t-lg flex items-center gap-2"
                       >
-                        <User className="h-4 w-4" />
+                        <User className="h-4 w-4" aria-hidden="true" />
                         Edit Profile
                       </button>
                       <hr className="border-border" />
                       <button
+                        role="menuitem"
                         onClick={handleFullResync}
                         disabled={isSyncing}
                         className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center gap-2 disabled:opacity-50"
                       >
-                        <RotateCcw className="h-4 w-4" />
+                        <RotateCcw className="h-4 w-4" aria-hidden="true" />
                         Full Resync
                       </button>
                       <hr className="border-border" />
                       <button
+                        role="menuitem"
                         onClick={handleReset}
                         className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-accent rounded-b-lg flex items-center gap-2"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                         Reset Profile
                       </button>
                     </div>
@@ -289,15 +296,26 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
           <div
             className="fixed inset-0 bg-black/50 z-50"
             onClick={() => !isProcessing && setShowEditModal(false)}
+            aria-hidden="true"
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-profile-title"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' && !isProcessing) {
+                setShowEditModal(false);
+              }
+            }}
+          >
             <div
               className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-xl animate-fade-in"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-xl font-semibold text-foreground mb-2">Edit Profile</h2>
+              <h2 id="edit-profile-title" className="text-xl font-semibold text-foreground mb-2">Edit Profile</h2>
               <p className="text-sm text-muted-foreground mb-6">
                 Update your chess platform usernames. Adding a new platform will automatically sync games.
               </p>
