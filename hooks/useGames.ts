@@ -124,7 +124,7 @@ export function useGames(): UseGamesReturn {
       }
 
       const url = `/api/games${params.toString() ? `?${params.toString()}` : ''}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: 'no-store' });
       const data = await response.json();
 
       if (!response.ok) {
@@ -152,7 +152,7 @@ export function useGames(): UseGamesReturn {
         if (color) params.set('color', color);
         if (result) params.set('result', result);
 
-        const response = await fetch(`/api/games?${params.toString()}`);
+        const response = await fetch(`/api/games?${params.toString()}`, { cache: 'no-store' });
         const data = await response.json();
 
         if (!response.ok) {
@@ -176,7 +176,7 @@ export function useGames(): UseGamesReturn {
       const params = new URLSearchParams();
       params.set('opponents', opponent);
 
-      const response = await fetch(`/api/games?${params.toString()}`);
+      const response = await fetch(`/api/games?${params.toString()}`, { cache: 'no-store' });
       const data = await response.json();
 
       if (!response.ok) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useCallback } from 'react';
 import type { Game, AnalysisData } from '@/lib/types';
 import GameLink from './GameLink';
 import GameAnalysisPanel from './GameAnalysisPanel';
@@ -72,10 +72,37 @@ export default function GamesTable({
   onFetchChessComAnalysis,
 }: GamesTableProps) {
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
+  // Track analysis updates locally so Accuracy column updates immediately
+  const [updatedAnalysis, setUpdatedAnalysis] = useState<Map<string, AnalysisData>>(new Map());
 
   const toggleExpand = (gameId: string) => {
     setExpandedGameId(prev => prev === gameId ? null : gameId);
   };
+
+  // Wrap Lichess fetch handler to update local state
+  const handleFetchLichessAnalysis = useCallback(async (
+    gameId: string,
+    playerColor: 'white' | 'black'
+  ): Promise<AnalysisData | null> => {
+    if (!onFetchLichessAnalysis) return null;
+    const result = await onFetchLichessAnalysis(gameId, playerColor);
+    if (result) {
+      setUpdatedAnalysis(prev => new Map(prev).set(gameId, result));
+    }
+    return result;
+  }, [onFetchLichessAnalysis]);
+
+  // Wrap Chess.com fetch handler to update local state
+  const handleFetchChessComAnalysis = useCallback(async (
+    game: Game
+  ): Promise<AnalysisData | null> => {
+    if (!onFetchChessComAnalysis) return null;
+    const result = await onFetchChessComAnalysis(game);
+    if (result) {
+      setUpdatedAnalysis(prev => new Map(prev).set(game.id, result));
+    }
+    return result;
+  }, [onFetchChessComAnalysis]);
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -115,7 +142,9 @@ export default function GamesTable({
           {displayGames.map((game) => {
             const resultStyles = getResultStyles(game.result);
             const isExpanded = expandedGameId === game.id;
-            const accuracy = game.analysis?.accuracy;
+            // Use locally updated analysis if available, otherwise use game's analysis
+            const localAnalysis = updatedAnalysis.get(game.id);
+            const accuracy = localAnalysis?.accuracy ?? game.analysis?.accuracy;
             const colSpan = 4 + (showOpponent ? 1 : 0) + (showOpening ? 1 : 0) + (showAnalysis ? 1 : 0) + (expandable ? 1 : 0);
             
             return (
@@ -209,11 +238,11 @@ export default function GamesTable({
                 {expandable && isExpanded && (
                   <tr className="bg-zinc-900/50">
                     <td colSpan={colSpan} className="p-4">
-                      <GameAnalysisPanel 
-                        game={game} 
+                      <GameAnalysisPanel
+                        game={game}
                         onAnalyze={onAnalyze}
-                        onFetchLichessAnalysis={onFetchLichessAnalysis}
-                        onFetchChessComAnalysis={onFetchChessComAnalysis}
+                        onFetchLichessAnalysis={handleFetchLichessAnalysis}
+                        onFetchChessComAnalysis={handleFetchChessComAnalysis}
                       />
                     </td>
                   </tr>

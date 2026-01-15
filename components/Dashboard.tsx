@@ -13,6 +13,7 @@ interface DashboardProps {
   games: Game[];
   isLoading: boolean;
   isAllTime?: boolean;
+  onGamesUpdated?: () => void;
 }
 
 const TABS: Tab[] = [
@@ -21,7 +22,7 @@ const TABS: Tab[] = [
   { id: 'analysis', label: 'Analysis', icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
-export default function Dashboard({ games, isLoading, isAllTime = false }: DashboardProps) {
+export default function Dashboard({ games, isLoading, isAllTime = false, onGamesUpdated }: DashboardProps) {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   if (isLoading) {
@@ -52,7 +53,7 @@ export default function Dashboard({ games, isLoading, isAllTime = false }: Dashb
       case 'dashboard':
         return <OverviewTab games={games} isAllTime={isAllTime} />;
       case 'games':
-        return <GamesTab games={games} />;
+        return <GamesTab games={games} onGamesUpdated={onGamesUpdated} />;
       case 'analysis':
         return <AnalysisTab games={games} />;
       default:
