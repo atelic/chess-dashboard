@@ -28,6 +28,16 @@ function formatDate(date: Date): string {
   });
 }
 
+function formatDateTime(date: Date): string {
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
 function getResultStyles(result: 'win' | 'loss' | 'draw'): { bg: string; text: string; label: string } {
   switch (result) {
     case 'win':
@@ -122,7 +132,7 @@ export default function GamesTable({
                   tabIndex={expandable ? 0 : undefined}
                   role={expandable ? 'button' : undefined}
                   aria-expanded={expandable ? isExpanded : undefined}
-                  aria-label={expandable ? `${isExpanded ? 'Collapse' : 'Expand'} game details for ${formatDate(game.playedAt)} vs ${game.opponent.username}` : undefined}
+                  aria-label={expandable ? `${isExpanded ? 'Collapse' : 'Expand'} game details for ${formatDateTime(game.playedAt)} vs ${game.opponent.username}` : undefined}
                 >
                   {expandable && (
                     <td className="py-2 pr-2 text-zinc-500">
@@ -137,8 +147,8 @@ export default function GamesTable({
                       </svg>
                     </td>
                   )}
-                  <td className="py-2 pr-4 text-zinc-300">
-                    {formatDate(game.playedAt)}
+                  <td className="py-2 pr-4 text-zinc-300" title={formatDate(game.playedAt)}>
+                    {formatDateTime(game.playedAt)}
                   </td>
                   <td className="py-2 pr-4">
                     <div className="flex items-center gap-2">

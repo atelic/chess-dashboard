@@ -37,6 +37,14 @@ function getWinRateColor(winRate: number, games: number): string {
   return '#22c55e'; // green
 }
 
+// Format hour in 12-hour format (e.g., "2pm", "12am")
+function formatHour(hour: number): string {
+  if (hour === 0) return '12am';
+  if (hour === 12) return '12pm';
+  if (hour < 12) return `${hour}am`;
+  return `${hour - 12}pm`;
+}
+
 const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartProps) {
   const hourlyStats = useMemo(() => calculateHourlyStats(games), [games]);
   const dayOfWeekStats = useMemo(() => calculateDayOfWeekStats(games), [games]);
@@ -122,7 +130,7 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
                 <div className="w-12"></div>
                 {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
                   <div key={hour} className="flex-1 text-xs text-zinc-500 text-center">
-                    {hour === 0 ? '12am' : hour === 12 ? '12pm' : hour < 12 ? `${hour}am` : `${hour - 12}pm`}
+                    {formatHour(hour)}
                   </div>
                 ))}
               </div>
@@ -140,9 +148,9 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
                           key={hour}
                           className="flex-1 aspect-square rounded-sm cursor-default"
                           style={{ backgroundColor: getWinRateColor(cellWinRate, cellGames) }}
-                          title={cellGames > 0 
-                            ? `${dayName} ${hour}:00 - ${cellGames} games, ${Math.round(cellWinRate)}% win rate`
-                            : `${dayName} ${hour}:00 - No games`
+                          title={cellGames > 0
+                            ? `${dayName} ${formatHour(hour)} - ${cellGames} games, ${Math.round(cellWinRate)}% win rate`
+                            : `${dayName} ${formatHour(hour)} - No games`
                           }
                         />
                       );

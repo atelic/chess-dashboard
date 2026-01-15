@@ -283,7 +283,7 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <Card>
+      <Card className="p-6">
         <div className="flex flex-wrap gap-4 items-end">
           {/* Search */}
           <div className="flex-1 min-w-[200px]">
@@ -390,7 +390,7 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
       </Card>
 
       {/* Games Table */}
-      <Card>
+      <Card className="p-6">
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-zinc-100">Recent Games</h3>
           <p className="text-sm text-zinc-500 mt-1">Click a row to expand and see analysis details</p>
