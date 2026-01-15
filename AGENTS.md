@@ -9,30 +9,45 @@ npm install          # Install dependencies
 npm run dev          # Development server (hot reload)
 npm run build        # Production build
 npm run lint         # ESLint with Next.js config
-# No test framework configured yet
+npm test             # Unit tests (Vitest)
+npm run test:watch   # Tests in watch mode
+npm run test:e2e     # Playwright e2e tests
+npm run test:all     # All tests (unit + e2e)
 ```
 
 ## Project Structure
 
 ```
-app/                    # Next.js App Router (layout.tsx, page.tsx, globals.css)
+app/                    # Next.js App Router
+  api/                  # API routes (games/, sync/, user/)
+  dashboard/            # Main dashboard page
 components/
   ui/                   # Reusable primitives (Button, Card, Input, Tabs, Toast, Spinner)
-  tabs/                 # Tab content (OverviewTab, OpeningsTab, OpponentsTab, InsightsTab)
-  *.tsx                 # Feature components (Dashboard, charts, forms)
-hooks/useGames.ts       # Data fetching hook
+  tabs/                 # Tab content (OverviewTab, GamesTab, AnalysisTab, etc.)
+  dashboard/            # Dashboard layout components
+  games/                # Game-related components
+  *.tsx                 # Feature components (charts, forms, filters)
+hooks/                  # Custom hooks (useGames, useUser, useSync)
+stores/                 # Zustand stores (useAppStore)
 lib/
   api/                  # Chess.com and Lichess API clients
+  domain/               # Business logic, models, service interfaces
+  infrastructure/       # Database clients, repositories
+  shared/               # Common types, errors, validation
+  utils/core.ts         # Statistical analysis utilities
   types.ts              # TypeScript type definitions
-  utils.ts              # Utility functions (stats, filtering, insights)
+__tests__/              # Test files (unit/, integration/, e2e/, fixtures/, mocks/)
 ```
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 with App Router
+- **Framework**: Next.js 16 with App Router, React 19
 - **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS v4
+- **Styling**: Tailwind CSS v4, shadcn/ui (zinc theme)
+- **State**: Zustand with persist middleware
 - **Charts**: Recharts
+- **Database**: Turso (prod), SQLite (dev)
+- **Chess Engine**: Stockfish.wasm
 
 ## TypeScript Conventions
 
@@ -88,7 +103,7 @@ function useGames(): UseGamesReturn {
 import { useState } from 'react';           // 1. React/external
 import { LineChart } from 'recharts';
 import type { Game } from '@/lib/types';    // 2. Type imports
-import { calculateStats } from '@/lib/utils'; // 3. Internal (@/)
+import { calculateStats } from '@/lib/utils/core'; // 3. Internal (@/)
 import Card from './ui/Card';               // 4. Relative
 ```
 
@@ -135,7 +150,7 @@ interface Game {
 - Calculate derived data using utils at component top
 - Compose multiple chart components
 
-### Utility Functions (`lib/utils.ts`)
+### Utility Functions (`lib/utils/core.ts`)
 - Group with comment headers: `// ============================================`
 - Return typed data points (e.g., `OpeningDataPoint[]`)
 - Filter functions accept `Partial<FilterState>`
@@ -153,6 +168,13 @@ interface Game {
 }
 ```
 
+## Testing
+
+- Unit tests: Vitest with jsdom environment, MSW for API mocking
+- E2E tests: Playwright (Chrome, Firefox)
+- Coverage thresholds: 70% (branches, functions, lines, statements)
+- Test files mirror source structure in `__tests__/`
+
 ## Common Tasks
 
 ### Adding a New Chart
@@ -161,9 +183,9 @@ interface Game {
 3. Wrap in Card, use ResponsiveContainer, handle empty state
 
 ### Adding a Utility Function
-1. Add to `lib/utils.ts` under appropriate section header
+1. Add to `lib/utils/core.ts` under appropriate section header
 2. Define return type in `lib/types.ts` if needed
-3. Export and import via `@/lib/utils`
+3. Export and import via `@/lib/utils/core`
 
 ### Adding an API Endpoint
 1. Add response types to `lib/types.ts`
