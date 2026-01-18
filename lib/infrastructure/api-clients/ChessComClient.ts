@@ -313,6 +313,7 @@ export class ChessComClient implements IChessClient {
       gameUrl: game.url,
       clock,
       analysis,
+      pgn: game.pgn || undefined,
     };
   }
 

@@ -105,7 +105,9 @@ export const TEST_SCHEMA = `
     mistakes INTEGER,
     inaccuracies INTEGER,
     acpl INTEGER,
-    analyzed_at TEXT
+    analyzed_at TEXT,
+    -- PGN data
+    pgn TEXT
   );
 
   -- Indexes

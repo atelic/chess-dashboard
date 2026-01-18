@@ -263,11 +263,19 @@ const MIGRATIONS = [
     sql: `
       -- Fix: analysis columns should be NULL when not analyzed, not 0
       -- 0 means "analyzed with zero errors", NULL means "not yet analyzed"
-      UPDATE games SET 
+      UPDATE games SET
         blunders = NULL,
         mistakes = NULL,
         inaccuracies = NULL
       WHERE analyzed_at IS NULL;
+    `,
+  },
+  {
+    version: 5,
+    name: 'add_pgn_column',
+    sql: `
+      -- Add PGN column to store move notation for opening explorer
+      ALTER TABLE games ADD COLUMN pgn TEXT;
     `,
   },
 ];

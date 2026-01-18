@@ -92,6 +92,7 @@ export class LichessClient implements IChessClient {
       clocks: 'true',     // Get time remaining per move
       evals: 'true',      // Get per-move evaluations (if analyzed)
       accuracy: 'true',   // Get accuracy percentages (if analyzed)
+      pgnInJson: 'true',  // Include PGN for opening explorer
     });
 
     // Set max - if fetchAll, use a high number to ensure all games are fetched
@@ -226,6 +227,7 @@ export class LichessClient implements IChessClient {
       gameUrl: `https://lichess.org/${game.id}`,
       clock,
       analysis,
+      pgn: game.pgn || undefined,
     };
   }
 

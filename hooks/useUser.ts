@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
+import { useAppStore, useHasHydrated } from '@/stores/useAppStore';
 
 interface User {
   id: number;
@@ -22,11 +22,12 @@ interface UseUserReturn {
 
 export function useUser(): UseUserReturn {
   const { user, setUser } = useAppStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const hasHydrated = useHasHydrated();
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchUser = useCallback(async (): Promise<User | null> => {
-    setIsLoading(true);
+    setIsFetching(true);
     setError(null);
 
     try {
@@ -44,13 +45,13 @@ export function useUser(): UseUserReturn {
       setError(message);
       return null;
     } finally {
-      setIsLoading(false);
+      setIsFetching(false);
     }
   }, [setUser]);
 
   const createOrUpdateUser = useCallback(
     async (chesscomUsername?: string, lichessUsername?: string): Promise<User | null> => {
-      setIsLoading(true);
+      setIsFetching(true);
       setError(null);
 
       try {
@@ -76,14 +77,14 @@ export function useUser(): UseUserReturn {
         setError(message);
         return null;
       } finally {
-        setIsLoading(false);
+        setIsFetching(false);
       }
     },
     [setUser],
   );
 
   const deleteUser = useCallback(async (): Promise<boolean> => {
-    setIsLoading(true);
+    setIsFetching(true);
     setError(null);
 
     try {
@@ -104,16 +105,19 @@ export function useUser(): UseUserReturn {
       setError(message);
       return false;
     } finally {
-      setIsLoading(false);
+      setIsFetching(false);
     }
   }, [setUser]);
 
-  // Fetch user on mount if not in store
+  // Fetch user on mount ONLY after hydration completes and if no user in store
   useEffect(() => {
-    if (!user) {
+    if (hasHydrated && !user) {
       fetchUser();
     }
-  }, [user, fetchUser]);
+  }, [hasHydrated, user, fetchUser]);
+
+  // isLoading is true while hydrating OR while fetching
+  const isLoading = !hasHydrated || isFetching;
 
   return {
     user,

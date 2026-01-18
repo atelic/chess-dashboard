@@ -137,7 +137,7 @@ export default function DashboardPage() {
         )}
 
         {/* Dashboard */}
-        <Dashboard games={filteredGames} isLoading={gamesLoading} isAllTime={isAllTime} />
+        <Dashboard games={filteredGames} isLoading={gamesLoading} isAllTime={isAllTime} onGamesUpdated={fetchGames} />
 
         {/* Source Attribution */}
         {games.length > 0 && (

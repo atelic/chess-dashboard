@@ -120,6 +120,7 @@ export async function GET(request: Request) {
         ...game.analysis,
         analyzedAt: game.analysis.analyzedAt?.toISOString(),
       } : undefined,
+      pgn: game.pgn,
     }));
 
     const response = NextResponse.json({

@@ -8,7 +8,6 @@ import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import GamesTable from '@/components/games/GamesTable';
 import { useAppStore } from '@/stores/useAppStore';
-import { fetchChessComMonthlyArchive, extractChessComAnalysis } from '@/lib/infrastructure/api-clients/ChessComClient';
 
 interface BulkFetchProgress {
   current: number;
@@ -20,13 +19,14 @@ interface BulkFetchProgress {
 interface GamesTabProps {
   games: Game[];
   onAnalyze?: (gameId: string) => Promise<void>;
+  onGamesUpdated?: () => void;
 }
 
 type TimeClass = 'all' | 'bullet' | 'blitz' | 'rapid' | 'classical';
 type Result = 'all' | 'win' | 'loss' | 'draw';
 type Source = 'all' | 'chesscom' | 'lichess';
 
-export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
+export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabProps) {
   const [search, setSearch] = useState('');
   const [timeClass, setTimeClass] = useState<TimeClass>('all');
   const [result, setResult] = useState<Result>('all');
@@ -44,26 +44,26 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
    * The analysis is saved to the DB by the API, and displayed immediately via local state
    */
   const handleFetchLichessAnalysis = useCallback(async (
-    gameId: string, 
+    gameId: string,
     playerColor: 'white' | 'black'
   ): Promise<AnalysisData | null> => {
     const response = await fetch(
       `/api/games/analysis?gameId=${gameId}&playerColor=${playerColor}&source=lichess`
     );
-    
+
     if (!response.ok) {
       if (response.status === 404) {
         return null;
       }
       throw new Error('Failed to fetch analysis');
     }
-    
+
     const data = await response.json();
-    
+
     // Analysis is saved to DB by the API endpoint
     // The GameAnalysisPanel will display it immediately via local state
-    // Next time games are loaded, it will come from the DB
-    
+    // The bulk fetch handler will refresh games after all fetches complete
+
     return data.analysis;
   }, []);
 
@@ -89,20 +89,20 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
     });
 
     const response = await fetch(`/api/games/analysis?${params}`);
-    
+
     if (!response.ok) {
       if (response.status === 404) {
         return null;
       }
       throw new Error('Failed to fetch analysis');
     }
-    
+
     const data = await response.json();
-    
+
     // Analysis is saved to DB by the API endpoint
     // The GameAnalysisPanel will display it immediately via local state
-    // Next time games are loaded, it will come from the DB
-    
+    // The bulk fetch handler will refresh games after all fetches complete
+
     return data.analysis;
   }, [user]);
 
@@ -154,84 +154,46 @@ export default function GamesTab({ games, onAnalyze }: GamesTabProps) {
         }
       }
 
-      // Process Chess.com games - fetch each monthly archive once
+      // Process Chess.com games - call API for each game (same as individual fetch)
       if (chesscomGames.length > 0 && user?.chesscomUsername) {
-        // Group Chess.com games by month
-        const gamesByMonth = new Map<string, Game[]>();
-        for (const game of chesscomGames) {
-          const monthKey = `${game.playedAt.getFullYear()}-${game.playedAt.getMonth() + 1}`;
-          if (!gamesByMonth.has(monthKey)) {
-            gamesByMonth.set(monthKey, []);
-          }
-          gamesByMonth.get(monthKey)!.push(game);
-        }
-
-        let processedChesscom = 0;
-        for (const [monthKey, monthGames] of gamesByMonth) {
-          const [year, month] = monthKey.split('-').map(Number);
-          
-          // Fetch the monthly archive once
+        for (let i = 0; i < chesscomGames.length; i++) {
+          const game = chesscomGames[i];
           setBulkFetchProgress({
-            current: lichessGames.length + processedChesscom + 1,
+            current: lichessGames.length + i + 1,
             total: totalGames,
             found: totalFound,
             source: 'chesscom',
           });
 
-          const archiveMap = await fetchChessComMonthlyArchive(user.chesscomUsername, year, month);
-          
-          // Extract analysis for each game in this month
-          for (const game of monthGames) {
-            processedChesscom++;
-            setBulkFetchProgress({
-              current: lichessGames.length + processedChesscom,
-              total: totalGames,
-              found: totalFound,
-              source: 'chesscom',
-            });
-
-            if (archiveMap) {
-              const archiveGame = archiveMap.get(game.gameUrl);
-              if (archiveGame) {
-                const analysis = extractChessComAnalysis(archiveGame, game.playerColor);
-                if (analysis?.accuracy !== undefined) {
-                  // Save to DB via API
-                  try {
-                    const params = new URLSearchParams({
-                      gameId: game.id,
-                      playerColor: game.playerColor,
-                      source: 'chesscom',
-                      username: user.chesscomUsername,
-                      gameUrl: game.gameUrl,
-                      gameDate: game.playedAt.toISOString(),
-                    });
-                    await fetch(`/api/games/analysis?${params}`);
-                    totalFound++;
-                    setBulkFetchProgress(prev => prev ? { ...prev, found: totalFound } : null);
-                  } catch (err) {
-                    console.error(`Failed to save Chess.com analysis for ${game.id}:`, err);
-                  }
-                }
-              }
+          try {
+            const result = await handleFetchChessComAnalysis(game);
+            if (result) {
+              totalFound++;
+              setBulkFetchProgress(prev => prev ? { ...prev, found: totalFound } : null);
             }
+          } catch (err) {
+            console.error(`Failed to fetch Chess.com analysis for ${game.id}:`, err);
           }
 
-          // Delay between months to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 200));
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
 
       // Done
       setBulkFetchProgress(null);
-      
+
       if (totalFound === 0) {
         setBulkFetchError(`Checked ${totalGames} games but no new analysis was available. Games may need to be analyzed on Lichess/Chess.com first.`);
+      } else {
+        // Refresh the games list to show updated accuracy values
+        onGamesUpdated?.();
       }
     } catch (err) {
       setBulkFetchProgress(null);
       setBulkFetchError(err instanceof Error ? err.message : 'Failed to fetch analysis');
     }
-  }, [games, user, handleFetchLichessAnalysis]);
+  }, [games, user, handleFetchLichessAnalysis, handleFetchChessComAnalysis, onGamesUpdated]);
 
   const filteredGames = useMemo(() => {
     return games.filter(game => {
