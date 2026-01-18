@@ -25,6 +25,16 @@ function DateRow({ stats, isExpanded, onToggle, games }: DateRowProps) {
           isExpanded ? 'bg-zinc-800/50' : 'hover:bg-zinc-800/30'
         }`}
         onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onToggle();
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-expanded={isExpanded}
+        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} games for ${stats.displayDate}`}
       >
         <td className="py-3 px-3 text-zinc-500">
           <svg
@@ -32,6 +42,7 @@ function DateRow({ stats, isExpanded, onToggle, games }: DateRowProps) {
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
@@ -55,6 +66,7 @@ function DateRow({ stats, isExpanded, onToggle, games }: DateRowProps) {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"

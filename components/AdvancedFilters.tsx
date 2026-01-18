@@ -159,7 +159,7 @@ export default function AdvancedFilters({
           <button
             type="button"
             onClick={() => handleViewModeChange('all')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
               viewMode === 'all'
                 ? 'bg-blue-600 text-white'
                 : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -172,7 +172,7 @@ export default function AdvancedFilters({
           <button
             type="button"
             onClick={() => handleViewModeChange('last100')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
               viewMode === 'last100'
                 ? 'bg-blue-600 text-white'
                 : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -185,7 +185,7 @@ export default function AdvancedFilters({
           <button
             type="button"
             onClick={() => handleViewModeChange('dateRange')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
               viewMode === 'dateRange'
                 ? 'bg-blue-600 text-white'
                 : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -207,14 +207,16 @@ export default function AdvancedFilters({
                 onChange={(e) => setStartDateStr(e.target.value)}
                 className="w-40"
                 disabled={isLoading}
+                aria-label="Start date"
               />
-              <span className="text-zinc-500">to</span>
+              <span className="text-zinc-500" aria-hidden="true">to</span>
               <Input
                 type="date"
                 value={endDateStr}
                 onChange={(e) => setEndDateStr(e.target.value)}
                 className="w-40"
                 disabled={isLoading}
+                aria-label="End date"
               />
             </div>
             <Button
@@ -266,7 +268,7 @@ export default function AdvancedFilters({
                   key={tc.value}
                   type="button"
                   onClick={() => handleTimeClassToggle(tc.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     filters.timeClasses.includes(tc.value)
                       ? 'bg-blue-600 text-white'
                       : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -286,7 +288,7 @@ export default function AdvancedFilters({
               <button
                 type="button"
                 onClick={() => handleColorToggle('white')}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 flex items-center gap-2 ${
                   filters.colors.includes('white')
                     ? 'bg-blue-600 text-white'
                     : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -299,7 +301,7 @@ export default function AdvancedFilters({
               <button
                 type="button"
                 onClick={() => handleColorToggle('black')}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 flex items-center gap-2 ${
                   filters.colors.includes('black')
                     ? 'bg-blue-600 text-white'
                     : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -321,7 +323,7 @@ export default function AdvancedFilters({
                   key={r.value}
                   type="button"
                   onClick={() => handleResultToggle(r.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     filters.results.includes(r.value)
                       ? 'bg-blue-600 text-white'
                       : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -343,7 +345,7 @@ export default function AdvancedFilters({
                   key={s.value}
                   type="button"
                   onClick={() => handleSourceToggle(s.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     filters.sources.includes(s.value)
                       ? 'bg-blue-600 text-white'
                       : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -363,7 +365,7 @@ export default function AdvancedFilters({
               <button
                 type="button"
                 onClick={() => handleRatedToggle(true)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   filters.rated === true
                     ? 'bg-blue-600 text-white'
                     : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -375,7 +377,7 @@ export default function AdvancedFilters({
               <button
                 type="button"
                 onClick={() => handleRatedToggle(false)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   filters.rated === false
                     ? 'bg-blue-600 text-white'
                     : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -421,7 +423,7 @@ export default function AdvancedFilters({
                     key={o.eco}
                     type="button"
                     onClick={() => handleOpeningToggle(o.eco)}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                    className={`px-2 py-1 rounded text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       filters.openings.includes(o.eco)
                         ? 'bg-blue-600 text-white'
                         : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'

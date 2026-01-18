@@ -39,19 +39,19 @@ export default function MoveHistory({
       <button
         onClick={onReset}
         disabled={moves.length === 0}
-        className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        title="Reset to start"
+        className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-label="Reset to start"
       >
-        <RotateCcw className="w-4 h-4" />
+        <RotateCcw className="w-4 h-4" aria-hidden="true" />
       </button>
 
       <button
         onClick={onBack}
         disabled={moves.length === 0}
-        className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        title="Go back one move"
+        className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-label="Go back one move"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="w-4 h-4" aria-hidden="true" />
       </button>
 
       {/* Move list */}
@@ -66,7 +66,7 @@ export default function MoveHistory({
               )}
               <button
                 onClick={() => onJumpTo?.(index)}
-                className="font-mono text-sm text-zinc-200 hover:text-blue-400 hover:underline transition-colors px-0.5"
+                className="font-mono text-sm text-zinc-200 hover:text-blue-400 hover:underline transition-colors px-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {san}
               </button>

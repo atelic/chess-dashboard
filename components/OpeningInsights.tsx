@@ -79,24 +79,33 @@ function OpeningTable({ openings, title, allGames }: OpeningTableProps) {
             <tr className="border-b border-zinc-800">
               <th className="text-left py-2 px-2 text-zinc-400 font-medium w-8"></th>
               <th className="text-left py-2 px-2 text-zinc-400 font-medium">Opening</th>
-              <th 
-                className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-                onClick={() => handleSort('games')}
-              >
-                Games {renderSortIcon('games', sortField, sortDirection)}
+              <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort('games')}
+                  className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+                >
+                  Games {renderSortIcon('games', sortField, sortDirection)}
+                </button>
               </th>
-              <th 
-                className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-                onClick={() => handleSort('winRate')}
-              >
-                Win Rate {renderSortIcon('winRate', sortField, sortDirection)}
+              <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort('winRate')}
+                  className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+                >
+                  Win Rate {renderSortIcon('winRate', sortField, sortDirection)}
+                </button>
               </th>
               <th className="text-right py-2 px-2 text-zinc-400 font-medium">W/L/D</th>
-              <th 
-                className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-                onClick={() => handleSort('avgOpponentRating')}
-              >
-                Avg Opp {renderSortIcon('avgOpponentRating', sortField, sortDirection)}
+              <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort('avgOpponentRating')}
+                  className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+                >
+                  Avg Opp {renderSortIcon('avgOpponentRating', sortField, sortDirection)}
+                </button>
               </th>
             </tr>
           </thead>
@@ -107,18 +116,29 @@ function OpeningTable({ openings, title, allGames }: OpeningTableProps) {
 
               return (
                 <Fragment key={opening.eco}>
-                  <tr 
+                  <tr
                     className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
                       isExpanded ? 'bg-zinc-800/50' : 'hover:bg-zinc-800/30'
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset`}
                     onClick={() => handleRowClick(opening.eco)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRowClick(opening.eco);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={isExpanded}
+                    aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${opening.name} opening details`}
                   >
                     <td className="py-2 px-2 text-zinc-500">
-                      <svg 
-                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
+                      <svg
+                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
@@ -181,7 +201,7 @@ function OpeningHighlight({ opening, type }: OpeningHighlightProps) {
     }`}>
       <div className="flex items-center gap-2 mb-1">
         <span className="text-lg">{isBest ? '📈' : '📉'}</span>
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+        <span className="text-xs font-medium text-zinc-400 uppercase">
           {isBest ? 'Best' : 'Needs Work'}
         </span>
       </div>

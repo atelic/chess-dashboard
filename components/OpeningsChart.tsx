@@ -50,8 +50,8 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 function formatOpeningLabel(eco: string, name: string, maxLength: number = 25): string {
   // Get the main opening name (before any variation details)
   const mainName = name.split(':')[0].split(',')[0].trim();
-  const truncated = mainName.length > maxLength 
-    ? mainName.substring(0, maxLength - 1) + '...'
+  const truncated = mainName.length > maxLength
+    ? mainName.substring(0, maxLength - 1) + '…'
     : mainName;
   return `${eco} ${truncated}`;
 }

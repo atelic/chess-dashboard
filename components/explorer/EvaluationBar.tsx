@@ -76,12 +76,12 @@ export default function EvaluationBar({
       <div className="relative w-full flex-1 overflow-hidden bg-zinc-700 min-h-0">
         {/* White portion (from bottom) */}
         <div
-          className="absolute inset-x-0 bottom-0 bg-zinc-100 transition-all duration-300 ease-out"
+          className="absolute inset-x-0 bottom-0 bg-zinc-100 transition-[height] duration-300 ease-out"
           style={{ height: `${barPercent}%` }}
         />
         {/* Black portion (from top) */}
         <div
-          className="absolute inset-x-0 top-0 bg-zinc-900 transition-all duration-300 ease-out"
+          className="absolute inset-x-0 top-0 bg-zinc-900 transition-[height] duration-300 ease-out"
           style={{ height: `${100 - barPercent}%` }}
         />
       </div>

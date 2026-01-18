@@ -62,7 +62,7 @@ function calculateOpeningDepthData(games: Game[]): {
         const moveData = openingMoves.get(key);
         return {
           eco: o.eco,
-          name: o.name.length > 25 ? o.name.substring(0, 22) + '...' : o.name,
+          name: o.name.length > 25 ? o.name.substring(0, 22) + '…' : o.name,
           avgMoveCount: moveData ? Math.round(moveData.total / moveData.count) : 0,
           games: o.games,
           winRate: o.winRate,

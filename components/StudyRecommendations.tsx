@@ -45,7 +45,7 @@ function RecommendationCard({ recommendation }: RecommendationCardProps) {
   return (
     <div className={`p-5 rounded-lg border ${colors.bg} ${colors.border}`}>
       <div className="flex items-start gap-3">
-        <span className="text-2xl">{icon}</span>
+        <span className="text-2xl" aria-hidden="true">{icon}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className={`font-medium ${colors.text}`}>{recommendation.title}</h4>
@@ -169,7 +169,7 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         {highPriority.length > 0 && (
           <div>
             <h3 className="text-sm font-medium text-red-400 mb-3 flex items-center gap-2">
-              <span>🔥</span>
+              <span aria-hidden="true">🔥</span>
               Focus on These First
             </h3>
             <div className="space-y-4">
@@ -184,7 +184,7 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         {mediumPriority.length > 0 && (
           <div>
             <h3 className="text-sm font-medium text-yellow-400 mb-3 flex items-center gap-2">
-              <span>⚠️</span>
+              <span aria-hidden="true">⚠️</span>
               Worth Addressing
             </h3>
             <div className="space-y-4">
@@ -199,7 +199,7 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         {lowPriority.length > 0 && (
           <div>
             <h3 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
-              <span>📝</span>
+              <span aria-hidden="true">📝</span>
               Nice to Have
             </h3>
             <div className="space-y-4">
@@ -213,7 +213,7 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         {/* Action Tip */}
         <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <span className="text-lg">💡</span>
+            <span className="text-lg" aria-hidden="true">💡</span>
             <div>
               <h4 className="text-zinc-300 font-medium">How to Use These Recommendations</h4>
               <p className="text-zinc-400 text-sm mt-1">

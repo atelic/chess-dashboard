@@ -48,7 +48,7 @@ const TerminationChart = memo(function TerminationChart({ games }: TerminationCh
               <span className="text-xs text-zinc-500 w-12">Won</span>
               <div className="flex-1 h-5 bg-zinc-800 rounded overflow-hidden">
                 <div
-                  className="h-full bg-green-500 flex items-center justify-end pr-2 transition-all"
+                  className="h-full bg-green-500 flex items-center justify-end pr-2 transition-[width] duration-200"
                   style={{ width: `${maxCount > 0 ? (stat.asWinner / maxCount) * 100 : 0}%` }}
                 >
                   {stat.asWinner > 0 && (
@@ -65,7 +65,7 @@ const TerminationChart = memo(function TerminationChart({ games }: TerminationCh
               <span className="text-xs text-zinc-500 w-12">Lost</span>
               <div className="flex-1 h-5 bg-zinc-800 rounded overflow-hidden">
                 <div
-                  className="h-full bg-red-500 flex items-center justify-end pr-2 transition-all"
+                  className="h-full bg-red-500 flex items-center justify-end pr-2 transition-[width] duration-200"
                   style={{ width: `${maxCount > 0 ? (stat.asLoser / maxCount) * 100 : 0}%` }}
                 >
                   {stat.asLoser > 0 && (

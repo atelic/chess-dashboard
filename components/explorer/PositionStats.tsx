@@ -31,21 +31,21 @@ export default function PositionStats({ node }: PositionStatsProps) {
         {/* Stats breakdown */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" aria-hidden="true" />
             <span className="text-zinc-300 text-sm">
-              {stats.wins} ({winPct.toFixed(0)}%)
+              <span className="sr-only">Wins: </span>{stats.wins} ({winPct.toFixed(0)}%)
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-zinc-500" />
+            <div className="w-3 h-3 rounded-full bg-zinc-500" aria-hidden="true" />
             <span className="text-zinc-300 text-sm">
-              {stats.draws} ({drawPct.toFixed(0)}%)
+              <span className="sr-only">Draws: </span>{stats.draws} ({drawPct.toFixed(0)}%)
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-red-500" aria-hidden="true" />
             <span className="text-zinc-300 text-sm">
-              {stats.losses} ({lossPct.toFixed(0)}%)
+              <span className="sr-only">Losses: </span>{stats.losses} ({lossPct.toFixed(0)}%)
             </span>
           </div>
         </div>

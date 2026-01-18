@@ -24,6 +24,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
   const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Edit form state
   const [editChesscom, setEditChesscom] = useState('');
@@ -54,13 +55,18 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
     }
   };
 
-  const handleReset = async () => {
+  const handleResetClick = () => {
     setShowMenu(false);
+    setShowResetConfirm(true);
+  };
+
+  const handleResetConfirm = async () => {
+    setShowResetConfirm(false);
     setIsResetting(true);
 
     const success = await deleteUser();
     if (success) {
-      showToast('Profile reset. Redirecting to setup...', 'info');
+      showToast('Profile reset. Redirecting to setup…', 'info');
       router.replace('/');
     } else {
       showToast('Failed to reset profile', 'error');
@@ -144,7 +150,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
 
       // If a new platform was added, trigger a full sync to get all games
       if (addedNewPlatform) {
-        showToast('Profile updated! Syncing new games...', 'info');
+        showToast('Profile updated! Syncing new games…', 'info');
         const result = await sync(true);
         if (result && result.newGamesCount > 0) {
           showToast(`Synced ${result.newGamesCount} new games!`, 'success');
@@ -187,7 +193,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
 
   return (
     <>
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-border bg-card/95 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Logo and Title */}
@@ -274,7 +280,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                       <hr className="border-border" />
                       <button
                         role="menuitem"
-                        onClick={handleReset}
+                        onClick={handleResetClick}
                         className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-accent rounded-b-lg flex items-center gap-2"
                       >
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -312,7 +318,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
             }}
           >
             <div
-              className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-xl animate-fade-in"
+              className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-xl animate-fade-in overscroll-contain"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 id="edit-profile-title" className="text-xl font-semibold text-foreground mb-2">Edit Profile</h2>
@@ -323,7 +329,7 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
               <div className="space-y-4">
                 <Input
                   label="Chess.com Username"
-                  placeholder="e.g., hikaru"
+                  placeholder="e.g., hikaru…"
                   value={editChesscom}
                   onChange={(e) => {
                     setEditChesscom(e.target.value);
@@ -331,11 +337,13 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                   }}
                   error={chesscomError}
                   disabled={isProcessing}
+                  spellCheck={false}
+                  autoComplete="username"
                 />
 
                 <Input
                   label="Lichess Username"
-                  placeholder="e.g., DrNykterstein"
+                  placeholder="e.g., DrNykterstein…"
                   value={editLichess}
                   onChange={(e) => {
                     setEditLichess(e.target.value);
@@ -343,6 +351,8 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                   }}
                   error={lichessError}
                   disabled={isProcessing}
+                  spellCheck={false}
+                  autoComplete="username"
                 />
               </div>
 
@@ -361,7 +371,68 @@ export default function DashboardHeader({ onGamesUpdated }: DashboardHeaderProps
                   isLoading={isProcessing}
                   className="flex-1"
                 >
-                  {isValidating ? 'Validating...' : isSaving ? 'Saving...' : 'Save'}
+                  {isValidating ? 'Validating…' : isSaving ? 'Saving…' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Reset Profile Confirmation Dialog */}
+      {showResetConfirm && (
+        <>
+          {/* Dialog Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-50"
+            onClick={() => setShowResetConfirm(false)}
+            aria-hidden="true"
+          />
+
+          {/* Dialog */}
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="reset-confirm-title"
+            aria-describedby="reset-confirm-desc"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setShowResetConfirm(false);
+              }
+            }}
+          >
+            <div
+              className="bg-card border border-border rounded-xl p-6 w-full max-w-sm shadow-xl animate-fade-in overscroll-contain"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-destructive/10">
+                  <Trash2 className="h-5 w-5 text-destructive" aria-hidden="true" />
+                </div>
+                <h2 id="reset-confirm-title" className="text-lg font-semibold text-foreground">
+                  Reset Profile?
+                </h2>
+              </div>
+              <p id="reset-confirm-desc" className="text-sm text-muted-foreground mb-6">
+                This will permanently delete all your data including saved games and settings.
+                This action cannot be undone.
+              </p>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleResetConfirm}
+                  className="flex-1"
+                >
+                  Reset Profile
                 </Button>
               </div>
             </div>

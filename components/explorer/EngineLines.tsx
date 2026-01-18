@@ -187,7 +187,7 @@ export default function EngineLines({
                 <button
                   key={moveIdx}
                   onClick={() => onMovesClick?.(line.allSans.slice(0, move.moveIndex + 1))}
-                  className="hover:text-blue-400 cursor-pointer transition-colors"
+                  className="hover:text-blue-400 cursor-pointer transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {move.display}
                 </button>

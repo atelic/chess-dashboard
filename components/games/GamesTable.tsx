@@ -20,22 +20,25 @@ interface GamesTableProps {
   onFetchChessComAnalysis?: (game: Game) => Promise<AnalysisData | null>;
 }
 
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
+
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return dateFormatter.format(date);
 }
 
 function formatDateTime(date: Date): string {
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+  return dateTimeFormatter.format(date);
 }
 
 function getResultStyles(result: 'win' | 'loss' | 'draw'): { bg: string; text: string; label: string } {
@@ -107,7 +110,7 @@ export default function GamesTable({
     return (
       <div className="flex items-center justify-center py-8">
         <Spinner size="md" />
-        <span className="ml-2 text-zinc-400">Loading games...</span>
+        <span className="ml-2 text-zinc-400">Loading games…</span>
       </div>
     );
   }

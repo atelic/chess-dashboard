@@ -130,7 +130,7 @@ export default function UsernameForm({ onSubmit, isLoading }: UsernameFormProps)
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input
               label="Chess.com Username"
-              placeholder="e.g., hikaru"
+              placeholder="e.g., hikaru…"
               value={chesscomUsername}
               onChange={(e) => {
                 setChesscomUsername(e.target.value);
@@ -138,11 +138,13 @@ export default function UsernameForm({ onSubmit, isLoading }: UsernameFormProps)
               }}
               error={chesscomError}
               disabled={isLoading || isValidating}
+              spellCheck={false}
+              autoComplete="username"
             />
 
             <Input
               label="Lichess Username"
-              placeholder="e.g., DrNykterstein"
+              placeholder="e.g., DrNykterstein…"
               value={lichessUsername}
               onChange={(e) => {
                 setLichessUsername(e.target.value);
@@ -150,6 +152,8 @@ export default function UsernameForm({ onSubmit, isLoading }: UsernameFormProps)
               }}
               error={lichessError}
               disabled={isLoading || isValidating}
+              spellCheck={false}
+              autoComplete="username"
             />
           </div>
 
@@ -166,7 +170,7 @@ export default function UsernameForm({ onSubmit, isLoading }: UsernameFormProps)
               className="min-w-[200px]"
             >
               <Search className="h-4 w-4 mr-2" />
-              {isValidating ? 'Validating...' : isLoading ? 'Loading Games...' : 'Analyze Games'}
+              {isValidating ? 'Validating…' : isLoading ? 'Loading Games…' : 'Analyze Games'}
             </Button>
           </div>
         </CardContent>

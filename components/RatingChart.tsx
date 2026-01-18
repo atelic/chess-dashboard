@@ -177,7 +177,7 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
             <div className="flex gap-1">
               <button
                 onClick={() => setSelectedSource('all')}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
+                className={`px-2 py-1 text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   selectedSource === 'all'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -189,7 +189,7 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
                 <button
                   key={source}
                   onClick={() => setSelectedSource(source)}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                  className={`px-2 py-1 text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     selectedSource === source
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -209,7 +209,7 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
             <div className="flex gap-1">
               <button
                 onClick={() => setSelectedTimeClass('all')}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
+                className={`px-2 py-1 text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   selectedTimeClass === 'all'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -221,7 +221,7 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
                 <button
                   key={tc}
                   onClick={() => setSelectedTimeClass(tc)}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                  className={`px-2 py-1 text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     selectedTimeClass === tc
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground hover:text-foreground'

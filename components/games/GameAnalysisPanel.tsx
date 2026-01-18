@@ -139,7 +139,7 @@ export default function GameAnalysisPanel({
                 {isFetchingLichess ? (
                   <>
                     <Spinner size="sm" />
-                    <span className="ml-2">Checking Lichess...</span>
+                    <span className="ml-2">Checking Lichess…</span>
                   </>
                 ) : (
                   'Fetch from Lichess'
@@ -157,7 +157,7 @@ export default function GameAnalysisPanel({
                 {isFetchingChessCom ? (
                   <>
                     <Spinner size="sm" />
-                    <span className="ml-2">Checking Chess.com...</span>
+                    <span className="ml-2">Checking Chess.com…</span>
                   </>
                 ) : (
                   'Fetch from Chess.com'
@@ -174,7 +174,7 @@ export default function GameAnalysisPanel({
                 {isAnalyzing ? (
                   <>
                     <Spinner size="sm" />
-                    <span className="ml-2">Analyzing...</span>
+                    <span className="ml-2">Analyzing…</span>
                   </>
                 ) : (
                   'Analyze with Stockfish'
@@ -222,7 +222,7 @@ export default function GameAnalysisPanel({
               </div>
               <div className="flex-1 h-2 bg-zinc-700 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full ${getAccuracyBgColor(analysis.accuracy)} transition-all`}
+                  className={`h-full ${getAccuracyBgColor(analysis.accuracy)} transition-[width] duration-200`}
                   style={{ width: `${analysis.accuracy}%` }}
                 />
               </div>
@@ -279,7 +279,7 @@ export default function GameAnalysisPanel({
           className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
         >
           View full analysis on {game.source === 'lichess' ? 'Lichess' : 'Chess.com'}
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
         </a>

@@ -108,7 +108,7 @@ export default function SetupPage() {
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="flex flex-col items-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-zinc-400">Loading...</p>
+          <p className="mt-4 text-zinc-400">Loading…</p>
         </div>
       </div>
     );
@@ -120,7 +120,7 @@ export default function SetupPage() {
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="flex flex-col items-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-zinc-400">Redirecting to dashboard...</p>
+          <p className="mt-4 text-zinc-400">Redirecting to dashboard…</p>
         </div>
       </div>
     );
@@ -165,7 +165,7 @@ export default function SetupPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
                   label="Chess.com Username"
-                  placeholder="e.g., hikaru"
+                  placeholder="e.g., hikaru…"
                   value={chesscomUsername}
                   onChange={(e) => {
                     setChesscomUsername(e.target.value);
@@ -177,7 +177,7 @@ export default function SetupPage() {
 
                 <Input
                   label="Lichess Username"
-                  placeholder="e.g., DrNykterstein"
+                  placeholder="e.g., DrNykterstein…"
                   value={lichessUsername}
                   onChange={(e) => {
                     setLichessUsername(e.target.value);
@@ -200,11 +200,11 @@ export default function SetupPage() {
                 className="w-full md:w-auto"
               >
                 {isValidating
-                  ? 'Validating...'
+                  ? 'Validating…'
                   : isSettingUp
-                  ? 'Setting up...'
+                  ? 'Setting up…'
                   : isSyncing
-                  ? 'Syncing games...'
+                  ? 'Syncing games…'
                   : 'Get Started'}
               </Button>
             </div>

@@ -54,7 +54,7 @@ function AnalysisSection({ id, title, icon, children, defaultOpen = false }: Ana
         </div>
         <ChevronDown
           className={cn(
-            'h-5 w-5 text-muted-foreground transition-transform duration-200',
+            'size-5 text-muted-foreground transition-transform duration-150',
             isOpen && 'rotate-180'
           )}
         />
@@ -62,12 +62,14 @@ function AnalysisSection({ id, title, icon, children, defaultOpen = false }: Ana
       <div
         id={`section-${id}`}
         className={cn(
-          'transition-all duration-300 ease-in-out',
-          isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+          'grid transition-[grid-template-rows,opacity] duration-200',
+          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         )}
       >
-        <div className="p-4 space-y-6 bg-background">
-          {children}
+        <div className="overflow-hidden">
+          <div className="p-4 space-y-6 bg-background">
+            {children}
+          </div>
         </div>
       </div>
     </div>

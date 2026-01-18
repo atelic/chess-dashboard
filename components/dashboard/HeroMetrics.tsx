@@ -32,7 +32,7 @@ function MetricCard({ label, value, subValue, trend, trendValue, icon, className
         </div>
       )}
       <p className="text-h3 text-muted-foreground mb-1">{label}</p>
-      <p className="text-display text-foreground">{value}</p>
+      <p className="text-display text-foreground tabular-nums">{value}</p>
       {(subValue || trendValue) && (
         <div className="flex items-center justify-center gap-1 mt-1">
           {trend && (

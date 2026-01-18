@@ -35,7 +35,7 @@ function OpponentCard({ opponent, type }: OpponentCardProps) {
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
+            <span className="text-xs font-medium text-zinc-500 uppercase">
               {isNemesis ? 'Your Nemesis' : 'Favorite Opponent'}
             </span>
           </div>
@@ -208,24 +208,33 @@ function FrequentOpponentsTable({ opponents, allGames, limit = 10 }: FrequentOpp
           <tr className="border-b border-zinc-800">
             <th className="text-left py-2 px-2 text-zinc-400 font-medium w-8"></th>
             <th className="text-left py-2 px-2 text-zinc-400 font-medium">Opponent</th>
-            <th 
-              className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-              onClick={() => handleSort('games')}
-            >
-              Games {renderSortIcon('games', sortField, sortDirection)}
+            <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+              <button
+                type="button"
+                onClick={() => handleSort('games')}
+                className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              >
+                Games {renderSortIcon('games', sortField, sortDirection)}
+              </button>
             </th>
-            <th 
-              className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-              onClick={() => handleSort('winRate')}
-            >
-              Win Rate {renderSortIcon('winRate', sortField, sortDirection)}
+            <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+              <button
+                type="button"
+                onClick={() => handleSort('winRate')}
+                className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              >
+                Win Rate {renderSortIcon('winRate', sortField, sortDirection)}
+              </button>
             </th>
             <th className="text-right py-2 px-2 text-zinc-400 font-medium">W/L/D</th>
-            <th 
-              className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-              onClick={() => handleSort('avgRating')}
-            >
-              Avg Rating {renderSortIcon('avgRating', sortField, sortDirection)}
+            <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+              <button
+                type="button"
+                onClick={() => handleSort('avgRating')}
+                className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              >
+                Avg Rating {renderSortIcon('avgRating', sortField, sortDirection)}
+              </button>
             </th>
           </tr>
         </thead>
@@ -236,18 +245,29 @@ function FrequentOpponentsTable({ opponents, allGames, limit = 10 }: FrequentOpp
 
             return (
               <Fragment key={opp.username}>
-                <tr 
+                <tr
                   className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
                     isExpanded ? 'bg-zinc-800/50' : 'hover:bg-zinc-800/30'
                   }`}
                   onClick={() => handleRowClick(opp.username)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleRowClick(opp.username);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-expanded={isExpanded}
+                  aria-label={`${isExpanded ? 'Collapse' : 'Expand'} games against ${opp.username}`}
                 >
                   <td className="py-2 px-2 text-zinc-500">
-                    <svg 
-                      className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
+                    <svg
+                      className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>

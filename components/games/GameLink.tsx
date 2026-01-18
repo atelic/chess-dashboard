@@ -28,7 +28,7 @@ export default function GameLink({ url, source, className = '' }: GameLinkProps)
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100 transition-colors ${className}`}
+      className={`inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded ${className}`}
       title={`View on ${source === 'chesscom' ? 'Chess.com' : 'Lichess'}`}
     >
       {source === 'chesscom' ? (

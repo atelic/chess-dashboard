@@ -28,7 +28,7 @@ function BarSegment({
 
   return (
     <div
-      className={`${color} h-full flex items-center justify-center overflow-hidden transition-all`}
+      className={`${color} h-full flex items-center justify-center overflow-hidden transition-[width] duration-200`}
       style={{ width: `${percentage}%` }}
       title={label}
     >
@@ -81,7 +81,7 @@ export default function MoveTree({ node, onMoveClick }: MoveTreeProps) {
             <button
               key={move.san}
               onClick={() => onMoveClick(move.san)}
-              className="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-zinc-800/50 transition-colors text-left"
+              className="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-zinc-800/50 transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               {/* Move notation */}
               <span className="font-mono font-semibold text-zinc-100 w-12">

@@ -252,7 +252,7 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
             <label className="block text-sm text-zinc-400 mb-1">Search</label>
             <Input
               type="text"
-              placeholder="Opponent or opening..."
+              placeholder="Opponent or opening…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); handleFilterChange(); }}
             />
@@ -260,11 +260,12 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
           
           {/* Time Class */}
           <div>
-            <label className="block text-sm text-zinc-400 mb-1">Time Control</label>
+            <label htmlFor="timeclass-filter" className="block text-sm text-zinc-400 mb-1">Time Control</label>
             <select
+              id="timeclass-filter"
               value={timeClass}
               onChange={(e) => { setTimeClass(e.target.value as TimeClass); handleFilterChange(); }}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="all">All</option>
               <option value="bullet">Bullet</option>
@@ -273,14 +274,15 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
               <option value="classical">Classical</option>
             </select>
           </div>
-          
+
           {/* Result */}
           <div>
-            <label className="block text-sm text-zinc-400 mb-1">Result</label>
+            <label htmlFor="result-filter" className="block text-sm text-zinc-400 mb-1">Result</label>
             <select
+              id="result-filter"
               value={result}
               onChange={(e) => { setResult(e.target.value as Result); handleFilterChange(); }}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="all">All</option>
               <option value="win">Wins</option>
@@ -288,14 +290,15 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
               <option value="draw">Draws</option>
             </select>
           </div>
-          
+
           {/* Source */}
           <div>
-            <label className="block text-sm text-zinc-400 mb-1">Source</label>
+            <label htmlFor="source-filter" className="block text-sm text-zinc-400 mb-1">Source</label>
             <select
+              id="source-filter"
               value={source}
               onChange={(e) => { setSource(e.target.value as Source); handleFilterChange(); }}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="all">All</option>
               <option value="chesscom">Chess.com</option>
@@ -324,7 +327,7 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
               <div className="flex items-center gap-2 text-zinc-400">
                 <Spinner size="sm" />
                 <span>
-                  Checking {bulkFetchProgress.source === 'lichess' ? 'Lichess' : 'Chess.com'}... 
+                  Checking {bulkFetchProgress.source === 'lichess' ? 'Lichess' : 'Chess.com'}… 
                   {bulkFetchProgress.current}/{bulkFetchProgress.total}
                   {bulkFetchProgress.found > 0 && (
                     <span className="text-green-400 ml-1">({bulkFetchProgress.found} found)</span>
@@ -373,7 +376,7 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
             <button
               onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="px-3 py-1 text-sm rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-sm rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Previous
             </button>
@@ -383,7 +386,7 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
             <button
               onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="px-3 py-1 text-sm rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-sm rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Next
             </button>
