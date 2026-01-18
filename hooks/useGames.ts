@@ -35,6 +35,7 @@ interface ApiGameResponse {
     acpl?: number;
     analyzedAt?: string;
   };
+  pgn?: string;
 }
 
 function deserializeGame(apiGame: ApiGameResponse): Game {

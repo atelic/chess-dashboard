@@ -80,6 +80,8 @@ export interface Game {
   readonly clock?: ClockData;
   /** Analysis data (accuracy, blunders, etc.) */
   readonly analysis?: AnalysisData;
+  /** PGN notation for the game (for opening explorer) */
+  readonly pgn?: string;
 }
 
 /**
@@ -113,6 +115,7 @@ export function createGame(data: CreateGameData): Game {
     gameUrl: data.gameUrl,
     clock: data.clock,
     analysis: data.analysis,
+    pgn: data.pgn,
   };
 }
 

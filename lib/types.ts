@@ -78,6 +78,7 @@ export interface Game {
   gameUrl: string;              // URL to view the game on the platform
   clock?: ClockData;            // Clock/time data for time management analysis
   analysis?: AnalysisData;      // Analysis data (accuracy, blunders, etc.)
+  pgn?: string;                 // PGN notation for opening explorer
 }
 
 export interface FetchGamesOptions {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameResult, PlayerColor } from '@/lib/shared/types';
@@ -93,6 +94,9 @@ const defaultExpandedSection: ExpandedSection = {
 // STORE
 // ============================================
 
+// Track hydration state
+let hasHydrated = false;
+
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
@@ -147,9 +151,35 @@ export const useAppStore = create<AppState>()(
         user: state.user,
         filter: state.filter,
       }),
+      onRehydrateStorage: () => {
+        return () => {
+          hasHydrated = true;
+        };
+      },
     },
   ),
 );
+
+/**
+ * Hook to check if the store has been hydrated from localStorage.
+ * Returns true once hydration is complete.
+ * Uses useSyncExternalStore to properly subscribe to the hydration state.
+ */
+export function useHasHydrated() {
+  return useSyncExternalStore(
+    // Subscribe function
+    (onStoreChange) => {
+      const unsubscribe = useAppStore.persist.onFinishHydration(() => {
+        onStoreChange();
+      });
+      return unsubscribe;
+    },
+    // Get snapshot (client)
+    () => hasHydrated,
+    // Get server snapshot (always false on server since no localStorage)
+    () => false,
+  );
+}
 
 // ============================================
 // SELECTORS

@@ -108,6 +108,56 @@ export async function getCloudEval(
 }
 
 /**
+ * Fetch multiple principal variations from cloud evaluation
+ *
+ * @param fen - FEN string of the position
+ * @param multiPv - Number of principal variations to return (1-5)
+ * @returns Array of evaluations or empty array if position not in cloud database
+ */
+export async function getCloudEvalMultiPv(
+  fen: string,
+  multiPv: number = 3
+): Promise<Evaluation[]> {
+  try {
+    const params = new URLSearchParams({
+      fen,
+      multiPv: multiPv.toString(),
+    });
+
+    const response = await fetch(`${CLOUD_EVAL_URL}?${params}`, {
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (response.status === 404 || !response.ok) {
+      return [];
+    }
+
+    const data: CloudEval = await response.json();
+
+    if (!data.pvs || data.pvs.length === 0) {
+      return [];
+    }
+
+    return data.pvs.map((pv) => {
+      const moves = pv.moves.split(' ');
+      return {
+        score: pv.cp ?? (pv.mate ? (pv.mate > 0 ? 10000 : -10000) : 0),
+        mate: pv.mate ?? null,
+        bestMove: moves[0] || '',
+        depth: data.depth,
+        pv: moves,
+        source: 'cloud' as const,
+      };
+    });
+  } catch (error) {
+    console.error('Cloud eval error:', error);
+    return [];
+  }
+}
+
+/**
  * Convert centipawn score to human-readable format
  */
 export function formatScore(score: number, mate: number | null): string {

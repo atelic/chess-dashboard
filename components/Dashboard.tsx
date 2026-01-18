@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { LayoutDashboard, List, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, List, BarChart3, Search } from 'lucide-react';
 import type { Game } from '@/lib/types';
 import Tabs, { Tab } from './ui/Tabs';
 import OverviewTab from './tabs/OverviewTab';
 import GamesTab from './tabs/GamesTab';
+import ExplorerTab from './tabs/ExplorerTab';
 import AnalysisTab from './tabs/AnalysisTab';
 import { AnimatedKnight } from './icons/ChessPieces';
 
@@ -19,6 +20,7 @@ interface DashboardProps {
 const TABS: Tab[] = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
   { id: 'games', label: 'Games', icon: <List className="w-4 h-4" /> },
+  { id: 'explorer', label: 'Explorer', icon: <Search className="w-4 h-4" /> },
   { id: 'analysis', label: 'Analysis', icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
@@ -54,6 +56,8 @@ export default function Dashboard({ games, isLoading, isAllTime = false, onGames
         return <OverviewTab games={games} isAllTime={isAllTime} />;
       case 'games':
         return <GamesTab games={games} onGamesUpdated={onGamesUpdated} />;
+      case 'explorer':
+        return <ExplorerTab games={games} />;
       case 'analysis':
         return <AnalysisTab games={games} />;
       default:

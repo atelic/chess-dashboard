@@ -15,7 +15,7 @@ const GAME_SELECT_COLUMNS = `
   opening_eco, opening_name, opponent_username, opponent_rating,
   player_rating, termination, rating_change, move_count, rated, game_url,
   initial_time, increment, time_remaining, avg_move_time,
-  accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
+  accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at, pgn
 `.replace(/\s+/g, ' ').trim();
 
 /**
@@ -51,6 +51,8 @@ interface GameRow {
   inaccuracies: number | null;
   acpl: number | null;
   analyzed_at: string | null;
+  // PGN data
+  pgn: string | null;
 }
 
 /**
@@ -219,7 +221,7 @@ export class TursoGameRepository implements IGameRepository {
    */
   async findGamesNeedingAnalysis(userId: number, limit: number = 50): Promise<Game[]> {
     const rows = await this.db.query<GameRow>(
-      `SELECT ${GAME_SELECT_COLUMNS} FROM games 
+      `SELECT ${GAME_SELECT_COLUMNS} FROM games
        WHERE user_id = ? AND analyzed_at IS NULL
        ORDER BY played_at DESC
        LIMIT ?`,
@@ -227,6 +229,52 @@ export class TursoGameRepository implements IGameRepository {
     );
 
     return rows.map((row) => this.rowToGame(row));
+  }
+
+  /**
+   * Find games that don't have PGN data yet (for backfill)
+   */
+  async findGamesNeedingPgn(userId: number, source?: GameSource, limit: number = 50): Promise<Game[]> {
+    let sql = `SELECT ${GAME_SELECT_COLUMNS} FROM games
+               WHERE user_id = ? AND pgn IS NULL`;
+    const params: unknown[] = [userId];
+
+    if (source) {
+      sql += ' AND source = ?';
+      params.push(source);
+    }
+
+    sql += ' ORDER BY played_at DESC LIMIT ?';
+    params.push(limit);
+
+    const rows = await this.db.query<GameRow>(sql, params);
+    return rows.map((row) => this.rowToGame(row));
+  }
+
+  /**
+   * Update PGN for a single game
+   */
+  async updatePgn(gameId: string, pgn: string): Promise<void> {
+    await this.db.execute(
+      'UPDATE games SET pgn = ? WHERE id = ?',
+      [pgn, gameId],
+    );
+  }
+
+  /**
+   * Count games without PGN data
+   */
+  async countGamesNeedingPgn(userId: number, source?: GameSource): Promise<number> {
+    let sql = 'SELECT COUNT(*) as count FROM games WHERE user_id = ? AND pgn IS NULL';
+    const params: unknown[] = [userId];
+
+    if (source) {
+      sql += ' AND source = ?';
+      params.push(source);
+    }
+
+    const rows = await this.db.query<{ count: number }>(sql, params);
+    return rows[0].count;
   }
 
   /**
@@ -268,8 +316,8 @@ export class TursoGameRepository implements IGameRepository {
         opening_eco, opening_name, opponent_username, opponent_rating,
         player_rating, termination, rating_change, move_count, rated, game_url,
         initial_time, increment, time_remaining, avg_move_time,
-        accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at, pgn
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         game.id,
         game.userId,
@@ -298,6 +346,7 @@ export class TursoGameRepository implements IGameRepository {
         game.analysis?.inaccuracies ?? null,
         game.analysis?.acpl ?? null,
         game.analysis?.analyzedAt?.toISOString() ?? null,
+        game.pgn ?? null,
       ],
     );
   }
@@ -313,8 +362,8 @@ export class TursoGameRepository implements IGameRepository {
         opening_eco, opening_name, opponent_username, opponent_rating,
         player_rating, termination, rating_change, move_count, rated, game_url,
         initial_time, increment, time_remaining, avg_move_time,
-        accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        accuracy, blunders, mistakes, inaccuracies, acpl, analyzed_at, pgn
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         -- Clock data: preserve existing (static per game)
         initial_time = COALESCE(games.initial_time, excluded.initial_time),
@@ -327,7 +376,9 @@ export class TursoGameRepository implements IGameRepository {
         mistakes = COALESCE(excluded.mistakes, games.mistakes),
         inaccuracies = COALESCE(excluded.inaccuracies, games.inaccuracies),
         acpl = COALESCE(excluded.acpl, games.acpl),
-        analyzed_at = COALESCE(excluded.analyzed_at, games.analyzed_at)`,
+        analyzed_at = COALESCE(excluded.analyzed_at, games.analyzed_at),
+        -- PGN data: prefer new data
+        pgn = COALESCE(excluded.pgn, games.pgn)`,
       params: [
         game.id,
         game.userId,
@@ -356,6 +407,7 @@ export class TursoGameRepository implements IGameRepository {
         game.analysis?.inaccuracies ?? null,
         game.analysis?.acpl ?? null,
         game.analysis?.analyzedAt?.toISOString() ?? null,
+        game.pgn ?? null,
       ],
     }));
 
@@ -424,6 +476,7 @@ export class TursoGameRepository implements IGameRepository {
       gameUrl: row.game_url || '',
       clock,
       analysis,
+      pgn: row.pgn ?? undefined,
     };
   }
 
