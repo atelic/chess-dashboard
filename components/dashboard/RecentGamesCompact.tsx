@@ -89,12 +89,12 @@ function GameRow({ game }: { game: Game }) {
         </div>
       </div>
 
-      <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+      <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex-shrink-0" aria-hidden="true" />
     </a>
   );
 }
 
-export function RecentGamesCompact({ games, maxGames = 5, className }: RecentGamesCompactProps) {
+function RecentGamesCompact({ games, maxGames = 5, className }: RecentGamesCompactProps) {
   const recentGames = React.useMemo(() =>
     [...games]
       .sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime())

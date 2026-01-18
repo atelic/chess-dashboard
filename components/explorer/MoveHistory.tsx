@@ -39,7 +39,7 @@ export default function MoveHistory({
       <button
         onClick={onReset}
         disabled={moves.length === 0}
-        className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="p-2 rounded-lg bg-secondary hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label="Reset to start"
       >
         <RotateCcw className="w-4 h-4" aria-hidden="true" />
@@ -48,25 +48,25 @@ export default function MoveHistory({
       <button
         onClick={onBack}
         disabled={moves.length === 0}
-        className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="p-2 rounded-lg bg-secondary hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label="Go back one move"
       >
         <ChevronLeft className="w-4 h-4" aria-hidden="true" />
       </button>
 
       {/* Move list */}
-      <div className="flex-1 flex items-center gap-1 overflow-x-auto py-1 px-2 bg-zinc-800/50 rounded-lg min-h-[36px]">
+      <div className="flex-1 flex items-center gap-1 overflow-x-auto py-1 px-2 bg-secondary/50 rounded-lg min-h-[36px]">
         {moves.length === 0 ? (
-          <span className="text-zinc-500 text-sm">Starting position</span>
+          <span className="text-muted-foreground text-sm">Starting position</span>
         ) : (
           formattedMoves.map(({ moveNumber, san, index }) => (
             <span key={index} className="flex items-center">
               {moveNumber && (
-                <span className="text-zinc-500 text-sm mr-0.5">{moveNumber}</span>
+                <span className="text-muted-foreground text-sm mr-0.5">{moveNumber}</span>
               )}
               <button
                 onClick={() => onJumpTo?.(index)}
-                className="font-mono text-sm text-zinc-200 hover:text-blue-400 hover:underline transition-colors px-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="font-mono text-sm text-foreground hover:text-blue-400 hover:underline transition-colors px-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {san}
               </button>

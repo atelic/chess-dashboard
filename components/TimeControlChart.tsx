@@ -32,10 +32,10 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-lg">
-        <p className="text-zinc-100 font-medium mb-1">{LABELS[data.timeClass]}</p>
-        <p className="text-sm text-zinc-400">{data.count} games</p>
-        <p className="text-sm text-zinc-400">{data.percentage.toFixed(1)}%</p>
+      <div className="bg-secondary border border-border rounded-lg p-3 shadow-lg">
+        <p className="text-foreground font-medium mb-1">{LABELS[data.timeClass]}</p>
+        <p className="text-sm text-muted-foreground">{data.count} games</p>
+        <p className="text-sm text-muted-foreground">{data.percentage.toFixed(1)}%</p>
       </div>
     );
   }
@@ -54,7 +54,7 @@ const TimeControlChart = memo(function TimeControlChart({ data }: TimeControlCha
   if (data.length === 0) {
     return (
       <Card title="Time Control Distribution">
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           No data available
         </div>
       </Card>
@@ -90,7 +90,7 @@ const TimeControlChart = memo(function TimeControlChart({ data }: TimeControlCha
               wrapperStyle={{ paddingTop: '10px' }}
               iconType="circle"
               formatter={(value: string) => (
-                <span className="text-zinc-300 text-sm">{value}</span>
+                <span className="text-muted-foreground text-sm">{value}</span>
               )}
             />
           </PieChart>

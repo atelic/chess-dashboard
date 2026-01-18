@@ -9,7 +9,7 @@ import type { PieceDropHandlerArgs } from 'react-chessboard';
 // Dynamic import to avoid SSR issues with react-chessboard
 const Chessboard = dynamic(
   () => import('react-chessboard').then((mod) => mod.Chessboard),
-  { ssr: false, loading: () => <div className="w-full aspect-square bg-zinc-800 rounded animate-pulse" /> }
+  { ssr: false, loading: () => <div className="w-full aspect-square bg-secondary rounded animate-pulse" /> }
 );
 
 interface ExplorerBoardProps {
@@ -102,8 +102,8 @@ export default function ExplorerBoard({
         options={{
           position: fen === 'start' ? 'start' : fen,
           boardOrientation: orientation,
-          darkSquareStyle: { backgroundColor: '#3f3f46' },
-          lightSquareStyle: { backgroundColor: '#71717a' },
+          darkSquareStyle: { backgroundColor: '#b58863' },
+          lightSquareStyle: { backgroundColor: '#f0d9b5' },
           allowDragging: interactive,
           animationDurationInMs: 200,
           onPieceDrop: onDrop,

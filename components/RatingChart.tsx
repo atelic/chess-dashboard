@@ -159,7 +159,7 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
   if (data.length === 0) {
     return (
       <Card title="Rating Progression">
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           No data available
         </div>
       </Card>
@@ -239,16 +239,16 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
+            <CartesianGrid strokeDasharray="3 3" className="stroke-[var(--chart-grid)]" />
             <XAxis
               dataKey="date"
-              stroke="#71717a"
+              className="stroke-[var(--chart-axis)]"
               fontSize={12}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              stroke="#71717a"
+              className="stroke-[var(--chart-axis)]"
               fontSize={12}
               tickLine={false}
               axisLine={false}
@@ -260,7 +260,7 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
                 wrapperStyle={{ paddingTop: '10px' }}
                 iconType="line"
                 formatter={(value: string) => (
-                  <span className="text-zinc-300 text-sm">{value}</span>
+                  <span className="text-muted-foreground text-sm">{value}</span>
                 )}
               />
             )}
@@ -289,7 +289,7 @@ const RatingChart = memo(function RatingChart({ data }: RatingChartProps) {
                 className="w-3 h-0.5 rounded"
                 style={{ backgroundColor: config.color }}
               />
-              <span className="text-xs text-zinc-400">{config.label}</span>
+              <span className="text-xs text-muted-foreground">{config.label}</span>
             </div>
           ))}
         </div>

@@ -68,7 +68,7 @@ const OpeningsChart = memo(function OpeningsChart({ data }: OpeningsChartProps) 
   if (data.length === 0) {
     return (
       <Card title="Results by Opening">
-        <div className="h-96 flex items-center justify-center text-zinc-500">
+        <div className="h-96 flex items-center justify-center text-muted-foreground">
           No data available
         </div>
       </Card>
@@ -84,10 +84,10 @@ const OpeningsChart = memo(function OpeningsChart({ data }: OpeningsChartProps) 
             layout="vertical"
             margin={{ top: 5, right: 20, left: 8, bottom: 5 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" className="stroke-[var(--chart-grid)]" horizontal={false} />
             <XAxis
               type="number"
-              stroke="#71717a"
+              className="stroke-[var(--chart-axis)]"
               fontSize={12}
               tickLine={false}
               axisLine={false}
@@ -95,7 +95,7 @@ const OpeningsChart = memo(function OpeningsChart({ data }: OpeningsChartProps) 
             <YAxis
               type="category"
               dataKey="label"
-              stroke="#a1a1aa"
+              className="stroke-[var(--chart-axis)]"
               fontSize={12}
               tickLine={false}
               axisLine={false}
@@ -106,7 +106,7 @@ const OpeningsChart = memo(function OpeningsChart({ data }: OpeningsChartProps) 
             <Legend
               wrapperStyle={{ paddingTop: '10px' }}
               iconType="circle"
-              formatter={(value) => <span className="text-zinc-300 text-sm">{value}</span>}
+              formatter={(value) => <span className="text-muted-foreground text-sm">{value}</span>}
             />
             <Bar dataKey="wins" stackId="a" fill="#22c55e" name="Wins" radius={[0, 0, 0, 0]} />
             <Bar dataKey="draws" stackId="a" fill="#eab308" name="Draws" />

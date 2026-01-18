@@ -142,46 +142,46 @@ export default function EngineLines({
 
   if (error) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
-        <div className="text-xs text-zinc-500">{error}</div>
+      <div className="bg-card border border-border rounded-xl p-3">
+        <div className="text-xs text-muted-foreground">{error}</div>
       </div>
     );
   }
 
-  if (formattedLines.length === 0) {
-    if (isAnalyzing) {
-      return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
-          <div className="flex items-center gap-2 text-zinc-400">
-            <Loader2 className="w-3 h-3 animate-spin" />
-            <span className="text-xs">Analyzing position...</span>
+    if (formattedLines.length === 0) {
+      if (isAnalyzing) {
+        return (
+          <div className="bg-card border border-border rounded-xl p-3">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
+              <span className="text-xs">Analyzing position...</span>
+            </div>
           </div>
-        </div>
-      );
-    }
+        );
+      }
     return null;
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-2">
+    <div className="bg-card border border-border rounded-xl p-3 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-zinc-500">Engine lines</span>
-        {isAnalyzing && <Loader2 className="w-3 h-3 animate-spin text-blue-400" />}
+        <span className="text-xs text-muted-foreground">Engine lines</span>
+        {isAnalyzing && <Loader2 className="w-3 h-3 animate-spin text-blue-400" aria-hidden="true" />}
       </div>
       {formattedLines.map((line, idx) => (
         <div key={idx} className="flex items-start gap-2">
           <span
             className={`font-mono text-xs px-1.5 py-0.5 rounded shrink-0 ${
               line.isWhiteAdvantage === null
-                ? 'bg-zinc-700 text-zinc-300'
+                ? 'bg-muted text-muted-foreground'
                 : line.isWhiteAdvantage
-                ? 'bg-zinc-100 text-zinc-900'
-                : 'bg-zinc-800 text-zinc-100'
+                ? 'bg-foreground text-background'
+                : 'bg-secondary text-foreground'
             }`}
           >
             {line.score}
           </span>
-          <div className="font-mono text-xs text-zinc-400 leading-relaxed flex flex-wrap gap-x-1">
+          <div className="font-mono text-xs text-muted-foreground leading-relaxed flex flex-wrap gap-x-1">
             {line.moves.map((move, moveIdx) =>
               move.isMove ? (
                 <button
@@ -192,7 +192,7 @@ export default function EngineLines({
                   {move.display}
                 </button>
               ) : (
-                <span key={moveIdx} className="text-zinc-500">
+                <span key={moveIdx} className="text-muted-foreground">
                   {move.display}
                 </span>
               )

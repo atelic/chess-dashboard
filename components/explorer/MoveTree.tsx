@@ -44,25 +44,25 @@ function BarSegment({
 export default function MoveTree({ node, onMoveClick }: MoveTreeProps) {
   if (!node) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-        <p className="text-zinc-400 text-center">No data for this position</p>
+      <div className="bg-card border border-border rounded-xl p-6">
+        <p className="text-muted-foreground text-center">No data for this position</p>
       </div>
     );
   }
 
   if (node.children.length === 0) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-        <p className="text-zinc-400 text-center">No games continue from this position</p>
+      <div className="bg-card border border-border rounded-xl p-6">
+        <p className="text-muted-foreground text-center">No games continue from this position</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-2 border-b border-zinc-800 bg-zinc-800/50">
-        <div className="flex items-center gap-4 text-sm text-zinc-400">
+      <div className="px-4 py-2 border-b border-border bg-secondary/50">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span className="w-12">Move</span>
           <span className="flex-1">Results</span>
           <span className="w-14 text-right">Games</span>
@@ -70,7 +70,7 @@ export default function MoveTree({ node, onMoveClick }: MoveTreeProps) {
       </div>
 
       {/* Move rows */}
-      <div className="divide-y divide-zinc-800/50">
+      <div className="divide-y divide-border">
         {node.children.map((move) => {
           const { stats } = move;
           const winPct = stats.total > 0 ? (stats.wins / stats.total) * 100 : 0;
@@ -81,15 +81,15 @@ export default function MoveTree({ node, onMoveClick }: MoveTreeProps) {
             <button
               key={move.san}
               onClick={() => onMoveClick(move.san)}
-              className="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-zinc-800/50 transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+              className="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-secondary/50 transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               {/* Move notation */}
-              <span className="font-mono font-semibold text-zinc-100 w-12">
+              <span className="font-mono font-semibold text-foreground w-12">
                 {move.san}
               </span>
 
               {/* Stats bar - muted colors with labels */}
-              <div className="flex-1 h-6 rounded overflow-hidden flex bg-zinc-800">
+              <div className="flex-1 h-6 rounded overflow-hidden flex bg-secondary">
                 <BarSegment
                   percentage={winPct}
                   color="bg-emerald-700"
@@ -98,8 +98,8 @@ export default function MoveTree({ node, onMoveClick }: MoveTreeProps) {
                 />
                 <BarSegment
                   percentage={drawPct}
-                  color="bg-zinc-600"
-                  textColor="text-zinc-200"
+                  color="bg-muted-foreground"
+                  textColor="text-foreground"
                   label={`Draws: ${stats.draws} (${drawPct.toFixed(1)}%)`}
                 />
                 <BarSegment
@@ -111,7 +111,7 @@ export default function MoveTree({ node, onMoveClick }: MoveTreeProps) {
               </div>
 
               {/* Games count */}
-              <span className="w-14 text-right text-zinc-300 tabular-nums text-sm">
+              <span className="w-14 text-right text-muted-foreground tabular-nums text-sm">
                 {stats.total.toLocaleString()}
               </span>
             </button>

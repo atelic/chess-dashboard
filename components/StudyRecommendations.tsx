@@ -30,7 +30,7 @@ const TYPE_COLORS: Record<RecommendationType, { bg: string; border: string; text
 const PRIORITY_LABELS: Record<string, { label: string; color: string }> = {
   high: { label: 'High Priority', color: 'text-red-400 bg-red-950' },
   medium: { label: 'Medium Priority', color: 'text-yellow-400 bg-yellow-950' },
-  low: { label: 'Low Priority', color: 'text-zinc-400 bg-zinc-800' },
+  low: { label: 'Low Priority', color: 'text-muted-foreground bg-secondary' },
 };
 
 interface RecommendationCardProps {
@@ -53,16 +53,16 @@ function RecommendationCard({ recommendation }: RecommendationCardProps) {
               {priority.label}
             </span>
           </div>
-          <p className="text-sm text-zinc-300 mt-1">{recommendation.description}</p>
+          <p className="text-sm text-muted-foreground mt-1">{recommendation.description}</p>
 
           {/* Study Items */}
           {recommendation.studyItems.length > 0 && (
             <div className="mt-3">
-              <div className="text-xs text-zinc-400 mb-1">Study Focus:</div>
+              <div className="text-xs text-muted-foreground mb-1">Study Focus:</div>
               <ul className="space-y-1">
                 {recommendation.studyItems.map((item, index) => (
-                  <li key={index} className="text-sm text-zinc-300 flex items-start gap-2">
-                    <span className="text-zinc-600 mt-0.5">•</span>
+                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <span className="text-muted-foreground mt-0.5">•</span>
                     {item}
                   </li>
                 ))}
@@ -71,8 +71,8 @@ function RecommendationCard({ recommendation }: RecommendationCardProps) {
           )}
 
           {/* Evidence */}
-          <div className="mt-3 text-xs text-zinc-500">
-            <span className="text-zinc-600">Based on: </span>
+          <div className="mt-3 text-xs text-muted-foreground">
+            <span className="text-muted-foreground">Based on: </span>
             {recommendation.evidence}
           </div>
 
@@ -85,7 +85,7 @@ function RecommendationCard({ recommendation }: RecommendationCardProps) {
                     ? 'bg-green-950 text-green-400'
                     : recommendation.estimatedImpact === 'medium'
                     ? 'bg-yellow-950 text-yellow-400'
-                    : 'bg-zinc-800 text-zinc-400'
+                    : 'bg-secondary text-muted-foreground'
                 }`}
               >
                 {recommendation.estimatedImpact.charAt(0).toUpperCase() +
@@ -109,7 +109,7 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         title="Study Recommendations"
         subtitle="Personalized suggestions to improve your game"
       >
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           <div className="text-center">
             <p>Not enough games for recommendations</p>
             <p className="text-sm mt-1">Play at least 10 games to get personalized suggestions</p>
@@ -125,10 +125,10 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         title="Study Recommendations"
         subtitle="Personalized suggestions to improve your game"
       >
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           <div className="text-center">
             <div className="text-4xl mb-4">🎉</div>
-            <h3 className="text-lg font-medium text-zinc-300 mb-2">Looking Good!</h3>
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">Looking Good!</h3>
             <p className="text-sm">
               No major areas of concern detected. Keep playing and we&apos;ll analyze more!
             </p>
@@ -153,15 +153,15 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         <div className="grid grid-cols-3 gap-4 text-center">
           <div className="bg-red-950/20 rounded-lg p-3">
             <div className="text-2xl font-bold text-red-400">{highPriority.length}</div>
-            <div className="text-xs text-zinc-400">High Priority</div>
+            <div className="text-xs text-muted-foreground">High Priority</div>
           </div>
           <div className="bg-yellow-950/20 rounded-lg p-3">
             <div className="text-2xl font-bold text-yellow-400">{mediumPriority.length}</div>
-            <div className="text-xs text-zinc-400">Medium Priority</div>
+            <div className="text-xs text-muted-foreground">Medium Priority</div>
           </div>
-          <div className="bg-zinc-800/50 rounded-lg p-3">
-            <div className="text-2xl font-bold text-zinc-400">{lowPriority.length}</div>
-            <div className="text-xs text-zinc-400">Low Priority</div>
+          <div className="bg-secondary/50 rounded-lg p-3">
+            <div className="text-2xl font-bold text-muted-foreground">{lowPriority.length}</div>
+            <div className="text-xs text-muted-foreground">Low Priority</div>
           </div>
         </div>
 
@@ -198,7 +198,7 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         {/* Low Priority Recommendations */}
         {lowPriority.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
               <span aria-hidden="true">📝</span>
               Nice to Have
             </h3>
@@ -211,12 +211,12 @@ export default function StudyRecommendations({ games }: StudyRecommendationsProp
         )}
 
         {/* Action Tip */}
-        <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
+        <div className="bg-secondary/50 border border-border rounded-lg p-4">
           <div className="flex items-start gap-3">
             <span className="text-lg" aria-hidden="true">💡</span>
             <div>
-              <h4 className="text-zinc-300 font-medium">How to Use These Recommendations</h4>
-              <p className="text-zinc-400 text-sm mt-1">
+              <h4 className="text-muted-foreground font-medium">How to Use These Recommendations</h4>
+              <p className="text-muted-foreground text-sm mt-1">
                 Start with high-priority items first. Spend focused practice time on each area 
                 before moving to the next. Track your progress by checking back after playing 
                 more games.

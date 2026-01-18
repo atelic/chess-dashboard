@@ -21,8 +21,8 @@ function DateRow({ stats, isExpanded, onToggle, games }: DateRowProps) {
   return (
     <Fragment>
       <tr
-        className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
-          isExpanded ? 'bg-zinc-800/50' : 'hover:bg-zinc-800/30'
+        className={`border-b border-border/50 cursor-pointer transition-colors ${
+          isExpanded ? 'bg-secondary/50' : 'hover:bg-secondary/30'
         }`}
         onClick={onToggle}
         onKeyDown={(e) => {
@@ -36,7 +36,7 @@ function DateRow({ stats, isExpanded, onToggle, games }: DateRowProps) {
         aria-expanded={isExpanded}
         aria-label={`${isExpanded ? 'Collapse' : 'Expand'} games for ${stats.displayDate}`}
       >
-        <td className="py-3 px-3 text-zinc-500">
+        <td className="py-3 px-3 text-muted-foreground">
           <svg
             className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
             fill="none"
@@ -48,15 +48,15 @@ function DateRow({ stats, isExpanded, onToggle, games }: DateRowProps) {
           </svg>
         </td>
         <td className="py-3 px-3">
-          <span className="text-zinc-200">{stats.displayDate}</span>
+          <span className="text-foreground">{stats.displayDate}</span>
         </td>
         <td className="py-3 px-3">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 font-mono text-sm">
               <span className="text-green-400 font-medium">{stats.wins}</span>
-              <span className="text-zinc-600">-</span>
-              <span className="text-zinc-400 font-medium">{stats.draws}</span>
-              <span className="text-zinc-600">-</span>
+              <span className="text-muted-foreground">-</span>
+              <span className="text-muted-foreground font-medium">{stats.draws}</span>
+              <span className="text-muted-foreground">-</span>
               <span className="text-red-400 font-medium">{stats.losses}</span>
             </div>
             {stats.hasTilt && (
@@ -75,14 +75,14 @@ function DateRow({ stats, isExpanded, onToggle, games }: DateRowProps) {
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   />
                 </svg>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-zinc-700 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                   Tilt Warning
                 </div>
               </div>
             )}
           </div>
         </td>
-        <td className="py-3 px-3 text-right text-zinc-400">
+        <td className="py-3 px-3 text-right text-muted-foreground">
           {stats.games} {stats.games === 1 ? 'game' : 'games'}
         </td>
         <td className="py-3 px-3 text-right font-mono text-sm">
@@ -91,13 +91,13 @@ function DateRow({ stats, isExpanded, onToggle, games }: DateRowProps) {
               {stats.ratingChange > 0 ? '+' : ''}{stats.ratingChange}
             </span>
           ) : (
-            <span className="text-zinc-500">0</span>
+            <span className="text-muted-foreground">0</span>
           )}
         </td>
       </tr>
       {isExpanded && (
         <tr>
-          <td colSpan={5} className="bg-zinc-800/20 p-4">
+          <td colSpan={5} className="bg-secondary/20 p-4">
             <GamesTable games={games} maxRows={20} />
           </td>
         </tr>
@@ -117,7 +117,7 @@ export default function DayPerformance({ games }: DayPerformanceProps) {
   if (dateStats.length === 0) {
     return (
       <Card title="Daily Performance">
-        <div className="text-center py-8 text-zinc-500">
+        <div className="text-center py-8 text-muted-foreground">
           No games to display
         </div>
       </Card>
@@ -129,12 +129,12 @@ export default function DayPerformance({ games }: DayPerformanceProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
-              <th className="text-left py-2 px-3 text-zinc-400 font-medium w-8"></th>
-              <th className="text-left py-2 px-3 text-zinc-400 font-medium">Date</th>
-              <th className="text-left py-2 px-3 text-zinc-400 font-medium">W-D-L</th>
-              <th className="text-right py-2 px-3 text-zinc-400 font-medium">Total</th>
-              <th className="text-right py-2 px-3 text-zinc-400 font-medium">Rating</th>
+            <tr className="border-b border-border">
+              <th className="text-left py-2 px-3 text-muted-foreground font-medium w-8"></th>
+              <th className="text-left py-2 px-3 text-muted-foreground font-medium">Date</th>
+              <th className="text-left py-2 px-3 text-muted-foreground font-medium">W-D-L</th>
+              <th className="text-right py-2 px-3 text-muted-foreground font-medium">Total</th>
+              <th className="text-right py-2 px-3 text-muted-foreground font-medium">Rating</th>
             </tr>
           </thead>
           <tbody>

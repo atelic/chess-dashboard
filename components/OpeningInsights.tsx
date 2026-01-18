@@ -23,7 +23,7 @@ interface OpeningTableProps {
 // Helper function to render sort icon - not a component
 function renderSortIcon(field: SortField, sortField: SortField, sortDirection: SortDirection) {
   if (sortField !== field) {
-    return <span className="text-zinc-600 ml-1">↕</span>;
+    return <span className="text-muted-foreground ml-1">↕</span>;
   }
   return (
     <span className="text-blue-400 ml-1">
@@ -64,7 +64,7 @@ function OpeningTable({ openings, title, allGames }: OpeningTableProps) {
 
   if (openings.length === 0) {
     return (
-      <div className="text-center py-8 text-zinc-500">
+      <div className="text-center py-8 text-muted-foreground">
         Not enough games to show openings
       </div>
     );
@@ -72,37 +72,37 @@ function OpeningTable({ openings, title, allGames }: OpeningTableProps) {
 
   return (
     <div>
-      <h4 className="text-sm font-medium text-zinc-400 mb-3">{title}</h4>
+      <h4 className="text-sm font-medium text-muted-foreground mb-3">{title}</h4>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
-              <th className="text-left py-2 px-2 text-zinc-400 font-medium w-8"></th>
-              <th className="text-left py-2 px-2 text-zinc-400 font-medium">Opening</th>
-              <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+            <tr className="border-b border-border">
+              <th className="text-left py-2 px-2 text-muted-foreground font-medium w-8"></th>
+              <th className="text-left py-2 px-2 text-muted-foreground font-medium">Opening</th>
+              <th className="text-right py-2 px-2 text-muted-foreground font-medium">
                 <button
                   type="button"
                   onClick={() => handleSort('games')}
-                  className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+                  className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
                 >
                   Games {renderSortIcon('games', sortField, sortDirection)}
                 </button>
               </th>
-              <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+              <th className="text-right py-2 px-2 text-muted-foreground font-medium">
                 <button
                   type="button"
                   onClick={() => handleSort('winRate')}
-                  className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+                  className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
                 >
                   Win Rate {renderSortIcon('winRate', sortField, sortDirection)}
                 </button>
               </th>
-              <th className="text-right py-2 px-2 text-zinc-400 font-medium">W/L/D</th>
-              <th className="text-right py-2 px-2 text-zinc-400 font-medium">
+              <th className="text-right py-2 px-2 text-muted-foreground font-medium">W/L/D</th>
+              <th className="text-right py-2 px-2 text-muted-foreground font-medium">
                 <button
                   type="button"
                   onClick={() => handleSort('avgOpponentRating')}
-                  className="hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+                  className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
                 >
                   Avg Opp {renderSortIcon('avgOpponentRating', sortField, sortDirection)}
                 </button>
@@ -117,8 +117,8 @@ function OpeningTable({ openings, title, allGames }: OpeningTableProps) {
               return (
                 <Fragment key={opening.eco}>
                   <tr
-                    className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
-                      isExpanded ? 'bg-zinc-800/50' : 'hover:bg-zinc-800/30'
+                    className={`border-b border-border/50 cursor-pointer transition-colors ${
+                      isExpanded ? 'bg-secondary/50' : 'hover:bg-secondary/30'
                     } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset`}
                     onClick={() => handleRowClick(opening.eco)}
                     onKeyDown={(e) => {
@@ -132,7 +132,7 @@ function OpeningTable({ openings, title, allGames }: OpeningTableProps) {
                     aria-expanded={isExpanded}
                     aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${opening.name} opening details`}
                   >
-                    <td className="py-2 px-2 text-zinc-500">
+                    <td className="py-2 px-2 text-muted-foreground">
                       <svg
                         className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                         fill="none"
@@ -144,31 +144,31 @@ function OpeningTable({ openings, title, allGames }: OpeningTableProps) {
                       </svg>
                     </td>
                     <td className="py-2 px-2">
-                      <span className="text-zinc-200">{opening.name}</span>
-                      <span className="text-zinc-500 ml-2 text-xs">({opening.eco})</span>
+                      <span className="text-foreground">{opening.name}</span>
+                      <span className="text-muted-foreground ml-2 text-xs">({opening.eco})</span>
                     </td>
-                    <td className="text-right py-2 px-2 text-zinc-300">{opening.games}</td>
+                    <td className="text-right py-2 px-2 text-muted-foreground">{opening.games}</td>
                     <td className="text-right py-2 px-2">
                       <span className={`${
                         opening.winRate >= 60 ? 'text-green-400' : 
-                        opening.winRate >= 40 ? 'text-zinc-300' : 
+                        opening.winRate >= 40 ? 'text-muted-foreground' : 
                         'text-red-400'
                       }`}>
                         {opening.winRate.toFixed(0)}%
                       </span>
                     </td>
-                    <td className="text-right py-2 px-2 text-zinc-400">
+                    <td className="text-right py-2 px-2 text-muted-foreground">
                       <span className="text-green-400">{opening.wins}</span>
-                      <span className="text-zinc-600">/</span>
+                      <span className="text-muted-foreground">/</span>
                       <span className="text-red-400">{opening.losses}</span>
-                      <span className="text-zinc-600">/</span>
-                      <span className="text-zinc-400">{opening.draws}</span>
+                      <span className="text-muted-foreground">/</span>
+                      <span className="text-muted-foreground">{opening.draws}</span>
                     </td>
-                    <td className="text-right py-2 px-2 text-zinc-400">{opening.avgOpponentRating}</td>
+                    <td className="text-right py-2 px-2 text-muted-foreground">{opening.avgOpponentRating}</td>
                   </tr>
                   {isExpanded && (
                     <tr>
-                      <td colSpan={6} className="bg-zinc-800/20 p-4">
+                      <td colSpan={6} className="bg-secondary/20 p-4">
                         <GamesTable 
                           games={openingGames} 
                           maxRows={10} 
@@ -201,18 +201,18 @@ function OpeningHighlight({ opening, type }: OpeningHighlightProps) {
     }`}>
       <div className="flex items-center gap-2 mb-1">
         <span className="text-lg">{isBest ? '📈' : '📉'}</span>
-        <span className="text-xs font-medium text-zinc-400 uppercase">
+        <span className="text-xs font-medium text-muted-foreground uppercase">
           {isBest ? 'Best' : 'Needs Work'}
         </span>
       </div>
-      <div className="text-zinc-200 font-medium">{opening.name}</div>
-      <div className="text-xs text-zinc-500">({opening.eco})</div>
+      <div className="text-foreground font-medium">{opening.name}</div>
+      <div className="text-xs text-muted-foreground">({opening.eco})</div>
       <div className={`text-lg font-semibold mt-1 ${
         isBest ? 'text-green-400' : 'text-red-400'
       }`}>
         {opening.winRate.toFixed(0)}% win rate
       </div>
-      <div className="text-xs text-zinc-500">
+      <div className="text-xs text-muted-foreground">
         {opening.wins}W / {opening.losses}L / {opening.draws}D ({opening.games} games)
       </div>
     </div>
@@ -240,30 +240,30 @@ export default function OpeningInsights({ games, minGames = 3 }: OpeningInsights
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* As White */}
             <div>
-              <h4 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
-                <span className="w-4 h-4 bg-white rounded-sm border border-zinc-600" />
+              <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                <span className="w-4 h-4 bg-white rounded-sm border border-muted-foreground" />
                 As White
               </h4>
               <div className="space-y-3">
                 {bestWhite && <OpeningHighlight opening={bestWhite} type="best" />}
                 {worstWhite && <OpeningHighlight opening={worstWhite} type="worst" />}
                 {!bestWhite && !worstWhite && (
-                  <p className="text-zinc-500 text-sm">Not enough games</p>
+                  <p className="text-muted-foreground text-sm">Not enough games</p>
                 )}
               </div>
             </div>
 
             {/* As Black */}
             <div>
-              <h4 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
-                <span className="w-4 h-4 bg-zinc-800 rounded-sm border border-zinc-600" />
+              <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                <span className="w-4 h-4 bg-secondary rounded-sm border border-muted-foreground" />
                 As Black
               </h4>
               <div className="space-y-3">
                 {bestBlack && <OpeningHighlight opening={bestBlack} type="best" />}
                 {worstBlack && <OpeningHighlight opening={worstBlack} type="worst" />}
                 {!bestBlack && !worstBlack && (
-                  <p className="text-zinc-500 text-sm">Not enough games</p>
+                  <p className="text-muted-foreground text-sm">Not enough games</p>
                 )}
               </div>
             </div>
@@ -279,22 +279,22 @@ export default function OpeningInsights({ games, minGames = 3 }: OpeningInsights
             onClick={() => setSelectedColor('white')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
               selectedColor === 'white'
-                ? 'bg-zinc-700 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                ? 'bg-muted text-white'
+                : 'bg-secondary text-muted-foreground hover:text-foreground'
             }`}
           >
-            <span className="w-3 h-3 bg-white rounded-sm border border-zinc-500" />
+            <span className="w-3 h-3 bg-white rounded-sm border border-border" />
             White
           </button>
           <button
             onClick={() => setSelectedColor('black')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
               selectedColor === 'black'
-                ? 'bg-zinc-700 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                ? 'bg-muted text-white'
+                : 'bg-secondary text-muted-foreground hover:text-foreground'
             }`}
           >
-            <span className="w-3 h-3 bg-zinc-800 rounded-sm border border-zinc-500" />
+            <span className="w-3 h-3 bg-secondary rounded-sm border border-border" />
             Black
           </button>
         </div>

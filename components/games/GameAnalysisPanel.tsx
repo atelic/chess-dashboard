@@ -16,11 +16,11 @@ interface GameAnalysisPanelProps {
  * Get color for accuracy score
  */
 function getAccuracyColor(accuracy: number): string {
-  if (accuracy >= 90) return 'text-green-400';
-  if (accuracy >= 80) return 'text-lime-400';
-  if (accuracy >= 70) return 'text-yellow-400';
-  if (accuracy >= 60) return 'text-orange-400';
-  return 'text-red-400';
+  if (accuracy >= 90) return 'text-green-600 dark:text-green-400';
+  if (accuracy >= 80) return 'text-lime-600 dark:text-lime-400';
+  if (accuracy >= 70) return 'text-yellow-600 dark:text-yellow-400';
+  if (accuracy >= 60) return 'text-orange-600 dark:text-orange-400';
+  return 'text-red-600 dark:text-red-400';
 }
 
 /**
@@ -117,11 +117,11 @@ export default function GameAnalysisPanel({
     const isFetching = isFetchingLichess || isFetchingChessCom;
     
     return (
-      <div className="bg-zinc-800/50 rounded-lg p-4">
+      <div className="bg-secondary/50 rounded-lg p-4">
         <div className="flex flex-col gap-3">
           <div>
-            <h4 className="text-sm font-medium text-zinc-300">Game Analysis</h4>
-            <p className="text-xs text-zinc-500 mt-1">
+            <h4 className="text-sm font-medium text-muted-foreground">Game Analysis</h4>
+            <p className="text-xs text-muted-foreground mt-1">
               {isLichess 
                 ? 'Check if Lichess has analysis for this game, or analyze locally with Stockfish.'
                 : 'Check if Chess.com has analysis for this game. You may need to request Game Review on Chess.com first.'}
@@ -185,14 +185,14 @@ export default function GameAnalysisPanel({
           
           {error && (
             <div className="text-xs">
-              <span className="text-red-400">{error}</span>
+              <span className="text-destructive">{error}</span>
               {reviewUrl && (
                 <span className="ml-1">
                   <a
                     href={reviewUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 underline"
+                    className="text-primary hover:text-primary/80 underline"
                   >
                     Request Game Review on Chess.com
                   </a>
@@ -208,19 +208,19 @@ export default function GameAnalysisPanel({
 
   // Show analysis data
   return (
-    <div className="bg-zinc-800/50 rounded-lg p-4">
-      <h4 className="text-sm font-medium text-zinc-300 mb-3">Game Analysis</h4>
+    <div className="bg-secondary/50 rounded-lg p-4">
+      <h4 className="text-sm font-medium text-muted-foreground mb-3">Game Analysis</h4>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Accuracy */}
         {analysis.accuracy !== undefined && (
           <div>
-            <div className="text-xs text-zinc-500 mb-1">Accuracy</div>
+            <div className="text-xs text-muted-foreground mb-1">Accuracy</div>
             <div className="flex items-center gap-2">
               <div className={`text-2xl font-bold ${getAccuracyColor(analysis.accuracy)}`}>
                 {analysis.accuracy}%
               </div>
-              <div className="flex-1 h-2 bg-zinc-700 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${getAccuracyBgColor(analysis.accuracy)} transition-[width] duration-200`}
                   style={{ width: `${analysis.accuracy}%` }}
@@ -232,51 +232,51 @@ export default function GameAnalysisPanel({
 
         {/* Blunders */}
         <div>
-          <div className="text-xs text-zinc-500 mb-1">Blunders</div>
+          <div className="text-xs text-muted-foreground mb-1">Blunders</div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-red-400">{analysis.blunders}</span>
-            <span className="text-red-400 text-lg">??</span>
+            <span className="text-2xl font-bold text-red-600 dark:text-red-400">{analysis.blunders}</span>
+            <span className="text-red-600 dark:text-red-400 text-lg">??</span>
           </div>
         </div>
 
         {/* Mistakes */}
         <div>
-          <div className="text-xs text-zinc-500 mb-1">Mistakes</div>
+          <div className="text-xs text-muted-foreground mb-1">Mistakes</div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-orange-400">{analysis.mistakes}</span>
-            <span className="text-orange-400 text-lg">?</span>
+            <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">{analysis.mistakes}</span>
+            <span className="text-orange-600 dark:text-orange-400 text-lg">?</span>
           </div>
         </div>
 
         {/* Inaccuracies */}
         <div>
-          <div className="text-xs text-zinc-500 mb-1">Inaccuracies</div>
+          <div className="text-xs text-muted-foreground mb-1">Inaccuracies</div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-yellow-400">{analysis.inaccuracies}</span>
-            <span className="text-yellow-400 text-lg">?!</span>
+            <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{analysis.inaccuracies}</span>
+            <span className="text-yellow-600 dark:text-yellow-400 text-lg">?!</span>
           </div>
         </div>
       </div>
 
       {/* ACPL */}
       {analysis.acpl !== undefined && (
-        <div className="mt-3 pt-3 border-t border-zinc-700">
+        <div className="mt-3 pt-3 border-t border-border">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-zinc-500">Average Centipawn Loss</span>
-            <span className="text-zinc-300 font-medium">{analysis.acpl}</span>
+            <span className="text-muted-foreground">Average Centipawn Loss</span>
+            <span className="text-muted-foreground font-medium">{analysis.acpl}</span>
           </div>
         </div>
       )}
 
       {/* View on platform link */}
-      <div className="mt-3 pt-3 border-t border-zinc-700">
+      <div className="mt-3 pt-3 border-t border-border">
         <a
           href={game.source === 'lichess' 
             ? `${game.gameUrl}/${game.playerColor}#analysis`
             : `${game.gameUrl}?tab=review`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+          className="text-primary hover:text-primary/80 text-sm flex items-center gap-1"
         >
           View full analysis on {game.source === 'lichess' ? 'Lichess' : 'Chess.com'}
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

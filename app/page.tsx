@@ -105,10 +105,10 @@ export default function SetupPage() {
   // Show loading while checking for existing user
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-zinc-400">Loading…</p>
+          <p className="mt-4 text-muted-foreground">Loading…</p>
         </div>
       </div>
     );
@@ -117,10 +117,10 @@ export default function SetupPage() {
   // User exists - will redirect
   if (user) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-zinc-400">Redirecting to dashboard…</p>
+          <p className="mt-4 text-muted-foreground">Redirecting to dashboard…</p>
         </div>
       </div>
     );
@@ -129,9 +129,9 @@ export default function SetupPage() {
   const isProcessing = isValidating || isSettingUp || isSyncing;
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-3">
             <svg
@@ -143,8 +143,8 @@ export default function SetupPage() {
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
             </svg>
             <div>
-              <h1 className="text-xl font-bold text-zinc-100">Chess Dashboard</h1>
-              <p className="text-sm text-zinc-500">Analyze your games from Chess.com and Lichess</p>
+              <h1 className="text-xl font-bold text-foreground">Chess Dashboard</h1>
+              <p className="text-sm text-muted-foreground">Analyze your games from Chess.com and Lichess</p>
             </div>
           </div>
         </div>
@@ -154,11 +154,11 @@ export default function SetupPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-zinc-100 mb-2">
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 Welcome to Chess Dashboard
               </h2>
-              <p className="text-zinc-400 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Enter your chess usernames to get started. Your games will be synced and stored locally.
               </p>
 
@@ -188,7 +188,7 @@ export default function SetupPage() {
                 />
               </div>
 
-              <p className="text-sm text-zinc-500 mt-4 mb-6">
+              <p className="text-sm text-muted-foreground mt-4 mb-6">
                 Enter at least one username. Games from both platforms will be merged and analyzed together.
               </p>
 
@@ -213,9 +213,9 @@ export default function SetupPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 mt-auto">
+      <footer className="border-t border-border mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <p className="text-center text-sm text-zinc-600">
+          <p className="text-center text-sm text-muted-foreground">
             Chess Dashboard - Analyze your games from Chess.com and Lichess
           </p>
         </div>

@@ -20,9 +20,9 @@ function getResultColor(result?: GameResult): string {
     case 'loss':
       return 'text-red-400';
     case 'draw':
-      return 'text-zinc-400';
+      return 'text-muted-foreground';
     default:
-      return 'text-zinc-400';
+      return 'text-muted-foreground';
   }
 }
 
@@ -148,7 +148,7 @@ export default function TerminationIcon({
       {icon}
       {showLabel && <span className="text-xs">{label}</span>}
       {/* Tooltip */}
-      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs font-medium text-zinc-100 bg-zinc-800 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs font-medium text-foreground bg-secondary rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
         {label}
       </span>
     </span>
