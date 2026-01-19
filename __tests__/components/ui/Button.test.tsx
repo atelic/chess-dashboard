@@ -67,8 +67,8 @@ describe('Button', () => {
     it('shows loading spinner when isLoading is true', () => {
       render(<Button isLoading>Submit</Button>);
       
-      // Should show "Loading..." text
-      expect(screen.getByRole('button')).toHaveTextContent('Loading...');
+      // Should show "Loading…" text (Unicode ellipsis)
+      expect(screen.getByRole('button')).toHaveTextContent('Loading…');
       // Original children should not be visible
       expect(screen.getByRole('button')).not.toHaveTextContent('Submit');
     });
