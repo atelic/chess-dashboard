@@ -5,7 +5,6 @@ import type { Game } from '@/lib/types';
 import {
   calculateStats,
   calculateWinRateOverTime,
-  calculateOpeningStats,
   calculateRatingProgression,
   calculateTimeControlDistribution,
   calculateColorPerformance,
@@ -34,7 +33,7 @@ export default function OverviewTab({ games, isAllTime = false }: OverviewTabPro
   // Memoize expensive calculations
   const stats = useMemo(() => calculateStats(games), [games]);
   const insights = useMemo(() => generateInsights(games), [games]);
-  const openingData = useMemo(() => calculateOpeningStats(games), [games]);
+
   const ratingData = useMemo(
     () => calculateRatingProgression(games, { excludeProvisional: isAllTime }),
     [games, isAllTime]
@@ -55,7 +54,7 @@ export default function OverviewTab({ games, isAllTime = false }: OverviewTabPro
       <ActionableInsights insights={insights} maxItems={4} />
 
       {/* Results by Opening - full width */}
-      <OpeningsChart data={openingData} />
+      <OpeningsChart games={games} />
 
       {/* Recent Games & Play Patterns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

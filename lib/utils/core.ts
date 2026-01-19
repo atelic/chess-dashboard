@@ -174,10 +174,21 @@ export function calculateWinRateOverTime(games: Game[]): WinRateDataPoint[] {
   return result;
 }
 
-export function calculateOpeningStats(games: Game[]): OpeningDataPoint[] {
+export interface OpeningStatsOptions {
+  /** Filter by player color ('white' or 'black'). If not provided, includes all games. */
+  playerColor?: 'white' | 'black';
+}
+
+export function calculateOpeningStats(
+  games: Game[],
+  options: OpeningStatsOptions = {}
+): OpeningDataPoint[] {
+  const { playerColor } = options;
   const ecoMap = new Map<string, { name: string; wins: number; losses: number; draws: number }>();
 
   for (const game of games) {
+    if (playerColor && game.playerColor !== playerColor) continue;
+    
     const eco = game.opening.eco;
     
     // Skip unknown openings

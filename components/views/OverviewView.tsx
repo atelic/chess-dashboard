@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import type { Game } from '@/lib/types';
 import {
   calculateStats,
-  calculateOpeningStats,
   calculateRatingProgression,
   generateInsights,
 } from '@/lib/utils';
@@ -31,7 +30,7 @@ export default function OverviewView({ games, isAllTime = false }: OverviewViewP
   // Memoize expensive calculations
   const stats = useMemo(() => calculateStats(games), [games]);
   const insights = useMemo(() => generateInsights(games), [games]);
-  const openingData = useMemo(() => calculateOpeningStats(games), [games]);
+
   const ratingData = useMemo(
     () => calculateRatingProgression(games, { excludeProvisional: isAllTime }),
     [games, isAllTime]
@@ -207,7 +206,7 @@ export default function OverviewView({ games, isAllTime = false }: OverviewViewP
         description="Win rates by opening"
         icon={<Target className="w-5 h-5" />}
       >
-        <OpeningsChart data={openingData} />
+        <OpeningsChart games={games} />
       </CommandPanel>
     </div>
   );
