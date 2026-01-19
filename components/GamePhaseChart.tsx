@@ -43,7 +43,7 @@ export default function GamePhaseChart({ games }: GamePhaseChartProps) {
         title="Game Phase Analysis"
         subtitle="Performance by opening, middlegame, and endgame"
       >
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           <div className="text-center">
             <p>No analysis data available</p>
             <p className="text-sm mt-1">Analyze some games to see phase performance</p>
@@ -93,27 +93,27 @@ export default function GamePhaseChart({ games }: GamePhaseChartProps) {
       <div className="space-y-6">
         {/* Summary Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Weakest Phase</div>
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Weakest Phase</div>
             <div className="text-xl font-semibold text-red-400 mt-1">
               {getPhaseLabel(phasePerf.weakestPhase)}
             </div>
           </div>
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Strongest Phase</div>
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Strongest Phase</div>
             <div className="text-xl font-semibold text-green-400 mt-1">
               {getPhaseLabel(phasePerf.strongestPhase)}
             </div>
           </div>
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Total Blunders</div>
-            <div className="text-xl font-semibold text-zinc-100 mt-1">
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Total Blunders</div>
+            <div className="text-xl font-semibold text-foreground mt-1">
               {phasePerf.opening.blunders + phasePerf.middlegame.blunders + phasePerf.endgame.blunders}
             </div>
           </div>
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Games Analyzed</div>
-            <div className="text-xl font-semibold text-zinc-100 mt-1">
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Games Analyzed</div>
+            <div className="text-xl font-semibold text-foreground mt-1">
               {phasePerf.gamesAnalyzed}
             </div>
           </div>
@@ -134,25 +134,25 @@ export default function GamePhaseChart({ games }: GamePhaseChartProps) {
                     ? 'bg-red-950/30 border-red-900/50'
                     : isStrongest
                     ? 'bg-green-950/30 border-green-900/50'
-                    : 'bg-zinc-800/50 border-zinc-700/50'
+                    : 'bg-secondary/50 border-border/50'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-zinc-200">{getPhaseLabel(phase)}</h4>
+                  <h4 className="font-medium text-foreground">{getPhaseLabel(phase)}</h4>
                   {isWeakest && <span className="text-xs text-red-400 bg-red-950 px-2 py-1 rounded">Needs work</span>}
                   {isStrongest && <span className="text-xs text-green-400 bg-green-950 px-2 py-1 rounded">Strong</span>}
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Blunders</span>
+                    <span className="text-muted-foreground">Blunders</span>
                     <span className="text-red-400 font-medium">{stats.blunders}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Mistakes</span>
+                    <span className="text-muted-foreground">Mistakes</span>
                     <span className="text-orange-400 font-medium">{stats.mistakes}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Inaccuracies</span>
+                    <span className="text-muted-foreground">Inaccuracies</span>
                     <span className="text-yellow-400 font-medium">{stats.inaccuracies}</span>
                   </div>
                 </div>
@@ -164,7 +164,7 @@ export default function GamePhaseChart({ games }: GamePhaseChartProps) {
         {/* Error Distribution Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <h4 className="text-sm font-medium text-zinc-300 mb-3">Errors by Phase</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-3">Errors by Phase</h4>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={errorData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -187,7 +187,7 @@ export default function GamePhaseChart({ games }: GamePhaseChartProps) {
 
           {pieData.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-zinc-300 mb-3">Error Distribution</h4>
+              <h4 className="text-sm font-medium text-muted-foreground mb-3">Error Distribution</h4>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie

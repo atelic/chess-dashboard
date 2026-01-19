@@ -15,7 +15,7 @@ const TerminationChart = memo(function TerminationChart({ games }: TerminationCh
   if (stats.length === 0) {
     return (
       <Card title="How Games End">
-        <div className="text-center py-8 text-zinc-500">
+        <div className="text-center py-8 text-muted-foreground">
           No termination data available
         </div>
       </Card>
@@ -37,18 +37,18 @@ const TerminationChart = memo(function TerminationChart({ games }: TerminationCh
         {relevantStats.map((stat) => (
           <div key={stat.termination} className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-zinc-300">{stat.label}</span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
+              <span className="text-xs text-muted-foreground">
                 {stat.asWinner + stat.asLoser} games
               </span>
             </div>
             
             {/* Wins bar */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 w-12">Won</span>
-              <div className="flex-1 h-5 bg-zinc-800 rounded overflow-hidden">
+              <span className="text-xs text-muted-foreground w-12">Won</span>
+              <div className="flex-1 h-5 bg-secondary rounded overflow-hidden">
                 <div
-                  className="h-full bg-green-500 flex items-center justify-end pr-2 transition-all"
+                  className="h-full bg-green-500 flex items-center justify-end pr-2 transition-[width] duration-200"
                   style={{ width: `${maxCount > 0 ? (stat.asWinner / maxCount) * 100 : 0}%` }}
                 >
                   {stat.asWinner > 0 && (
@@ -62,10 +62,10 @@ const TerminationChart = memo(function TerminationChart({ games }: TerminationCh
 
             {/* Losses bar */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 w-12">Lost</span>
-              <div className="flex-1 h-5 bg-zinc-800 rounded overflow-hidden">
+              <span className="text-xs text-muted-foreground w-12">Lost</span>
+              <div className="flex-1 h-5 bg-secondary rounded overflow-hidden">
                 <div
-                  className="h-full bg-red-500 flex items-center justify-end pr-2 transition-all"
+                  className="h-full bg-red-500 flex items-center justify-end pr-2 transition-[width] duration-200"
                   style={{ width: `${maxCount > 0 ? (stat.asLoser / maxCount) * 100 : 0}%` }}
                 >
                   {stat.asLoser > 0 && (
@@ -81,19 +81,19 @@ const TerminationChart = memo(function TerminationChart({ games }: TerminationCh
       </div>
 
       {/* Summary */}
-      <div className="mt-6 pt-4 border-t border-zinc-800">
+      <div className="mt-6 pt-4 border-t border-border">
         <div className="grid grid-cols-2 gap-4 text-center">
           <div>
             <div className="text-2xl font-semibold text-green-400">
               {relevantStats.reduce((sum, s) => sum + s.asWinner, 0)}
             </div>
-            <div className="text-xs text-zinc-500">Total Wins</div>
+            <div className="text-xs text-muted-foreground">Total Wins</div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-red-400">
               {relevantStats.reduce((sum, s) => sum + s.asLoser, 0)}
             </div>
-            <div className="text-xs text-zinc-500">Total Losses</div>
+            <div className="text-xs text-muted-foreground">Total Losses</div>
           </div>
         </div>
       </div>

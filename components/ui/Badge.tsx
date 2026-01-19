@@ -5,7 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
   {
     variants: {
       variant: {
@@ -16,11 +16,11 @@ const badgeVariants = cva(
         warning: 'border-transparent bg-warning text-warning-foreground shadow',
         outline: 'text-foreground border-border',
         // Chess-themed variants
-        win: 'border-transparent bg-success/20 text-success',
-        loss: 'border-transparent bg-destructive/20 text-destructive',
-        draw: 'border-transparent bg-warning/20 text-warning',
+        win: 'border-transparent bg-success/20 text-green-700 dark:text-success',
+        loss: 'border-transparent bg-destructive/20 text-red-700 dark:text-destructive',
+        draw: 'border-transparent bg-warning/20 text-yellow-700 dark:text-warning',
         white: 'border-transparent bg-[var(--chess-light-solid)] text-zinc-900',
-        black: 'border-transparent bg-zinc-800 text-zinc-100 border border-zinc-600',
+        black: 'border-transparent bg-zinc-800 text-zinc-100 dark:bg-secondary dark:text-foreground dark:border dark:border-muted-foreground',
       },
     },
     defaultVariants: {

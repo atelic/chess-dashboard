@@ -30,7 +30,7 @@ function StatItem({ icon, label, value, subValue, highlight }: StatItemProps) {
       <div className={cn(
         'p-2 rounded-lg',
         highlight ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
-      )}>
+      )} aria-hidden="true">
         {icon}
       </div>
       <div className="flex-1">

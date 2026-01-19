@@ -62,7 +62,7 @@ function calculateOpeningDepthData(games: Game[]): {
         const moveData = openingMoves.get(key);
         return {
           eco: o.eco,
-          name: o.name.length > 25 ? o.name.substring(0, 22) + '...' : o.name,
+          name: o.name.length > 25 ? o.name.substring(0, 22) + '…' : o.name,
           avgMoveCount: moveData ? Math.round(moveData.total / moveData.count) : 0,
           games: o.games,
           winRate: o.winRate,
@@ -88,7 +88,7 @@ function calculateOpeningDepthData(games: Game[]): {
 function DepthBarChart({ data, title }: { data: OpeningDepthData[]; title: string }) {
   if (data.length === 0) {
     return (
-      <div className="text-center py-8 text-zinc-500 text-sm">
+      <div className="text-center py-8 text-muted-foreground text-sm">
         Not enough games to show {title.toLowerCase()} opening depth
       </div>
     );
@@ -102,8 +102,8 @@ function DepthBarChart({ data, title }: { data: OpeningDepthData[]; title: strin
 
   return (
     <div>
-      <h4 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
-        <span className={`w-3 h-3 ${title === 'White' ? 'bg-white' : 'bg-zinc-800'} rounded-sm border border-zinc-500`} />
+      <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+        <span className={`w-3 h-3 ${title === 'White' ? 'bg-white' : 'bg-secondary'} rounded-sm border border-border`} />
         {title} Openings
       </h4>
       <ResponsiveContainer width="100%" height={250}>
@@ -156,7 +156,7 @@ export default function OpeningDepthChart({ games }: OpeningDepthChartProps) {
   if (games.length === 0) {
     return (
       <Card title="Opening Depth" subtitle="How deep you play into opening theory">
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           No games to analyze
         </div>
       </Card>
@@ -171,7 +171,7 @@ export default function OpeningDepthChart({ games }: OpeningDepthChartProps) {
       subtitle={`Average game length by opening (overall avg: ${depthData.overallAvgDepth} moves)`}
     >
       {!hasData ? (
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           <div className="text-center">
             <p>Not enough opening data</p>
             <p className="text-sm mt-1">Play more games to see opening depth analysis</p>
@@ -181,34 +181,34 @@ export default function OpeningDepthChart({ games }: OpeningDepthChartProps) {
         <div className="space-y-6">
           {/* Summary Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-zinc-800 rounded-lg p-4">
-              <div className="text-zinc-400 text-sm">White Openings</div>
-              <div className="text-xl font-semibold text-zinc-100 mt-1">
+            <div className="bg-secondary rounded-lg p-4">
+              <div className="text-muted-foreground text-sm">White Openings</div>
+              <div className="text-xl font-semibold text-foreground mt-1">
                 {depthData.white.length}
               </div>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-4">
-              <div className="text-zinc-400 text-sm">Black Openings</div>
-              <div className="text-xl font-semibold text-zinc-100 mt-1">
+            <div className="bg-secondary rounded-lg p-4">
+              <div className="text-muted-foreground text-sm">Black Openings</div>
+              <div className="text-xl font-semibold text-foreground mt-1">
                 {depthData.black.length}
               </div>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-4">
-              <div className="text-zinc-400 text-sm">Avg Game Length</div>
-              <div className="text-xl font-semibold text-zinc-100 mt-1">
+            <div className="bg-secondary rounded-lg p-4">
+              <div className="text-muted-foreground text-sm">Avg Game Length</div>
+              <div className="text-xl font-semibold text-foreground mt-1">
                 {depthData.overallAvgDepth} moves
               </div>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-4">
-              <div className="text-zinc-400 text-sm">Games Analyzed</div>
-              <div className="text-xl font-semibold text-zinc-100 mt-1">
+            <div className="bg-secondary rounded-lg p-4">
+              <div className="text-muted-foreground text-sm">Games Analyzed</div>
+              <div className="text-xl font-semibold text-foreground mt-1">
                 {games.filter(g => g.opening.eco !== 'Unknown').length}
               </div>
             </div>
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-4 text-xs text-zinc-400">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 rounded bg-green-500" />
               &ge;60% win rate
@@ -230,12 +230,12 @@ export default function OpeningDepthChart({ games }: OpeningDepthChartProps) {
           </div>
 
           {/* Tip */}
-          <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
+          <div className="bg-secondary/50 border border-border rounded-lg p-4">
             <div className="flex items-start gap-3">
               <span className="text-lg">💡</span>
               <div>
-                <h4 className="text-zinc-300 font-medium">Reading This Chart</h4>
-                <p className="text-zinc-400 text-sm mt-1">
+                <h4 className="text-muted-foreground font-medium">Reading This Chart</h4>
+                <p className="text-muted-foreground text-sm mt-1">
                   Longer bars indicate openings where your games tend to last longer. 
                   This could mean you&apos;re playing complex positions that require more moves to resolve, 
                   or that you&apos;re comfortable navigating the middlegame that arises from that opening.

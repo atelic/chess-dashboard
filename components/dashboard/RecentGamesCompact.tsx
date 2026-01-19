@@ -25,6 +25,14 @@ function ResultIcon({ result }: { result: Game['result'] }) {
   }
 }
 
+const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
 function formatTimeAgo(date: Date): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -32,10 +40,10 @@ function formatTimeAgo(date: Date): string {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  if (diffMins < 60) return relativeTimeFormatter.format(-diffMins, 'minute');
+  if (diffHours < 24) return relativeTimeFormatter.format(-diffHours, 'hour');
+  if (diffDays < 7) return relativeTimeFormatter.format(-diffDays, 'day');
+  return dateTimeFormatter.format(date);
 }
 
 function GameRow({ game }: { game: Game }) {
@@ -81,12 +89,12 @@ function GameRow({ game }: { game: Game }) {
         </div>
       </div>
 
-      <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+      <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex-shrink-0" aria-hidden="true" />
     </a>
   );
 }
 
-export function RecentGamesCompact({ games, maxGames = 5, className }: RecentGamesCompactProps) {
+function RecentGamesCompact({ games, maxGames = 5, className }: RecentGamesCompactProps) {
   const recentGames = React.useMemo(() =>
     [...games]
       .sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime())

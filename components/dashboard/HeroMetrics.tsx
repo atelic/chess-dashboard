@@ -32,7 +32,7 @@ function MetricCard({ label, value, subValue, trend, trendValue, icon, className
         </div>
       )}
       <p className="text-h3 text-muted-foreground mb-1">{label}</p>
-      <p className="text-display text-foreground">{value}</p>
+      <p className="text-display text-foreground tabular-nums">{value}</p>
       {(subValue || trendValue) && (
         <div className="flex items-center justify-center gap-1 mt-1">
           {trend && (
@@ -41,7 +41,7 @@ function MetricCard({ label, value, subValue, trend, trendValue, icon, className
               trend === 'up' && 'text-success',
               trend === 'down' && 'text-destructive',
               trend === 'neutral' && 'text-muted-foreground'
-            )}>
+            )} aria-hidden="true">
               {trend === 'up' && <TrendingUp className="h-3 w-3" />}
               {trend === 'down' && <TrendingDown className="h-3 w-3" />}
               {trend === 'neutral' && <Minus className="h-3 w-3" />}
@@ -135,8 +135,8 @@ export function HeroMetrics({ stats, games, className }: HeroMetricsProps) {
       value: currentStreak.count,
       subValue: `${isWinStreak ? 'Win' : 'Loss'} streak`,
       icon: isWinStreak 
-        ? <Flame className="h-8 w-8 text-orange-500/30" />
-        : <Snowflake className="h-8 w-8 text-blue-400/30" />,
+        ? <Flame className="h-8 w-8 text-orange-500/50 dark:text-orange-500/30" aria-hidden="true" />
+        : <Snowflake className="h-8 w-8 text-blue-500/50 dark:text-blue-400/30" aria-hidden="true" />,
     };
   }, [currentStreak]);
 
@@ -146,7 +146,7 @@ export function HeroMetrics({ stats, games, className }: HeroMetricsProps) {
         label="Peak Rating"
         value={highestRatingInfo.rating}
         subValue={ratingLabel}
-        icon={<KingIcon className="h-8 w-8" />}
+        icon={<KingIcon className="h-8 w-8" aria-hidden="true" />}
       />
       <MetricCard
         label="Win Rate"

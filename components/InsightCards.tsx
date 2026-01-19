@@ -14,17 +14,17 @@ interface InsightCardProps {
 
 const InsightCard = memo(function InsightCard({ insight }: InsightCardProps) {
   const bgColors = {
-    positive: 'bg-green-950/30 border-green-900/50',
-    negative: 'bg-red-950/30 border-red-900/50',
-    warning: 'bg-amber-950/30 border-amber-900/50',
-    neutral: 'bg-zinc-800/50 border-zinc-700/50',
+    positive: 'bg-success/10 border-success/20 dark:bg-green-950/30 dark:border-green-900/50',
+    negative: 'bg-destructive/10 border-destructive/20 dark:bg-red-950/30 dark:border-red-900/50',
+    warning: 'bg-warning/10 border-warning/20 dark:bg-amber-950/30 dark:border-amber-900/50',
+    neutral: 'bg-secondary/50 border-border/50',
   };
 
   const textColors = {
-    positive: 'text-green-400',
-    negative: 'text-red-400',
-    warning: 'text-amber-400',
-    neutral: 'text-blue-400',
+    positive: 'text-green-700 dark:text-green-400',
+    negative: 'text-red-700 dark:text-red-400',
+    warning: 'text-amber-700 dark:text-amber-400',
+    neutral: 'text-blue-700 dark:text-blue-400',
   };
 
   return (
@@ -35,11 +35,11 @@ const InsightCard = memo(function InsightCard({ insight }: InsightCardProps) {
           <h4 className={`font-medium ${textColors[insight.type]}`}>
             {insight.title}
           </h4>
-          <p className="text-sm text-zinc-300 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {insight.description}
           </p>
           {insight.value && (
-            <p className="text-xs text-zinc-500 mt-2">
+            <p className="text-xs text-muted-foreground mt-2">
               {insight.value}
             </p>
           )}
@@ -80,9 +80,9 @@ export default function InsightCards({ games }: InsightCardsProps) {
 
   if (insights.length === 0) {
     return (
-      <div className="text-center py-12 text-zinc-500">
+      <div className="text-center py-12 text-muted-foreground">
         <div className="text-4xl mb-4">🔍</div>
-        <h3 className="text-lg font-medium text-zinc-400 mb-2">No insights yet</h3>
+        <h3 className="text-lg font-medium text-muted-foreground mb-2">No insights yet</h3>
         <p className="text-sm">Play more games to generate insights about your play style.</p>
       </div>
     );

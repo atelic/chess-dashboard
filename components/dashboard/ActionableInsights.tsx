@@ -43,7 +43,7 @@ function InsightCard({ insight }: { insight: Insight }) {
           insight.type === 'negative' && 'bg-destructive/10',
           insight.type === 'warning' && 'bg-warning/10',
           insight.type === 'neutral' && 'bg-primary/10'
-        )}>
+        )} aria-hidden="true">
           <InsightIcon type={insight.type} />
         </div>
         <div className="flex-1 min-w-0">

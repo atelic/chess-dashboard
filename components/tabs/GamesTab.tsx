@@ -249,10 +249,10 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
         <div className="flex flex-wrap gap-4 items-end">
           {/* Search */}
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm text-zinc-400 mb-1">Search</label>
+            <label className="block text-sm text-muted-foreground mb-1">Search</label>
             <Input
               type="text"
-              placeholder="Opponent or opening..."
+              placeholder="Opponent or opening…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); handleFilterChange(); }}
             />
@@ -260,11 +260,12 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
           
           {/* Time Class */}
           <div>
-            <label className="block text-sm text-zinc-400 mb-1">Time Control</label>
+            <label htmlFor="timeclass-filter" className="block text-sm text-muted-foreground mb-1">Time Control</label>
             <select
+              id="timeclass-filter"
               value={timeClass}
               onChange={(e) => { setTimeClass(e.target.value as TimeClass); handleFilterChange(); }}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="all">All</option>
               <option value="bullet">Bullet</option>
@@ -273,14 +274,15 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
               <option value="classical">Classical</option>
             </select>
           </div>
-          
+
           {/* Result */}
           <div>
-            <label className="block text-sm text-zinc-400 mb-1">Result</label>
+            <label htmlFor="result-filter" className="block text-sm text-muted-foreground mb-1">Result</label>
             <select
+              id="result-filter"
               value={result}
               onChange={(e) => { setResult(e.target.value as Result); handleFilterChange(); }}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="all">All</option>
               <option value="win">Wins</option>
@@ -288,14 +290,15 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
               <option value="draw">Draws</option>
             </select>
           </div>
-          
+
           {/* Source */}
           <div>
-            <label className="block text-sm text-zinc-400 mb-1">Source</label>
+            <label htmlFor="source-filter" className="block text-sm text-muted-foreground mb-1">Source</label>
             <select
+              id="source-filter"
               value={source}
               onChange={(e) => { setSource(e.target.value as Source); handleFilterChange(); }}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="all">All</option>
               <option value="chesscom">Chess.com</option>
@@ -305,26 +308,26 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
         </div>
         
         {/* Summary */}
-        <div className="mt-4 pt-4 border-t border-zinc-800 flex flex-wrap items-center gap-4 text-sm">
-          <span className="text-zinc-400">
-            <span className="text-zinc-100 font-medium">{stats.total}</span> games
+        <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center gap-4 text-sm">
+          <span className="text-muted-foreground">
+            <span className="text-foreground font-medium">{stats.total}</span> games
           </span>
-          <span className="text-zinc-400">
-            <span className="text-zinc-100 font-medium">{stats.analyzed}</span> analyzed
+          <span className="text-muted-foreground">
+            <span className="text-foreground font-medium">{stats.analyzed}</span> analyzed
           </span>
           {stats.analyzed > 0 && (
-            <span className="text-zinc-400">
-              <span className="text-zinc-100 font-medium">{stats.avgAccuracy.toFixed(1)}%</span> avg accuracy
+            <span className="text-muted-foreground">
+              <span className="text-foreground font-medium">{stats.avgAccuracy.toFixed(1)}%</span> avg accuracy
             </span>
           )}
           
           {/* Fetch All Analysis Button */}
           <div className="ml-auto flex items-center gap-3">
             {bulkFetchProgress ? (
-              <div className="flex items-center gap-2 text-zinc-400">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Spinner size="sm" />
                 <span>
-                  Checking {bulkFetchProgress.source === 'lichess' ? 'Lichess' : 'Chess.com'}... 
+                  Checking {bulkFetchProgress.source === 'lichess' ? 'Lichess' : 'Chess.com'}… 
                   {bulkFetchProgress.current}/{bulkFetchProgress.total}
                   {bulkFetchProgress.found > 0 && (
                     <span className="text-green-400 ml-1">({bulkFetchProgress.found} found)</span>
@@ -345,7 +348,7 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
         
         {/* Bulk fetch error/info message */}
         {bulkFetchError && (
-          <div className="mt-3 p-3 bg-zinc-800/50 rounded-lg text-sm text-zinc-400">
+          <div className="mt-3 p-3 bg-secondary/50 rounded-lg text-sm text-muted-foreground">
             {bulkFetchError}
           </div>
         )}
@@ -354,8 +357,8 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
       {/* Games Table */}
       <Card className="p-6">
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-zinc-100">Recent Games</h3>
-          <p className="text-sm text-zinc-500 mt-1">Click a row to expand and see analysis details</p>
+          <h3 className="text-lg font-semibold text-foreground">Recent Games</h3>
+          <p className="text-sm text-muted-foreground mt-1">Click a row to expand and see analysis details</p>
         </div>
         
         <GamesTable
@@ -369,21 +372,21 @@ export default function GamesTab({ games, onAnalyze, onGamesUpdated }: GamesTabP
         
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
             <button
               onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="px-3 py-1 text-sm rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-sm rounded bg-secondary text-muted-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Previous
             </button>
-            <span className="text-sm text-zinc-400">
+            <span className="text-sm text-muted-foreground">
               Page {page + 1} of {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="px-3 py-1 text-sm rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-sm rounded bg-secondary text-muted-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Next
             </button>

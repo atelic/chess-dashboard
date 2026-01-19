@@ -12,7 +12,20 @@ const Card = React.forwardRef<
     subtitle?: string;
     interactive?: boolean;
   }
->(({ className, title, subtitle, interactive, children, ...props }, ref) => {
+>(({ className, title, subtitle, interactive, children, onClick, ...props }, ref) => {
+  const interactiveProps = interactive
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+          if ((e.key === 'Enter' || e.key === ' ') && onClick) {
+            e.preventDefault();
+            onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+          }
+        },
+      }
+    : {};
+
   // If title/subtitle provided, use legacy layout for backward compatibility
   if (title || subtitle) {
     return (
@@ -20,17 +33,19 @@ const Card = React.forwardRef<
         ref={ref}
         className={cn(
           'rounded-xl border border-border bg-card text-card-foreground shadow-sm p-6',
-          interactive && 'card-interactive cursor-pointer',
+          interactive && 'card-interactive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           className
         )}
+        onClick={onClick}
+        {...interactiveProps}
         {...props}
       >
         <div className="mb-4">
           {title && (
-            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+            <h3 className="text-lg font-semibold text-foreground text-balance">{title}</h3>
           )}
           {subtitle && (
-            <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+            <p className="text-sm text-muted-foreground mt-1 text-pretty">{subtitle}</p>
           )}
         </div>
         {children}
@@ -43,9 +58,11 @@ const Card = React.forwardRef<
       ref={ref}
       className={cn(
         'rounded-xl border border-border bg-card text-card-foreground shadow-sm',
-        interactive && 'card-interactive cursor-pointer',
+        interactive && 'card-interactive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         className
       )}
+      onClick={onClick}
+      {...interactiveProps}
       {...props}
     >
       {children}
@@ -72,7 +89,7 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn('font-semibold leading-none tracking-tight text-foreground', className)}
+    className={cn('font-semibold leading-none text-foreground text-balance', className)}
     {...props}
   />
 ));
@@ -84,7 +101,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn('text-sm text-muted-foreground', className)}
+    className={cn('text-sm text-muted-foreground text-pretty', className)}
     {...props}
   />
 ));

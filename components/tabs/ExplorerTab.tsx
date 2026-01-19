@@ -123,7 +123,7 @@ export default function ExplorerTab({ games }: ExplorerTabProps) {
       <div className="flex flex-col items-center justify-center py-20">
         <AlertCircle className="w-8 h-8 text-red-400 mb-4" />
         <p className="text-red-400">Failed to build opening tree</p>
-        <p className="text-zinc-500 text-sm mt-1">{error}</p>
+        <p className="text-muted-foreground text-sm mt-1">{error}</p>
       </div>
     );
   }
@@ -132,9 +132,9 @@ export default function ExplorerTab({ games }: ExplorerTabProps) {
   if (isBuilding) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-zinc-400 animate-spin mb-4" />
-        <p className="text-zinc-400">Building opening tree from {gamesWithPgnCount.toLocaleString()} games...</p>
-        <p className="text-zinc-500 text-sm mt-1">This runs in the background and won&apos;t freeze your browser</p>
+        <Loader2 className="w-8 h-8 text-muted-foreground animate-spin mb-4" />
+        <p className="text-muted-foreground">Building opening tree from {gamesWithPgnCount.toLocaleString()} games...</p>
+        <p className="text-muted-foreground text-sm mt-1">This runs in the background and won&apos;t freeze your browser</p>
       </div>
     );
   }
@@ -161,14 +161,14 @@ export default function ExplorerTab({ games }: ExplorerTabProps) {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         {/* Perspective toggle */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-zinc-400">Show games as:</span>
-          <div className="flex rounded-lg overflow-hidden border border-zinc-700">
+          <span className="text-sm text-muted-foreground">Show games as:</span>
+          <div className="flex rounded-lg overflow-hidden border border-border">
             <button
               onClick={() => setPerspective('white')}
               className={`px-3 py-1.5 text-sm transition-colors ${
                 perspective === 'white'
-                  ? 'bg-zinc-700 text-white'
-                  : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
             >
               White
@@ -177,8 +177,8 @@ export default function ExplorerTab({ games }: ExplorerTabProps) {
               onClick={() => setPerspective('black')}
               className={`px-3 py-1.5 text-sm transition-colors ${
                 perspective === 'black'
-                  ? 'bg-zinc-700 text-white'
-                  : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
             >
               Black
@@ -187,8 +187,8 @@ export default function ExplorerTab({ games }: ExplorerTabProps) {
               onClick={() => setPerspective('both')}
               className={`px-3 py-1.5 text-sm transition-colors ${
                 perspective === 'both'
-                  ? 'bg-zinc-700 text-white'
-                  : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
             >
               Both
@@ -204,7 +204,7 @@ export default function ExplorerTab({ games }: ExplorerTabProps) {
             className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors ${
               engineEnabled
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
+                : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
           >
             <Cpu className="w-4 h-4" />
@@ -214,7 +214,7 @@ export default function ExplorerTab({ games }: ExplorerTabProps) {
           {/* Flip board button */}
           <button
             onClick={() => setOrientation((o) => (o === 'white' ? 'black' : 'white'))}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-secondary hover:bg-muted rounded-lg transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
             Flip board
@@ -285,7 +285,7 @@ export default function ExplorerTab({ games }: ExplorerTabProps) {
           <MoveTree node={currentNode} onMoveClick={handleMoveClick} />
 
           {/* Tree info */}
-          <div className="text-sm text-zinc-500 text-center">
+          <div className="text-sm text-muted-foreground text-center">
             {tree.totalGames.toLocaleString()} games with move data
             {tree.gamesWithoutPgn > 0 && (
               <span> ({tree.gamesWithoutPgn.toLocaleString()} excluded - no PGN)</span>

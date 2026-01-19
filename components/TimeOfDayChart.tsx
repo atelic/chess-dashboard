@@ -60,7 +60,7 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
   if (games.length === 0) {
     return (
       <Card title="Playing Schedule" subtitle="When do you play your best chess?">
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           No games to analyze
         </div>
       </Card>
@@ -100,8 +100,8 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
                 <span className="text-green-400">&#9733;</span>
                 <span className="text-green-400 font-medium">Peak Performance</span>
               </div>
-              <div className="text-2xl font-bold text-zinc-100">{peakTimes.label}</div>
-              <div className="text-sm text-zinc-400 mt-1">
+              <div className="text-2xl font-bold text-foreground">{peakTimes.label}</div>
+              <div className="text-sm text-muted-foreground mt-1">
                 {Math.round(peakTimes.winRate)}% win rate ({peakTimes.games} games)
               </div>
             </div>
@@ -112,8 +112,8 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
                 <span className="text-red-400">&#9888;</span>
                 <span className="text-red-400 font-medium">Avoid Playing</span>
               </div>
-              <div className="text-2xl font-bold text-zinc-100">{worstTimes.label}</div>
-              <div className="text-sm text-zinc-400 mt-1">
+              <div className="text-2xl font-bold text-foreground">{worstTimes.label}</div>
+              <div className="text-sm text-muted-foreground mt-1">
                 {Math.round(worstTimes.winRate)}% win rate ({worstTimes.games} games)
               </div>
             </div>
@@ -122,14 +122,14 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
 
         {/* Heatmap */}
         <div>
-          <h4 className="text-sm font-medium text-zinc-300 mb-3">Win Rate by Time & Day</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">Win Rate by Time & Day</h4>
           <div className="overflow-x-auto">
             <div className="min-w-[600px]">
               {/* Hour labels */}
               <div className="flex mb-1">
                 <div className="w-12"></div>
                 {[0, 3, 6, 9, 12, 15, 18, 21].map((hour) => (
-                  <div key={hour} className="flex-1 text-xs text-zinc-500 text-center">
+                  <div key={hour} className="flex-1 text-xs text-muted-foreground text-center">
                     {formatHour(hour)}
                   </div>
                 ))}
@@ -137,7 +137,7 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
               {/* Heatmap rows */}
               {DAY_NAMES_SHORT.map((dayName, dayIndex) => (
                 <div key={dayName} className="flex items-center mb-1">
-                  <div className="w-12 text-xs text-zinc-500">{dayName}</div>
+                  <div className="w-12 text-xs text-muted-foreground">{dayName}</div>
                   <div className="flex-1 flex gap-0.5">
                     {Array.from({ length: 24 }).map((_, hour) => {
                       const cell = heatmapData.find((c) => c.day === dayIndex && c.hour === hour);
@@ -159,9 +159,9 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
                 </div>
               ))}
               {/* Legend */}
-              <div className="flex items-center justify-center gap-4 mt-3 text-xs text-zinc-500">
+              <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-sm bg-zinc-800"></div>
+                  <div className="w-3 h-3 rounded-sm bg-secondary"></div>
                   <span>No games</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -183,7 +183,7 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
 
         {/* Games by Time of Day */}
         <div>
-          <h4 className="text-sm font-medium text-zinc-300 mb-3">Games by Time of Day</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">Games by Time of Day</h4>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={hourlyChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -215,22 +215,22 @@ const TimeOfDayChart = memo(function TimeOfDayChart({ games }: TimeOfDayChartPro
 
         {/* Day of Week Performance */}
         <div>
-          <h4 className="text-sm font-medium text-zinc-300 mb-3">Performance by Day of Week</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">Performance by Day of Week</h4>
           <div className="grid grid-cols-7 gap-2">
             {dayOfWeekStats.map((day) => (
               <div
                 key={day.day}
-                className="bg-zinc-800 rounded-lg p-3 text-center"
+                className="bg-secondary rounded-lg p-3 text-center"
               >
-                <div className="text-xs text-zinc-500">{DAY_NAMES_SHORT[day.day]}</div>
+                <div className="text-xs text-muted-foreground">{DAY_NAMES_SHORT[day.day]}</div>
                 <div className={`text-lg font-semibold mt-1 ${
-                  day.games === 0 ? 'text-zinc-600' :
+                  day.games === 0 ? 'text-muted-foreground' :
                   day.winRate < 45 ? 'text-red-400' :
-                  day.winRate > 55 ? 'text-green-400' : 'text-zinc-100'
+                  day.winRate > 55 ? 'text-green-400' : 'text-foreground'
                 }`}>
                   {day.games > 0 ? `${Math.round(day.winRate)}%` : '-'}
                 </div>
-                <div className="text-xs text-zinc-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {day.games} games
                 </div>
               </div>

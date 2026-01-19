@@ -20,22 +20,25 @@ interface GamesTableProps {
   onFetchChessComAnalysis?: (game: Game) => Promise<AnalysisData | null>;
 }
 
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
+
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return dateFormatter.format(date);
 }
 
 function formatDateTime(date: Date): string {
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+  return dateTimeFormatter.format(date);
 }
 
 function getResultStyles(result: 'win' | 'loss' | 'draw'): { bg: string; text: string; label: string } {
@@ -45,7 +48,7 @@ function getResultStyles(result: 'win' | 'loss' | 'draw'): { bg: string; text: s
     case 'loss':
       return { bg: 'bg-red-500/10', text: 'text-red-400', label: 'L' };
     case 'draw':
-      return { bg: 'bg-zinc-500/10', text: 'text-zinc-400', label: 'D' };
+      return { bg: 'bg-muted/30', text: 'text-muted-foreground', label: 'D' };
   }
 }
 
@@ -107,14 +110,14 @@ export default function GamesTable({
     return (
       <div className="flex items-center justify-center py-8">
         <Spinner size="md" />
-        <span className="ml-2 text-zinc-400">Loading games...</span>
+        <span className="ml-2 text-muted-foreground">Loading games…</span>
       </div>
     );
   }
 
   if (games.length === 0) {
     return (
-      <div className="text-center py-8 text-zinc-500">
+      <div className="text-center py-8 text-muted-foreground">
         No games found
       </div>
     );
@@ -126,8 +129,11 @@ export default function GamesTable({
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
+        <caption className="sr-only">
+          Chess games table showing date, result, opponent{showOpponent && ', opening'}{showOpening && ', and analysis'}
+        </caption>
         <thead>
-          <tr className="text-left text-zinc-500 border-b border-zinc-800">
+          <tr className="text-left text-muted-foreground border-b border-border">
             {expandable && <th className="pb-2 pr-2 font-medium w-8"></th>}
             <th className="pb-2 pr-4 font-medium">Date</th>
             <th className="pb-2 pr-4 font-medium">Result</th>
@@ -150,7 +156,7 @@ export default function GamesTable({
             return (
               <Fragment key={game.id}>
                 <tr
-                  className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${expandable ? 'cursor-pointer' : ''} ${isExpanded ? 'bg-zinc-800/30' : ''}`}
+                  className={`border-b border-border/50 hover:bg-secondary/30 transition-colors ${expandable ? 'cursor-pointer' : ''} ${isExpanded ? 'bg-secondary/30' : ''}`}
                   onClick={expandable ? () => toggleExpand(game.id) : undefined}
                   onKeyDown={expandable ? (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -164,7 +170,7 @@ export default function GamesTable({
                   aria-label={expandable ? `${isExpanded ? 'Collapse' : 'Expand'} game details for ${formatDateTime(game.playedAt)} vs ${game.opponent.username}` : undefined}
                 >
                   {expandable && (
-                    <td className="py-2 pr-2 text-zinc-500">
+                    <td className="py-2 pr-2 text-muted-foreground">
                       <svg
                         className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                         fill="none"
@@ -176,7 +182,7 @@ export default function GamesTable({
                       </svg>
                     </td>
                   )}
-                  <td className="py-2 pr-4 text-zinc-300" title={formatDate(game.playedAt)}>
+                  <td className="py-2 pr-4 text-muted-foreground" title={formatDate(game.playedAt)}>
                     {formatDateTime(game.playedAt)}
                   </td>
                   <td className="py-2 pr-4">
@@ -190,44 +196,44 @@ export default function GamesTable({
                   {showOpponent && (
                     <td className="py-2 pr-4">
                       <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${game.playerColor === 'white' ? 'bg-white' : 'bg-zinc-700 border border-zinc-500'}`} aria-hidden="true" />
-                        <span className="text-zinc-300">{game.opponent.username}</span>
-                        <span className="text-zinc-500">({game.opponent.rating})</span>
+                        <span className={`w-2 h-2 rounded-full ${game.playerColor === 'white' ? 'bg-white' : 'bg-muted border border-border'}`} aria-hidden="true" />
+                        <span className="text-muted-foreground">{game.opponent.username}</span>
+                        <span className="text-muted-foreground">({game.opponent.rating})</span>
                       </div>
                     </td>
                   )}
                   {showOpening && (
                     <td className="py-2 pr-4 hidden sm:table-cell">
-                      <span className="text-zinc-400" title={game.opening.name}>
+                      <span className="text-muted-foreground" title={game.opening.name}>
                         {game.opening.eco !== 'Unknown' ? (
                           <>
-                            <span className="text-zinc-500">{game.opening.eco}</span>
+                            <span className="text-muted-foreground">{game.opening.eco}</span>
                             {' '}
                             <span className="hidden lg:inline">{game.opening.name}</span>
                           </>
                         ) : (
-                          <span className="text-zinc-600">-</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </span>
                     </td>
                   )}
                   <td className="py-2 pr-4 hidden md:table-cell">
-                    <span className="text-zinc-500">{getTimeControlLabel(game.timeClass)}</span>
+                    <span className="text-muted-foreground">{getTimeControlLabel(game.timeClass)}</span>
                   </td>
-                  {showAnalysis && (
+                    {showAnalysis && (
                     <td className="py-2 pr-4 hidden lg:table-cell">
                       {accuracy !== undefined ? (
                         <span className={`font-medium ${
-                          accuracy >= 90 ? 'text-green-400' :
-                          accuracy >= 80 ? 'text-lime-400' :
-                          accuracy >= 70 ? 'text-yellow-400' :
-                          accuracy >= 60 ? 'text-orange-400' :
-                          'text-red-400'
+                          accuracy >= 90 ? 'text-green-600 dark:text-green-400' :
+                          accuracy >= 80 ? 'text-lime-600 dark:text-lime-400' :
+                          accuracy >= 70 ? 'text-yellow-600 dark:text-yellow-400' :
+                          accuracy >= 60 ? 'text-orange-600 dark:text-orange-400' :
+                          'text-red-600 dark:text-red-400'
                         }`}>
                           {accuracy}%
                         </span>
                       ) : (
-                        <span className="text-zinc-600">-</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </td>
                   )}
@@ -236,7 +242,7 @@ export default function GamesTable({
                   </td>
                 </tr>
                 {expandable && isExpanded && (
-                  <tr className="bg-zinc-900/50">
+                  <tr className="bg-card/50">
                     <td colSpan={colSpan} className="p-4">
                       <GameAnalysisPanel
                         game={game}
@@ -254,7 +260,7 @@ export default function GamesTable({
       </table>
       
       {hasMore && (
-        <div className="mt-3 text-center text-sm text-zinc-500">
+        <div className="mt-3 text-center text-sm text-muted-foreground">
           Showing {displayGames.length} of {games.length} games
         </div>
       )}

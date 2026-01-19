@@ -21,12 +21,10 @@ import type {
   TimeStats,
   TimeClassTimeStats,
   TimePressureStats,
-  TimeUsageByPhase,
   HourlyStats,
   DayOfWeekStats,
   TimeWindow,
   TimeHeatmapCell,
-  // Phase 6-8 types
   GamePhase,
   GamePhaseStats,
   PhasePerformanceSummary,
@@ -121,24 +119,6 @@ export function formatDateShort(date: Date): string {
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-  });
-}
-
-export function formatDateTime(date: Date): string {
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-}
-
-export function formatTime(date: Date): string {
-  return date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
   });
 }
 
@@ -241,7 +221,11 @@ export function calculateRatingProgression(
 ): RatingDataPoint[] {
   if (games.length === 0) return [];
 
-  const sorted = [...games].sort((a, b) => a.playedAt.getTime() - b.playedAt.getTime());
+  // Only include rated games in rating progression
+  const ratedGames = games.filter((game) => game.rated);
+  if (ratedGames.length === 0) return [];
+
+  const sorted = [...ratedGames].sort((a, b) => a.playedAt.getTime() - b.playedAt.getTime());
 
   let gamesToProcess = sorted;
 
@@ -1111,6 +1095,8 @@ export function generateInsights(games: Game[]): Insight[] {
 // FILTERING
 // ============================================
 
+const DEFAULT_FILTER_KEY = 'chess-dashboard-default-filter';
+
 export function getDefaultFilters(): FilterState {
   return {
     dateRange: {},
@@ -1125,6 +1111,67 @@ export function getDefaultFilters(): FilterState {
     sources: [],
     rated: null,
   };
+}
+
+export function getSavedDefaultFilter(): FilterState {
+  if (typeof window === 'undefined') {
+    return getDefaultFilters();
+  }
+  
+  try {
+    const saved = localStorage.getItem(DEFAULT_FILTER_KEY);
+    if (!saved) {
+      return getDefaultFilters();
+    }
+    
+    const parsed = JSON.parse(saved);
+    return {
+      ...parsed,
+      dateRange: {
+        start: parsed.dateRange?.start ? new Date(parsed.dateRange.start) : undefined,
+        end: parsed.dateRange?.end ? new Date(parsed.dateRange.end) : undefined,
+      },
+    };
+  } catch {
+    return getDefaultFilters();
+  }
+}
+
+export function saveDefaultFilter(filter: FilterState): void {
+  if (typeof window === 'undefined') return;
+  
+  localStorage.setItem(DEFAULT_FILTER_KEY, JSON.stringify(filter));
+}
+
+export function clearDefaultFilter(): void {
+  if (typeof window === 'undefined') return;
+  
+  localStorage.removeItem(DEFAULT_FILTER_KEY);
+}
+
+export function hasDefaultFilter(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  return localStorage.getItem(DEFAULT_FILTER_KEY) !== null;
+}
+
+export function isBaseDefaults(filter: FilterState): boolean {
+  const base = getDefaultFilters();
+  return (
+    filter.maxGames === base.maxGames &&
+    filter.timeClasses.length === 0 &&
+    filter.colors.length === 0 &&
+    filter.results.length === 0 &&
+    filter.openings.length === 0 &&
+    filter.opponents.length === 0 &&
+    filter.terminations.length === 0 &&
+    filter.sources.length === 0 &&
+    filter.rated === null &&
+    !filter.dateRange.start &&
+    !filter.dateRange.end &&
+    !filter.opponentRatingRange.min &&
+    !filter.opponentRatingRange.max
+  );
 }
 
 export function filterGames(games: Game[], filters: Partial<FilterState>): Game[] {
@@ -1228,19 +1275,6 @@ export function calculateAverageGameLength(games: Game[]): number {
   const gamesWithMoves = games.filter((g) => g.moveCount > 0);
   if (gamesWithMoves.length === 0) return 0;
   return gamesWithMoves.reduce((sum, g) => sum + g.moveCount, 0) / gamesWithMoves.length;
-}
-
-// Legacy filter function (to be removed later)
-export function filterGamesByDateRange(
-  games: Game[],
-  startDate?: Date,
-  endDate?: Date
-): Game[] {
-  return games.filter((game) => {
-    if (startDate && game.playedAt < startDate) return false;
-    if (endDate && game.playedAt > endDate) return false;
-    return true;
-  });
 }
 
 export function mergeAndSortGames(gamesArrays: Game[][]): Game[] {
@@ -1382,52 +1416,6 @@ export function analyzeTimePressure(games: Game[], timeTroubleThreshold: number 
     lossesToTimeout,
     avgTimeWhenLosing,
     avgTimeWhenWinning,
-  };
-}
-
-/**
- * Analyze time usage by game phase
- * Requires games with moveTimes data
- */
-export function analyzeTimeUsageByPhase(games: Game[]): TimeUsageByPhase {
-  const gamesWithMoveTimes = games.filter((g) => g.clock?.moveTimes && g.clock.moveTimes.length > 0);
-  
-  if (gamesWithMoveTimes.length === 0) {
-    return {
-      openingAvgTime: 0,
-      middlegameAvgTime: 0,
-      endgameAvgTime: 0,
-    };
-  }
-
-  let openingTotal = 0, openingCount = 0;
-  let middlegameTotal = 0, middlegameCount = 0;
-  let endgameTotal = 0, endgameCount = 0;
-
-  for (const game of gamesWithMoveTimes) {
-    const moveTimes = game.clock!.moveTimes!;
-    
-    for (let i = 0; i < moveTimes.length; i++) {
-      const moveNumber = i + 1;
-      const time = moveTimes[i];
-      
-      if (moveNumber <= 15) {
-        openingTotal += time;
-        openingCount++;
-      } else if (moveNumber <= 40) {
-        middlegameTotal += time;
-        middlegameCount++;
-      } else {
-        endgameTotal += time;
-        endgameCount++;
-      }
-    }
-  }
-
-  return {
-    openingAvgTime: openingCount > 0 ? openingTotal / openingCount : 0,
-    middlegameAvgTime: middlegameCount > 0 ? middlegameTotal / middlegameCount : 0,
-    endgameAvgTime: endgameCount > 0 ? endgameTotal / endgameCount : 0,
   };
 }
 

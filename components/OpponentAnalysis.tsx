@@ -35,14 +35,14 @@ function OpponentCard({ opponent, type }: OpponentCardProps) {
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
+            <span className="text-xs font-medium text-muted-foreground uppercase">
               {isNemesis ? 'Your Nemesis' : 'Favorite Opponent'}
             </span>
           </div>
-          <div className="text-xl font-semibold text-zinc-100 mt-1">
+          <div className="text-xl font-semibold text-foreground mt-1">
             {opponent.username}
           </div>
-          <div className="text-sm text-zinc-400 mt-1">
+          <div className="text-sm text-muted-foreground mt-1">
             Avg rating: {opponent.avgRating}
           </div>
           <div className="flex items-center gap-3 mt-3">
@@ -50,24 +50,24 @@ function OpponentCard({ opponent, type }: OpponentCardProps) {
               <div className={`text-lg font-semibold ${isNemesis ? 'text-red-400' : 'text-green-400'}`}>
                 {opponent.winRate.toFixed(0)}%
               </div>
-              <div className="text-xs text-zinc-500">Win Rate</div>
+              <div className="text-xs text-muted-foreground">Win Rate</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-semibold text-zinc-300">{opponent.games}</div>
-              <div className="text-xs text-zinc-500">Games</div>
+              <div className="text-lg font-semibold text-muted-foreground">{opponent.games}</div>
+              <div className="text-xs text-muted-foreground">Games</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-semibold">
                 <span className="text-green-400">{opponent.wins}</span>
-                <span className="text-zinc-600">-</span>
+                <span className="text-muted-foreground">-</span>
                 <span className="text-red-400">{opponent.losses}</span>
-                <span className="text-zinc-600">-</span>
-                <span className="text-zinc-400">{opponent.draws}</span>
+                <span className="text-muted-foreground">-</span>
+                <span className="text-muted-foreground">{opponent.draws}</span>
               </div>
-              <div className="text-xs text-zinc-500">W-L-D</div>
+              <div className="text-xs text-muted-foreground">W-L-D</div>
             </div>
           </div>
-          <div className="text-xs text-zinc-500 mt-3">
+          <div className="text-xs text-muted-foreground mt-3">
             Last played: {formatDate(opponent.lastPlayed)}
           </div>
         </div>
@@ -83,7 +83,7 @@ interface RatingBracketChartProps {
 function RatingBracketChart({ brackets }: RatingBracketChartProps) {
   if (brackets.length === 0) {
     return (
-      <div className="text-center py-8 text-zinc-500">
+      <div className="text-center py-8 text-muted-foreground">
         Not enough games for rating analysis
       </div>
     );
@@ -96,12 +96,12 @@ function RatingBracketChart({ brackets }: RatingBracketChartProps) {
       {brackets.map((bracket) => (
         <div key={bracket.bracket} className="space-y-1">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">{bracket.bracket}</span>
-            <span className="text-zinc-500">
+            <span className="text-muted-foreground">{bracket.bracket}</span>
+            <span className="text-muted-foreground">
               {bracket.games} games ({bracket.winRate.toFixed(0)}% win)
             </span>
           </div>
-          <div className="h-6 bg-zinc-800 rounded overflow-hidden flex">
+          <div className="h-6 bg-secondary rounded overflow-hidden flex">
             {/* Proportional bar based on game count */}
             <div 
               className="h-full flex"
@@ -116,14 +116,14 @@ function RatingBracketChart({ brackets }: RatingBracketChartProps) {
                 style={{ width: `${(bracket.losses / bracket.games) * 100}%` }}
               />
               <div 
-                className="bg-zinc-500 h-full"
+                className="bg-muted-foreground h-full"
                 style={{ width: `${(bracket.draws / bracket.games) * 100}%` }}
               />
             </div>
           </div>
         </div>
       ))}
-      <div className="flex justify-center gap-6 mt-4 text-xs text-zinc-500">
+      <div className="flex justify-center gap-6 mt-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           <span className="w-3 h-3 bg-green-500 rounded" />
           Wins
@@ -133,7 +133,7 @@ function RatingBracketChart({ brackets }: RatingBracketChartProps) {
           Losses
         </div>
         <div className="flex items-center gap-1">
-          <span className="w-3 h-3 bg-zinc-500 rounded" />
+          <span className="w-3 h-3 bg-muted-foreground rounded" />
           Draws
         </div>
       </div>
@@ -147,7 +147,7 @@ type SortDirection = 'asc' | 'desc';
 // Helper function to render sort icon - not a component
 function renderSortIcon(field: SortField, sortField: SortField, sortDirection: SortDirection) {
   if (sortField !== field) {
-    return <span className="text-zinc-600 ml-1">↕</span>;
+    return <span className="text-muted-foreground ml-1">↕</span>;
   }
   return (
     <span className="text-blue-400 ml-1">
@@ -195,7 +195,7 @@ function FrequentOpponentsTable({ opponents, allGames, limit = 10 }: FrequentOpp
 
   if (opponents.length === 0) {
     return (
-      <div className="text-center py-8 text-zinc-500">
+      <div className="text-center py-8 text-muted-foreground">
         No opponents to display
       </div>
     );
@@ -205,27 +205,36 @@ function FrequentOpponentsTable({ opponents, allGames, limit = 10 }: FrequentOpp
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-zinc-800">
-            <th className="text-left py-2 px-2 text-zinc-400 font-medium w-8"></th>
-            <th className="text-left py-2 px-2 text-zinc-400 font-medium">Opponent</th>
-            <th 
-              className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-              onClick={() => handleSort('games')}
-            >
-              Games {renderSortIcon('games', sortField, sortDirection)}
+          <tr className="border-b border-border">
+            <th className="text-left py-2 px-2 text-muted-foreground font-medium w-8"></th>
+            <th className="text-left py-2 px-2 text-muted-foreground font-medium">Opponent</th>
+            <th className="text-right py-2 px-2 text-muted-foreground font-medium">
+              <button
+                type="button"
+                onClick={() => handleSort('games')}
+                className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              >
+                Games {renderSortIcon('games', sortField, sortDirection)}
+              </button>
             </th>
-            <th 
-              className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-              onClick={() => handleSort('winRate')}
-            >
-              Win Rate {renderSortIcon('winRate', sortField, sortDirection)}
+            <th className="text-right py-2 px-2 text-muted-foreground font-medium">
+              <button
+                type="button"
+                onClick={() => handleSort('winRate')}
+                className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              >
+                Win Rate {renderSortIcon('winRate', sortField, sortDirection)}
+              </button>
             </th>
-            <th className="text-right py-2 px-2 text-zinc-400 font-medium">W/L/D</th>
-            <th 
-              className="text-right py-2 px-2 text-zinc-400 font-medium cursor-pointer hover:text-zinc-200"
-              onClick={() => handleSort('avgRating')}
-            >
-              Avg Rating {renderSortIcon('avgRating', sortField, sortDirection)}
+            <th className="text-right py-2 px-2 text-muted-foreground font-medium">W/L/D</th>
+            <th className="text-right py-2 px-2 text-muted-foreground font-medium">
+              <button
+                type="button"
+                onClick={() => handleSort('avgRating')}
+                className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              >
+                Avg Rating {renderSortIcon('avgRating', sortField, sortDirection)}
+              </button>
             </th>
           </tr>
         </thead>
@@ -236,45 +245,56 @@ function FrequentOpponentsTable({ opponents, allGames, limit = 10 }: FrequentOpp
 
             return (
               <Fragment key={opp.username}>
-                <tr 
-                  className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
-                    isExpanded ? 'bg-zinc-800/50' : 'hover:bg-zinc-800/30'
+                <tr
+                  className={`border-b border-border/50 cursor-pointer transition-colors ${
+                    isExpanded ? 'bg-secondary/50' : 'hover:bg-secondary/30'
                   }`}
                   onClick={() => handleRowClick(opp.username)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleRowClick(opp.username);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-expanded={isExpanded}
+                  aria-label={`${isExpanded ? 'Collapse' : 'Expand'} games against ${opp.username}`}
                 >
-                  <td className="py-2 px-2 text-zinc-500">
-                    <svg 
-                      className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
+                  <td className="py-2 px-2 text-muted-foreground">
+                    <svg
+                      className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </td>
-                  <td className="py-2 px-2 text-zinc-200">{opp.username}</td>
-                  <td className="text-right py-2 px-2 text-zinc-300">{opp.games}</td>
+                  <td className="py-2 px-2 text-foreground">{opp.username}</td>
+                  <td className="text-right py-2 px-2 text-muted-foreground">{opp.games}</td>
                   <td className="text-right py-2 px-2">
                     <span className={`${
                       opp.winRate >= 60 ? 'text-green-400' :
-                      opp.winRate >= 40 ? 'text-zinc-300' :
+                      opp.winRate >= 40 ? 'text-muted-foreground' :
                       'text-red-400'
                     }`}>
                       {opp.winRate.toFixed(0)}%
                     </span>
                   </td>
-                  <td className="text-right py-2 px-2 text-zinc-400">
+                  <td className="text-right py-2 px-2 text-muted-foreground">
                     <span className="text-green-400">{opp.wins}</span>
-                    <span className="text-zinc-600">/</span>
+                    <span className="text-muted-foreground">/</span>
                     <span className="text-red-400">{opp.losses}</span>
-                    <span className="text-zinc-600">/</span>
-                    <span className="text-zinc-400">{opp.draws}</span>
+                    <span className="text-muted-foreground">/</span>
+                    <span className="text-muted-foreground">{opp.draws}</span>
                   </td>
-                  <td className="text-right py-2 px-2 text-zinc-400">{opp.avgRating}</td>
+                  <td className="text-right py-2 px-2 text-muted-foreground">{opp.avgRating}</td>
                 </tr>
                 {isExpanded && (
                   <tr>
-                    <td colSpan={6} className="bg-zinc-800/20 p-4">
+                    <td colSpan={6} className="bg-secondary/20 p-4">
                       <GamesTable 
                         games={opponentGames} 
                         maxRows={10}

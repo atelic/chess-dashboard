@@ -34,7 +34,7 @@ describe('Dashboard', () => {
     it('shows loading indicator when isLoading is true', () => {
       render(<Dashboard games={[]} isLoading={true} />);
       
-      expect(screen.getByText('Loading games...')).toBeInTheDocument();
+      expect(screen.getByText('Loading games…')).toBeInTheDocument();
     });
 
     it('does not show tabs during loading', () => {

@@ -3,60 +3,159 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================
+   TRADING/FINANCIAL THEME - LIGHT MODE (default)
+   ============================================ */
 :root {
-  /* Shadcn/ui color tokens (OKLCH format for Tailwind 4) */
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  /* Core colors - Light mode */
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0 0);
 
-  --card: oklch(0.17 0 0);
-  --card-foreground: oklch(0.985 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
 
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
 
-  --primary: oklch(0.623 0.214 259);
+  /* Primary - Emerald green for trading theme */
+  --primary: oklch(0.545 0.175 160);
   --primary-foreground: oklch(0.985 0 0);
 
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
 
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.40 0 0);
 
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.97 0.01 160);
+  --accent-foreground: oklch(0.205 0 0);
+
+  /* Trading colors */
+  --success: oklch(0.545 0.175 160);
+  --success-foreground: oklch(0.985 0 0);
 
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
 
-  --success: oklch(0.627 0.194 149);
-  --success-foreground: oklch(0.985 0 0);
-
-  --warning: oklch(0.795 0.184 86);
+  --warning: oklch(0.75 0.183 55);
   --warning-foreground: oklch(0.145 0 0);
 
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.623 0.214 259);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.545 0.175 160);
 
   /* Border radius */
   --radius: 0.625rem;
 
-  /* Chart colors */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Chart colors - Trading palette */
+  --chart-1: oklch(0.545 0.175 160);
+  --chart-2: oklch(0.577 0.245 27.325);
+  --chart-3: oklch(0.65 0.15 250);
+  --chart-4: oklch(0.75 0.183 55);
+  --chart-5: oklch(0.6 0.15 300);
 
-  /* Chess accent colors (subtle) */
-  --chess-light-square: rgba(240, 217, 181, 0.08);
-  --chess-dark-square: rgba(181, 136, 99, 0.08);
+  /* Chess accent colors */
+  --chess-light-square: rgba(240, 217, 181, 0.5);
+  --chess-dark-square: rgba(181, 136, 99, 0.5);
   --chess-light-solid: #f0d9b5;
   --chess-dark-solid: #b58863;
 
   /* Legacy variables for compatibility */
-  --card-border: oklch(0.269 0 0);
+  --card-border: oklch(0.922 0 0);
+
+  /* Surface colors for layering */
+  --surface-1: oklch(0.985 0 0);
+  --surface-2: oklch(0.97 0 0);
+  --surface-3: oklch(0.955 0 0);
+
+  /* Text hierarchy */
+  --text-primary: oklch(0.145 0 0);
+  --text-secondary: oklch(0.35 0 0);
+  --text-tertiary: oklch(0.40 0 0);
+
+  /* Trading specific */
+  --gain: oklch(0.545 0.175 160);
+  --loss: oklch(0.577 0.245 27.325);
+  --neutral: oklch(0.40 0 0);
+
+  /* Chart colors - theme aware */
+  --chart-grid: oklch(0.90 0 0);
+  --chart-axis: oklch(0.45 0 0);
+}
+
+/* ============================================
+   TRADING/FINANCIAL THEME - DARK MODE
+   ============================================ */
+.dark {
+  /* Core colors - Dark mode with navy tint */
+  --background: oklch(0.13 0.015 260);
+  --foreground: oklch(0.95 0 0);
+
+  --card: oklch(0.16 0.015 260);
+  --card-foreground: oklch(0.95 0 0);
+
+  --popover: oklch(0.13 0.015 260);
+  --popover-foreground: oklch(0.95 0 0);
+
+  /* Primary - Bright emerald for dark mode */
+  --primary: oklch(0.696 0.17 162);
+  --primary-foreground: oklch(0.145 0 0);
+
+  --secondary: oklch(0.22 0.015 260);
+  --secondary-foreground: oklch(0.95 0 0);
+
+  --muted: oklch(0.22 0.015 260);
+  --muted-foreground: oklch(0.65 0 0);
+
+  --accent: oklch(0.22 0.02 160);
+  --accent-foreground: oklch(0.95 0 0);
+
+  /* Trading colors - more vibrant for dark mode */
+  --success: oklch(0.696 0.17 162);
+  --success-foreground: oklch(0.145 0 0);
+
+  --destructive: oklch(0.65 0.23 25);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --warning: oklch(0.8 0.18 80);
+  --warning-foreground: oklch(0.145 0 0);
+
+  --border: oklch(0.28 0.015 260);
+  --input: oklch(0.28 0.015 260);
+  --ring: oklch(0.696 0.17 162);
+
+  /* Chart colors - Trading palette dark mode */
+  --chart-1: oklch(0.696 0.17 162);
+  --chart-2: oklch(0.65 0.23 25);
+  --chart-3: oklch(0.7 0.15 250);
+  --chart-4: oklch(0.8 0.18 80);
+  --chart-5: oklch(0.7 0.15 300);
+
+  /* Chess accent colors - subtle for dark mode */
+  --chess-light-square: rgba(240, 217, 181, 0.08);
+  --chess-dark-square: rgba(181, 136, 99, 0.08);
+
+  /* Legacy variables for compatibility */
+  --card-border: oklch(0.28 0.015 260);
+
+  /* Surface colors for layering */
+  --surface-1: oklch(0.13 0.015 260);
+  --surface-2: oklch(0.16 0.015 260);
+  --surface-3: oklch(0.19 0.015 260);
+
+  /* Text hierarchy */
+  --text-primary: oklch(0.95 0 0);
+  --text-secondary: oklch(0.75 0 0);
+  --text-tertiary: oklch(0.65 0 0);
+
+  /* Trading specific */
+  --gain: oklch(0.696 0.17 162);
+  --loss: oklch(0.65 0.23 25);
+  --neutral: oklch(0.65 0 0);
+
+  /* Chart colors - theme aware */
+  --chart-grid: oklch(0.28 0.015 260);
+  --chart-axis: oklch(0.55 0 0);
 }
 
 /* Tailwind theme mapping */
@@ -82,12 +181,16 @@
   --color-ring: var(--ring);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-gain: var(--gain);
+  --color-loss: var(--loss);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-axis: var(--chart-axis);
 }
 
 body {
@@ -206,8 +309,12 @@ body {
 
 .card-interactive:hover {
   border-color: var(--border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: scale(1.005);
+}
+
+.dark .card-interactive:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Button active state */
@@ -240,16 +347,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: oklch(0.17 0 0);
+  background: var(--surface-2);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.35 0 0);
+  background: var(--border);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.45 0 0);
+  background: var(--muted-foreground);
 }
 
 /* ============================================
@@ -261,20 +368,20 @@ body {
 }
 
 .recharts-default-tooltip {
-  background-color: oklch(0.17 0 0) !important;
-  border: 1px solid oklch(0.35 0 0) !important;
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
   border-radius: 8px !important;
   padding: 8px 12px !important;
 }
 
 .recharts-tooltip-label {
-  color: oklch(0.985 0 0) !important;
+  color: var(--foreground) !important;
   font-weight: 600 !important;
   margin-bottom: 4px !important;
 }
 
 .recharts-tooltip-item {
-  color: oklch(0.708 0 0) !important;
+  color: var(--muted-foreground) !important;
   font-size: 14px !important;
 }
 
@@ -331,4 +438,273 @@ body {
     linear-gradient(-45deg, transparent 75%, var(--chess-dark-square) 75%);
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+/* ============================================
+   COMMAND CENTER LAYOUT
+   ============================================ */
+
+/* Sidebar transitions */
+.sidebar-transition {
+  transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              padding 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-transition {
+  transition: margin-left 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Nav item styles */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  transition: color 150ms ease, background-color 150ms ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+.nav-item.active {
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
+  color: var(--primary);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--primary);
+  border-radius: 0 2px 2px 0;
+}
+
+/* Panel styles */
+.command-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.command-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.command-panel-content {
+  padding: 20px;
+}
+
+/* Status badge styles */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge-success {
+  background: color-mix(in oklch, var(--success) 10%, transparent);
+  color: var(--success);
+  border: 1px solid color-mix(in oklch, var(--success) 20%, transparent);
+}
+
+.status-badge-warning {
+  background: color-mix(in oklch, var(--warning) 10%, transparent);
+  color: var(--warning);
+  border: 1px solid color-mix(in oklch, var(--warning) 20%, transparent);
+}
+
+.status-badge-danger {
+  background: color-mix(in oklch, var(--destructive) 10%, transparent);
+  color: var(--destructive);
+  border: 1px solid color-mix(in oklch, var(--destructive) 20%, transparent);
+}
+
+.status-badge-info {
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in oklch, var(--primary) 20%, transparent);
+}
+
+/* Ping animation for status dots */
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-ping-slow {
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Keyboard shortcut styling */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted-foreground);
+}
+
+/* Collapsible section */
+.collapsible-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.collapsible-trigger:hover {
+  background: var(--surface-3);
+}
+
+.collapsible-trigger[data-state="open"] {
+  border-radius: 12px 12px 0 0;
+  border-bottom: none;
+}
+
+.collapsible-content {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+/* Metric card for command center */
+.metric-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: border-color 200ms ease;
+}
+
+.metric-card:hover {
+  border-color: var(--muted-foreground);
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 8px;
+  background: var(--secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tab styles for panels */
+.panel-tab {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: transparent;
+  transition: color 150ms ease, background-color 150ms ease;
+  cursor: pointer;
+}
+
+.panel-tab:hover {
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.panel-tab.active {
+  color: var(--foreground);
+  background: var(--accent);
+}
+
+/* ============================================
+   TRADING-SPECIFIC UTILITIES
+   ============================================ */
+
+/* Gain/Loss text colors */
+.text-gain {
+  color: var(--gain);
+}
+
+.text-loss {
+  color: var(--loss);
+}
+
+.text-neutral {
+  color: var(--neutral);
+}
+
+/* Gain/Loss backgrounds */
+.bg-gain {
+  background-color: color-mix(in oklch, var(--gain) 10%, transparent);
+}
+
+.bg-loss {
+  background-color: color-mix(in oklch, var(--loss) 10%, transparent);
+}
+
+/* Win rate color utility */
+.win-rate-high {
+  color: var(--gain);
+}
+
+.win-rate-mid {
+  color: var(--warning);
+}
+
+.win-rate-low {
+  color: var(--loss);
 }

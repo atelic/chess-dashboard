@@ -31,7 +31,7 @@ export default function Dashboard({ games, isLoading, isAllTime = false, onGames
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <AnimatedKnight className="mb-4" />
-        <p className="text-muted-foreground animate-pulse">Loading games...</p>
+        <p className="text-muted-foreground animate-pulse">Loading games…</p>
       </div>
     );
   }

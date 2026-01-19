@@ -41,7 +41,7 @@ const TimeManagementChart = memo(function TimeManagementChart({ games }: TimeMan
   if (timeStats.gamesWithClockData === 0) {
     return (
       <Card title="Time Management" subtitle="Analyze your clock usage patterns">
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           <div className="text-center">
             <p>No clock data available</p>
             <p className="text-sm mt-1">Sync your games to see time management stats</p>
@@ -77,29 +77,29 @@ const TimeManagementChart = memo(function TimeManagementChart({ games }: TimeMan
       <div className="space-y-6">
         {/* Summary Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Avg Time Remaining</div>
-            <div className="text-xl font-semibold text-zinc-100 mt-1">
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Avg Time Remaining</div>
+            <div className="text-xl font-semibold text-foreground mt-1">
               {formatTime(timeStats.avgTimeRemaining)}
             </div>
           </div>
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Avg Move Time</div>
-            <div className="text-xl font-semibold text-zinc-100 mt-1">
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Avg Move Time</div>
+            <div className="text-xl font-semibold text-foreground mt-1">
               {formatTime(timeStats.avgMoveTime)}
             </div>
           </div>
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Timeout Loss Rate</div>
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Timeout Loss Rate</div>
             <div className={`text-xl font-semibold mt-1 ${
-              timeStats.timeoutLossRate > 20 ? 'text-red-400' : 'text-zinc-100'
+              timeStats.timeoutLossRate > 20 ? 'text-red-400' : 'text-foreground'
             }`}>
               {Math.round(timeStats.timeoutLossRate)}%
             </div>
           </div>
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Time Trouble Games</div>
-            <div className="text-xl font-semibold text-zinc-100 mt-1">
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Time Trouble Games</div>
+            <div className="text-xl font-semibold text-foreground mt-1">
               {pressureStats.gamesInTimeTrouble}
             </div>
           </div>
@@ -107,32 +107,32 @@ const TimeManagementChart = memo(function TimeManagementChart({ games }: TimeMan
 
         {/* Time Pressure Analysis */}
         {pressureStats.gamesInTimeTrouble > 0 && (
-          <div className="bg-zinc-800/50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-zinc-300 mb-3">Time Pressure Performance</h4>
+          <div className="bg-secondary/50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-muted-foreground mb-3">Time Pressure Performance</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-zinc-400">Win rate when low on time:</span>
+                <span className="text-muted-foreground">Win rate when low on time:</span>
                 <span className={`ml-2 font-medium ${
                   pressureStats.winRateInTimeTrouble < 30 ? 'text-red-400' : 
-                  pressureStats.winRateInTimeTrouble > 50 ? 'text-green-400' : 'text-zinc-100'
+                  pressureStats.winRateInTimeTrouble > 50 ? 'text-green-400' : 'text-foreground'
                 }`}>
                   {Math.round(pressureStats.winRateInTimeTrouble)}%
                 </span>
               </div>
               <div>
-                <span className="text-zinc-400">Total timeout losses:</span>
-                <span className="ml-2 font-medium text-zinc-100">
+                <span className="text-muted-foreground">Total timeout losses:</span>
+                <span className="ml-2 font-medium text-foreground">
                   {pressureStats.lossesToTimeout}
                 </span>
               </div>
               <div>
-                <span className="text-zinc-400">Avg time when winning:</span>
+                <span className="text-muted-foreground">Avg time when winning:</span>
                 <span className="ml-2 font-medium text-green-400">
                   {formatTime(pressureStats.avgTimeWhenWinning)}
                 </span>
               </div>
               <div>
-                <span className="text-zinc-400">Avg time when losing:</span>
+                <span className="text-muted-foreground">Avg time when losing:</span>
                 <span className="ml-2 font-medium text-red-400">
                   {formatTime(pressureStats.avgTimeWhenLosing)}
                 </span>
@@ -144,7 +144,7 @@ const TimeManagementChart = memo(function TimeManagementChart({ games }: TimeMan
         {/* Timeout Rate by Time Control */}
         {chartData.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-zinc-300 mb-3">Timeout Rate by Time Control</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-3">Timeout Rate by Time Control</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={chartData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />

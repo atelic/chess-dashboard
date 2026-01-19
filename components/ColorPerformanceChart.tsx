@@ -33,10 +33,10 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 shadow-lg">
-        <p className="text-zinc-100 font-medium mb-2 capitalize">{label}</p>
+      <div className="bg-secondary border border-border rounded-lg p-3 shadow-lg">
+        <p className="text-foreground font-medium mb-2 capitalize">{label}</p>
         <p className="text-sm text-blue-400">Win Rate: {data.winRate.toFixed(1)}%</p>
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-muted-foreground">
           {data.wins} wins / {data.games} games
         </p>
       </div>
@@ -57,7 +57,7 @@ const ColorPerformanceChart = memo(function ColorPerformanceChart({ data }: Colo
   if (data.length === 0) {
     return (
       <Card title="Performance by Color">
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           No data available
         </div>
       </Card>

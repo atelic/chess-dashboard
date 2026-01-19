@@ -53,7 +53,7 @@ export default function ResilienceChart({ games }: ResilienceChartProps) {
         title="Mental Game & Resilience"
         subtitle="Track your ability to handle pressure and convert advantages"
       >
-        <div className="h-64 flex items-center justify-center text-zinc-500">
+        <div className="h-64 flex items-center justify-center text-muted-foreground">
           <div className="text-center">
             <p>Not enough analyzed games</p>
             <p className="text-sm mt-1">
@@ -119,7 +119,7 @@ export default function ResilienceChart({ games }: ResilienceChartProps) {
                 >
                   {stats.mentalScore}
                 </div>
-                <div className="text-xs text-zinc-400">Mental Score</div>
+                <div className="text-xs text-muted-foreground">Mental Score</div>
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function ResilienceChart({ games }: ResilienceChartProps) {
             >
               {getMentalScoreLabel(stats.mentalScore)}
             </div>
-            <p className="text-sm text-zinc-400 mt-1 max-w-xs">
+            <p className="text-sm text-muted-foreground mt-1 max-w-xs">
               {stats.mentalScore >= 60
                 ? 'You handle pressure well and convert advantages consistently.'
                 : stats.mentalScore >= 40
@@ -143,35 +143,35 @@ export default function ResilienceChart({ games }: ResilienceChartProps) {
         {/* Key Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-green-950/30 border border-green-900/50 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Comeback Wins</div>
+            <div className="text-muted-foreground text-sm">Comeback Wins</div>
             <div className="text-xl font-semibold text-green-400 mt-1">
               {stats.comebackWins}
             </div>
-            <div className="text-xs text-zinc-500 mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               {stats.comebackRate.toFixed(0)}% rate
             </div>
           </div>
           <div className="bg-red-950/30 border border-red-900/50 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Blown Wins</div>
+            <div className="text-muted-foreground text-sm">Blown Wins</div>
             <div className="text-xl font-semibold text-red-400 mt-1">
               {stats.blownWins}
             </div>
-            <div className="text-xs text-zinc-500 mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               {stats.blowRate.toFixed(0)}% rate
             </div>
           </div>
           <div className="bg-blue-950/30 border border-blue-900/50 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Converted Advantages</div>
+            <div className="text-muted-foreground text-sm">Converted Advantages</div>
             <div className="text-xl font-semibold text-blue-400 mt-1">
               {stats.convertedAdvantages}
             </div>
           </div>
-          <div className="bg-zinc-800 rounded-lg p-4">
-            <div className="text-zinc-400 text-sm">Volatile Games</div>
-            <div className="text-xl font-semibold text-zinc-100 mt-1">
+          <div className="bg-secondary rounded-lg p-4">
+            <div className="text-muted-foreground text-sm">Volatile Games</div>
+            <div className="text-xl font-semibold text-foreground mt-1">
               {stats.volatileGames}
             </div>
-            <div className="text-xs text-zinc-500 mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               {analyzedGames > 0
                 ? ((stats.volatileGames / analyzedGames) * 100).toFixed(0)
                 : 0}
@@ -185,7 +185,7 @@ export default function ResilienceChart({ games }: ResilienceChartProps) {
           {/* Outcome Distribution */}
           {pieData.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-zinc-300 mb-3">
+              <h4 className="text-sm font-medium text-muted-foreground mb-3">
                 Game Outcomes
               </h4>
               <ResponsiveContainer width="100%" height={200}>
@@ -219,7 +219,7 @@ export default function ResilienceChart({ games }: ResilienceChartProps) {
 
           {/* Rates Comparison */}
           <div>
-            <h4 className="text-sm font-medium text-zinc-300 mb-3">
+            <h4 className="text-sm font-medium text-muted-foreground mb-3">
               Performance Rates
             </h4>
             <ResponsiveContainer width="100%" height={200}>
