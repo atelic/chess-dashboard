@@ -55,12 +55,14 @@ export async function POST(request: Request) {
 
     const syncService = await createSyncService();
     const result = await syncService.syncGames(user.id, { fullSync });
+    const updatedUser = await userService.getCurrentUser();
 
     return NextResponse.json({
       success: result.success,
       newGamesCount: result.newGamesCount,
       totalGamesCount: result.totalGamesCount,
       sources: result.sources,
+      lastSyncedAt: updatedUser?.lastSyncedAt?.toISOString() || null,
     });
   } catch (error) {
     console.error('POST /api/sync error:', error);
@@ -113,12 +115,14 @@ export async function DELETE(request: Request) {
 
     const syncService = await createSyncService();
     const result = await syncService.fullResync(user.id);
+    const updatedUser = await userService.getCurrentUser();
 
     return NextResponse.json({
       success: result.success,
       newGamesCount: result.newGamesCount,
       totalGamesCount: result.totalGamesCount,
       sources: result.sources,
+      lastSyncedAt: updatedUser?.lastSyncedAt?.toISOString() || null,
     });
   } catch (error) {
     console.error('DELETE /api/sync error:', error);

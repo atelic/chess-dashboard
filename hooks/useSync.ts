@@ -12,6 +12,7 @@ interface SyncResult {
     newGames: number;
     error?: string;
   }>;
+  lastSyncedAt: string | null;
 }
 
 interface UseSyncReturn {
@@ -24,7 +25,7 @@ interface UseSyncReturn {
 }
 
 export function useSync(): UseSyncReturn {
-  const { syncStatus, setSyncing, setSyncComplete, setSyncError, clearSyncError } = useAppStore();
+  const { syncStatus, setSyncing, setSyncComplete, setSyncError, clearSyncError, user, setUser } = useAppStore();
 
   const sync = useCallback(
     async (fullSync: boolean = false): Promise<SyncResult | null> => {
@@ -43,7 +44,13 @@ export function useSync(): UseSyncReturn {
           throw new Error(data.error || 'Sync failed');
         }
 
-        setSyncComplete(new Date());
+        const syncedAt = data.lastSyncedAt ? new Date(data.lastSyncedAt) : new Date();
+        setSyncComplete(syncedAt);
+        
+        if (user && data.lastSyncedAt) {
+          setUser({ ...user, lastSyncedAt: data.lastSyncedAt });
+        }
+        
         return data as SyncResult;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Sync failed';
@@ -51,7 +58,7 @@ export function useSync(): UseSyncReturn {
         return null;
       }
     },
-    [setSyncing, setSyncComplete, setSyncError],
+    [setSyncing, setSyncComplete, setSyncError, user, setUser],
   );
 
   const fullResync = useCallback(async (): Promise<SyncResult | null> => {
@@ -68,14 +75,20 @@ export function useSync(): UseSyncReturn {
         throw new Error(data.error || 'Full resync failed');
       }
 
-      setSyncComplete(new Date());
+      const syncedAt = data.lastSyncedAt ? new Date(data.lastSyncedAt) : new Date();
+      setSyncComplete(syncedAt);
+      
+      if (user && data.lastSyncedAt) {
+        setUser({ ...user, lastSyncedAt: data.lastSyncedAt });
+      }
+      
       return data as SyncResult;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Full resync failed';
       setSyncError(message);
       return null;
     }
-  }, [setSyncing, setSyncComplete, setSyncError]);
+  }, [setSyncing, setSyncComplete, setSyncError, user, setUser]);
 
   return {
     isSyncing: syncStatus.isSyncing,
